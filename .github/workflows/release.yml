@@ -1,0 +1,37 @@
+name: Build Release
+
+on:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+
+jobs:
+  build windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - uses: actions/checkout@v3
+      - name: Build
+        run: cargo build --release
+      - uses: actions/upload-artifact@v2
+        with:
+          name: windows
+          path: target/release/pagelistbot.exe
+
+  build macos:
+    runs-on: windows-latest
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - uses: actions/checkout@v3
+      - name: Build
+        run: cargo build --release
+      - uses: actions/upload-artifact@v2
+        with:
+          name: macOS
+          path: target/release/pagelistbot
