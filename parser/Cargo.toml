@@ -6,4 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nom = "7"
+nom = { version = "7", optional = true }
+nom_locate = { version = "4", optional = true }
+
+[features]
+default = [ "parse" ]
+parse = [ "nom", "nom_locate" ]
