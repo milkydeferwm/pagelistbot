@@ -2,10 +2,10 @@
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Span<'a> {
-    offset: usize,
-    line: u32,
-    column: usize,
-    fragment: &'a str,
+    pub offset: usize,
+    pub line: u32,
+    pub column: usize,
+    pub fragment: &'a str,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
