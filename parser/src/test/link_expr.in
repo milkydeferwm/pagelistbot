@@ -1,0 +1,23 @@
+[
+    (
+        "link(\"Main Page\")",
+        Ok(Expr::Link {
+            span: Span {
+                offset: 0,
+                line: 1,
+                column: 1,
+                fragment: "link(\"Main Page\")"
+            },
+            target: Box::new(Expr::Page {
+                span: Span {
+                    offset: 5,
+                    line: 1,
+                    column: 6,
+                    fragment: "\"Main Page\""
+                },
+                titles: vec!["Main Page"],
+            }),
+            modifier: ModifierBuilder::new().build()
+        })
+    )
+]
