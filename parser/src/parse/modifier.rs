@@ -46,7 +46,7 @@ where
     Ok((input, ModifierType::ResultLimit(limit)))
 }
 
-/// Parse a ResultLimit modifier. Assume no leading or trailing spaces.
+/// Parse a ResolveRedirects modifier. Assume no leading or trailing spaces.
 /// 
 /// Must be written as
 /// * `resolve()`; or
