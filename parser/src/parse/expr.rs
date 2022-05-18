@@ -8,12 +8,10 @@ use nom::sequence::delimited;
 use nom_locate::LocatedSpan;
 
 use crate::ast::*;
-use crate::parser_types::*;
+use super::NomSpan;
 
 #[cfg(test)]
 use pagelistbot_parser_test_macro::parse_test;
-
-pub(crate) type NomSpan<'a> = LocatedSpan<&'a str>;
 
 pub fn parse(input: NomSpan) -> IResult<NomSpan, Expr> {
     todo!()
