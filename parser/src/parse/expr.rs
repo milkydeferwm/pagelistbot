@@ -74,7 +74,7 @@ where
 
 pub fn parse<'a, E>(input: StrSpan) -> IResult<StrSpan, Expr, E>
 where
-    E: nom::error::ParseError<StrSpan<'a>> + nom::error::FromExternalError<StrSpan<'a>, std::num::ParseIntError>
+    E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
     todo!()
 }
