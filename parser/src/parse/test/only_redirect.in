@@ -1,0 +1,22 @@
+[
+    (
+        "onlyredir",
+        Ok(ModifierType::OnlyRedirect)
+    ),
+    (
+        "ONLYREDIR",
+        Ok(ModifierType::OnlyRedirect)
+    ),
+    (
+        "Onlyredir()",
+        Ok(ModifierType::OnlyRedirect)
+    ),
+    (
+        "OnlyRedir ()",
+        Ok(ModifierType::OnlyRedirect)
+    ),
+    (
+        "onlyredir ( )",
+        Ok(ModifierType::OnlyRedirect)
+    )
+]

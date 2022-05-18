@@ -1,0 +1,22 @@
+[
+    (
+        "direct",
+        Ok(ModifierType::DirectBacklink)
+    ),
+    (
+        "DIRECT",
+        Ok(ModifierType::DirectBacklink)
+    ),
+    (
+        "Direct()",
+        Ok(ModifierType::DirectBacklink)
+    ),
+    (
+        "direct ()",
+        Ok(ModifierType::DirectBacklink)
+    ),
+    (
+        "direct ( )",
+        Ok(ModifierType::DirectBacklink)
+    )
+]

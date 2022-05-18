@@ -127,3 +127,93 @@ where
     )(input)?;
     Ok((input, ModifierType::RecursionDepth(depth)))
 }
+
+/// Parse a NoRedirect modifier. Assume no leading or trailing spaces.
+/// 
+/// Must be written as
+/// * `noredir()`; or
+/// * `noredir`
+/// 
+/// The brackets are optional. There might be spaces between tokens. 
+#[cfg_attr(
+    test,
+    parse_test(test_no_redirect, "test/no_redirect.in"),
+)]
+fn parse_no_redirect<'a, E>(input: StrSpan) -> IResult<StrSpan, ModifierType>
+where
+    E: ParseError<StrSpan<'a>>
+{
+    let (input, _) = preceded(
+        tag_no_case("noredir"),
+        opt(
+            ws(
+                delimited(
+                    char('('),
+                    multispace0,
+                    char(')')
+                )
+            )
+        )
+    )(input)?;
+    Ok((input, ModifierType::NoRedirect))
+}
+
+/// Parse a OnlyRedirect modifier. Assume no leading or trailing spaces.
+/// 
+/// Must be written as
+/// * `onlyredir()`; or
+/// * `onlyredir`
+/// 
+/// The brackets are optional. There might be spaces between tokens. 
+#[cfg_attr(
+    test,
+    parse_test(test_only_redirect, "test/only_redirect.in"),
+)]
+fn parse_only_redirect<'a, E>(input: StrSpan) -> IResult<StrSpan, ModifierType>
+where
+    E: ParseError<StrSpan<'a>>
+{
+    let (input, _) = preceded(
+        tag_no_case("onlyredir"),
+        opt(
+            ws(
+                delimited(
+                    char('('),
+                    multispace0,
+                    char(')')
+                )
+            )
+        )
+    )(input)?;
+    Ok((input, ModifierType::OnlyRedirect))
+}
+
+/// Parse a DirectBacklink modifier. Assume no leading or trailing spaces.
+/// 
+/// Must be written as
+/// * `direct()`; or
+/// * `direct`
+/// 
+/// The brackets are optional. There might be spaces between tokens. 
+#[cfg_attr(
+    test,
+    parse_test(test_direct_backlink, "test/direct_backlink.in"),
+)]
+fn parse_direct_backlink<'a, E>(input: StrSpan) -> IResult<StrSpan, ModifierType>
+where
+    E: ParseError<StrSpan<'a>>
+{
+    let (input, _) = preceded(
+        tag_no_case("direct"),
+        opt(
+            ws(
+                delimited(
+                    char('('),
+                    multispace0,
+                    char(')')
+                )
+            )
+        )
+    )(input)?;
+    Ok((input, ModifierType::DirectBacklink))
+}
