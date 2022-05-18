@@ -101,3 +101,29 @@ where
     )(input)?;
     Ok((input, ModifierType::Namespace(std::collections::HashSet::from_iter(nsvec))))
 }
+
+/// Parse a RecursionDepth modifier. Assume no leading or trailing spaces.
+/// 
+/// `depth(xx)`
+/// 
+/// `xx` is an `i64` integer, and there might be whitespaces between tokens.
+#[cfg_attr(
+    test,
+    parse_test(test_recursion_depth, "test/recursion_depth.in"),
+)]
+fn parse_recursion_depth<'a, E>(input: StrSpan) -> IResult<StrSpan, ModifierType>
+where
+    E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
+{
+    let (input, depth) = preceded(
+        tag_no_case("depth"),
+        ws(
+            delimited(
+                char('('),
+                ws(parse_i64),
+                char(')')
+            )
+        )
+    )(input)?;
+    Ok((input, ModifierType::RecursionDepth(depth)))
+}
