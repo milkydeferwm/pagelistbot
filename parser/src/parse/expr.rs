@@ -14,24 +14,10 @@ use crate::ast::*;
 use super::StrSpan;
 use super::parser_types::*;
 use super::string::parse_string;
+use super::util::ws;
 
 #[cfg(test)]
 use pagelistbot_parser_test_macro::parse_test;
-
-/// A combinator that takes a parser `inner` and produces a parser that also consumes both leading and 
-/// trailing whitespace, returning the output of `inner`.
-fn ws<'a, F: 'a, O, E>(inner: F) -> impl FnMut(StrSpan<'a>) -> IResult<StrSpan<'a>, O, E>
-where
-    F: FnMut(StrSpan<'a>) -> IResult<StrSpan<'a>, O, E>,
-    E: ParseError<StrSpan<'a>>
-{
-    use nom::character::complete::multispace0;
-    delimited(
-        multispace0,
-        inner,
-        multispace0
-    )
-}
 
 /// Parse a `page` expression. Assumes no leading or trailing whitespaces.
 /// 
