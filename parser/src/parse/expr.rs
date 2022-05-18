@@ -8,12 +8,16 @@ use nom::sequence::delimited;
 use nom_locate::LocatedSpan;
 
 use crate::ast::*;
-use super::NomSpan;
+use super::StrSpan;
+use super::parser_types::*;
 
 #[cfg(test)]
 use pagelistbot_parser_test_macro::parse_test;
 
-pub fn parse(input: NomSpan) -> IResult<NomSpan, Expr> {
+pub fn parse<'a, E>(input: StrSpan) -> IResult<StrSpan, Expr, E>
+where
+    E: nom::error::ParseError<StrSpan<'a>> + nom::error::FromExternalError<StrSpan<'a>, std::num::ParseIntError>
+{
     todo!()
 }
 
@@ -21,6 +25,9 @@ pub fn parse(input: NomSpan) -> IResult<NomSpan, Expr> {
     test,
     parse_test(test_link_expr, "test/link_expr.in"),
 )]
-fn parse_link_expr(input: NomSpan) -> IResult<NomSpan, Expr> {
+fn parse_link_expr<'a, E>(input: StrSpan) -> IResult<StrSpan, Expr>
+where
+    E: nom::error::ParseError<StrSpan<'a>> + nom::error::FromExternalError<StrSpan<'a>, std::num::ParseIntError>
+{
     todo!();
 }

@@ -22,7 +22,7 @@ pub fn parse_test(attr: TokenStream, item: TokenStream) -> TokenStream {
 
             let input = include!( #test_fn_input );
             for (input, expected) in input {
-                let result = #test_fn (nom_locate::LocatedSpan::new(input)).finish().map(|(_, res)| res);
+                let result = #test_fn ::<nom::error::VerboseError<nom_locate::LocatedSpan<&str>>>(nom_locate::LocatedSpan::new(input)).finish().map(|(_, res)| res);
                 assert_eq!(result, expected);
             }
         }
