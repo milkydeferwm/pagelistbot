@@ -9,8 +9,6 @@ use nom::error::{ParseError, FromExternalError};
 use nom::multi::{separated_list1, many0};
 use nom::sequence::{delimited, preceded};
 
-use nom_locate::LocatedSpan;
-
 use crate::ast::*;
 use super::StrSpan;
 use super::parser_types::*;
@@ -20,7 +18,7 @@ use super::util::ws;
 #[cfg(test)]
 use pagelistbot_parser_test_macro::parse_test;
 
-/// Parse a ResultLimit modifier. Assume no leading or trailing spaces.
+/// Parse a ResultLimit modifier. Assume no leading or trailing whitespaces.
 /// 
 /// `limit(xx)`
 /// 
@@ -46,13 +44,13 @@ where
     Ok((input, ModifierType::ResultLimit(limit)))
 }
 
-/// Parse a ResolveRedirects modifier. Assume no leading or trailing spaces.
+/// Parse a ResolveRedirects modifier. Assume no leading or trailing whitespaces.
 /// 
 /// Must be written as
 /// * `resolve()`; or
 /// * `resolve`
 /// 
-/// The brackets are optional. There might be spaces between tokens. 
+/// The brackets are optional. There might be whitespaces between tokens. 
 #[cfg_attr(
     test,
     parse_test(test_resolve_redirects, "test/resolve_redirects.in"),
@@ -76,7 +74,7 @@ where
     Ok((input, ModifierType::ResolveRedirects))
 }
 
-/// Parse a Namespace modifier. Assume no leading or trailing spaces.
+/// Parse a Namespace modifier. Assume no leading or trailing whitespaces.
 /// 
 /// `ns(xx,xx,xx)`
 /// 
@@ -102,7 +100,7 @@ where
     Ok((input, ModifierType::Namespace(std::collections::HashSet::from_iter(nsvec))))
 }
 
-/// Parse a RecursionDepth modifier. Assume no leading or trailing spaces.
+/// Parse a RecursionDepth modifier. Assume no leading or trailing whitespaces.
 /// 
 /// `depth(xx)`
 /// 
@@ -128,13 +126,13 @@ where
     Ok((input, ModifierType::RecursionDepth(depth)))
 }
 
-/// Parse a NoRedirect modifier. Assume no leading or trailing spaces.
+/// Parse a NoRedirect modifier. Assume no leading or trailing whitespaces.
 /// 
 /// Must be written as
 /// * `noredir()`; or
 /// * `noredir`
 /// 
-/// The brackets are optional. There might be spaces between tokens. 
+/// The brackets are optional. There might be whitespaces between tokens. 
 #[cfg_attr(
     test,
     parse_test(test_no_redirect, "test/no_redirect.in"),
@@ -158,13 +156,13 @@ where
     Ok((input, ModifierType::NoRedirect))
 }
 
-/// Parse a OnlyRedirect modifier. Assume no leading or trailing spaces.
+/// Parse a OnlyRedirect modifier. Assume no leading or trailing whitespaces.
 /// 
 /// Must be written as
 /// * `onlyredir()`; or
 /// * `onlyredir`
 /// 
-/// The brackets are optional. There might be spaces between tokens. 
+/// The brackets are optional. There might be whitespaces between tokens. 
 #[cfg_attr(
     test,
     parse_test(test_only_redirect, "test/only_redirect.in"),
@@ -188,13 +186,13 @@ where
     Ok((input, ModifierType::OnlyRedirect))
 }
 
-/// Parse a DirectBacklink modifier. Assume no leading or trailing spaces.
+/// Parse a DirectBacklink modifier. Assume no leading or trailing whitespaces.
 /// 
 /// Must be written as
 /// * `direct()`; or
 /// * `direct`
 /// 
-/// The brackets are optional. There might be spaces between tokens. 
+/// The brackets are optional. There might be whitespaces between tokens. 
 #[cfg_attr(
     test,
     parse_test(test_direct_backlink, "test/direct_backlink.in"),
