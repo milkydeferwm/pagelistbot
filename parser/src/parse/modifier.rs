@@ -25,7 +25,7 @@ use pagelistbot_parser_test_macro::parse_test;
 /// `xx` is an `i64` integer, and there might be whitespaces between tokens.
 #[cfg_attr(
     test,
-    parse_test(test_result_limit, "test/result_limit.in"),
+    parse_test(test_result_limit, "test/modifier/result_limit.in"),
 )]
 fn parse_result_limit<'a, E>(input: StrSpan) -> IResult<StrSpan, ModifierType>
 where
@@ -53,7 +53,7 @@ where
 /// The brackets are optional. There might be whitespaces between tokens. 
 #[cfg_attr(
     test,
-    parse_test(test_resolve_redirects, "test/resolve_redirects.in"),
+    parse_test(test_resolve_redirects, "test/modifier/resolve_redirects.in"),
 )]
 fn parse_resolve_redirects<'a, E>(input: StrSpan) -> IResult<StrSpan, ModifierType>
 where
@@ -81,7 +81,7 @@ where
 /// `xx` is an `i64` integer, and there might be whitespaces between tokens.
 #[cfg_attr(
     test,
-    parse_test(test_namespace, "test/namespace.in"),
+    parse_test(test_namespace, "test/modifier/namespace.in"),
 )]
 fn parse_namespace<'a, E>(input: StrSpan) -> IResult<StrSpan, ModifierType>
 where
@@ -107,7 +107,7 @@ where
 /// `xx` is an `i64` integer, and there might be whitespaces between tokens.
 #[cfg_attr(
     test,
-    parse_test(test_recursion_depth, "test/recursion_depth.in"),
+    parse_test(test_recursion_depth, "test/modifier/recursion_depth.in"),
 )]
 fn parse_recursion_depth<'a, E>(input: StrSpan) -> IResult<StrSpan, ModifierType>
 where
@@ -135,7 +135,7 @@ where
 /// The brackets are optional. There might be whitespaces between tokens. 
 #[cfg_attr(
     test,
-    parse_test(test_no_redirect, "test/no_redirect.in"),
+    parse_test(test_no_redirect, "test/modifier/no_redirect.in"),
 )]
 fn parse_no_redirect<'a, E>(input: StrSpan) -> IResult<StrSpan, ModifierType>
 where
@@ -165,7 +165,7 @@ where
 /// The brackets are optional. There might be whitespaces between tokens. 
 #[cfg_attr(
     test,
-    parse_test(test_only_redirect, "test/only_redirect.in"),
+    parse_test(test_only_redirect, "test/modifier/only_redirect.in"),
 )]
 fn parse_only_redirect<'a, E>(input: StrSpan) -> IResult<StrSpan, ModifierType>
 where
@@ -195,7 +195,7 @@ where
 /// The brackets are optional. There might be whitespaces between tokens. 
 #[cfg_attr(
     test,
-    parse_test(test_direct_backlink, "test/direct_backlink.in"),
+    parse_test(test_direct_backlink, "test/modifier/direct_backlink.in"),
 )]
 fn parse_direct_backlink<'a, E>(input: StrSpan) -> IResult<StrSpan, ModifierType>
 where
@@ -226,7 +226,7 @@ where
 /// There is a dot before each of the above modifiers. Whitespaces are allowed between tokens.
 #[cfg_attr(
     test,
-    parse_test(test_modifier, "test/modifier.in"),
+    parse_test(test_modifier, "test/modifier/modifier.in"),
 )]
 fn parse_modifier<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, ModifierType>
 where
@@ -259,7 +259,7 @@ where
 /// Whitespaces are permitted between tokens.
 #[cfg_attr(
     test,
-    parse_test(test_modifier_list, "test/modifier_list.in"),
+    parse_test(test_modifier_list, "test/modifier/modifier_list.in"),
 )]
 pub(crate) fn parse_modifier_list<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Modifier>
 where

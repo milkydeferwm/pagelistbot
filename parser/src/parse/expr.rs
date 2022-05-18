@@ -28,7 +28,7 @@ use pagelistbot_parser_test_macro::parse_test;
 /// With optional whitespaces between tokens.
 #[cfg_attr(
     test,
-    parse_test(test_page_expr, "test/page_expr.in"),
+    parse_test(test_page_expr, "test/expr/page_expr.in"),
 )]
 fn parse_page_expr<'a, E>(input: StrSpan) -> IResult<StrSpan, Expr>
 where
@@ -67,7 +67,7 @@ where
 
 #[cfg_attr(
     test,
-    parse_test(test_link_expr, "test/link_expr.in"),
+    parse_test(test_link_expr, "test/expr/link_expr.in"),
 )]
 fn parse_link_expr<'a, E>(input: StrSpan) -> IResult<StrSpan, Expr>
 where

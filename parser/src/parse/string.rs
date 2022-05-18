@@ -24,7 +24,7 @@ use pagelistbot_parser_test_macro::parse_test;
 /// to parse sequences like \u{00AC}.
 #[cfg_attr(
     test,
-    parse_test(test_unicode, "test/unicode.in")
+    parse_test(test_unicode, "test/string/unicode.in")
 )]
 fn parse_unicode<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, char, E>
 where
@@ -44,7 +44,7 @@ where
 /// Parse an escaped character: \n, \t, \r, \u{00AC}, etc.
 #[cfg_attr(
     test,
-    parse_test(test_escaped_char, "test/escaped_char.in")
+    parse_test(test_escaped_char, "test/string/escaped_char.in")
 )]
 fn parse_escaped_char<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, char, E>
 where
@@ -105,7 +105,7 @@ where
 /// into an output string.
 #[cfg_attr(
     test,
-    parse_test(test_string, "test/string.in")
+    parse_test(test_string, "test/string/string.in")
 )]
 pub(crate) fn parse_string<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, String, E>
 where
