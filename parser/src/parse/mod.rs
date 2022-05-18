@@ -4,6 +4,7 @@ mod parser_types;
 
 mod expr;
 mod modifier;
+mod number;
 mod string;
 mod util;
 
