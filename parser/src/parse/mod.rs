@@ -5,6 +5,7 @@ mod parser_types;
 mod expr;
 mod modifier;
 mod string;
+mod util;
 
 type StrSpan<'a> = nom_locate::LocatedSpan<&'a str>;
 
