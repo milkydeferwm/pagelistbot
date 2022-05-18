@@ -217,3 +217,35 @@ where
     )(input)?;
     Ok((input, ModifierType::DirectBacklink))
 }
+
+/// Parse a modifier. Assume no leading or trailing whitespaces.
+/// 
+/// A modifier is written as follows
+/// * `.limit(xx)`
+/// * `.resolve`
+/// * *etc*
+/// 
+/// There is a dot before each of the above modifiers. Whitespaces are allowed between tokens.
+#[cfg_attr(
+    test,
+    parse_test(test_modifier, "test/modifier.in"),
+)]
+fn parse_modifier<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, ModifierType>
+where
+    E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
+{
+    preceded(
+        char('.'),
+        ws(
+            alt((
+                parse_result_limit::<E>,
+                parse_resolve_redirects::<E>,
+                parse_namespace::<E>,
+                parse_recursion_depth::<E>,
+                parse_no_redirect::<E>,
+                parse_only_redirect::<E>,
+                parse_direct_backlink::<E>,
+            ))
+        )
+    )(input)
+}
