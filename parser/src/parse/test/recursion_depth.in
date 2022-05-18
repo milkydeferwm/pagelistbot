@@ -1,0 +1,18 @@
+[
+    (
+        "depth(0)",
+        Ok(ModifierType::RecursionDepth(0))
+    ),
+    (
+        "Depth( 1 )",
+        Ok(ModifierType::RecursionDepth(1))
+    ),
+    (
+        "dEpTh (-1)",
+        Ok(ModifierType::RecursionDepth(-1))
+    ),
+    (
+        "DEPTH ( +10000 )",
+        Ok(ModifierType::RecursionDepth(10000))
+    )
+]
