@@ -1,0 +1,35 @@
+[
+    (
+        ".limit (-1). resolve .ns ( 0, 1,2, 3) . DEPTH ( +10000 ).Noredir() . OnlyRedir().direct",
+        Ok(Modifier {
+            result_limit: Some(-1),
+            resolve_redirects: true,
+            namespace: Some(std::collections::HashSet::from_iter(Vec::<i64>::from([0, 1, 2, 3]))),
+            categorymembers_recursion_depth: 10000,
+            filter_redirects: RedirectFilterStrategy::OnlyRedirect,
+            backlink_trace_redirects: false,
+        })
+    ),
+    (
+        ".limit (-1). resolve .ns ( 0, 1,2, 3) . DEPTH ( 2 ).Noredir() .direct . deptH(-10 ).ns(3, 6, 1). limit( 50000)",
+        Ok(Modifier {
+            result_limit: Some(50000),
+            resolve_redirects: true,
+            namespace: Some(std::collections::HashSet::from_iter(Vec::<i64>::from([1, 3]))),
+            categorymembers_recursion_depth: 2,
+            filter_redirects: RedirectFilterStrategy::NoRedirect,
+            backlink_trace_redirects: false,
+        })
+    ),
+    (
+        "",
+        Ok(Modifier {
+            result_limit: None,
+            resolve_redirects: false,
+            namespace: None,
+            categorymembers_recursion_depth: 0,
+            filter_redirects: RedirectFilterStrategy::All,
+            backlink_trace_redirects: true,
+        })
+    ),
+]

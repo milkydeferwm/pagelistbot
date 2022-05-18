@@ -6,7 +6,7 @@ use nom::bytes::complete::tag_no_case;
 use nom::character::complete::{char, multispace0};
 use nom::combinator::opt;
 use nom::error::{ParseError, FromExternalError};
-use nom::multi::separated_list1;
+use nom::multi::{separated_list1, many0};
 use nom::sequence::{delimited, preceded};
 
 use nom_locate::LocatedSpan;
@@ -248,4 +248,38 @@ where
             ))
         )
     )(input)
+}
+
+/// Parse a list of modifiers. Assume no leading or trailing whitespaces.
+/// 
+/// A list of modifiers may look like:
+/// 
+/// * `.ns(0).limit(-1)`
+/// * `.depth(3) .ns(1) .resolve`
+/// * *etc*
+/// 
+/// Whitespaces are permitted between tokens.
+#[cfg_attr(
+    test,
+    parse_test(test_modifier_list, "test/modifier_list.in"),
+)]
+pub(crate) fn parse_modifier_list<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Modifier>
+where
+    E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
+{
+    let (input, list) = many0(ws(parse_modifier::<E>))(input)?;
+
+    let mut builder = ModifierBuilder::new();
+    for modifier in list {
+        match modifier {
+            ModifierType::ResultLimit(limit) => builder = builder.result_limit(limit),
+            ModifierType::ResolveRedirects => builder = builder.resolve_redirects(),
+            ModifierType::Namespace(ns) => builder = builder.namespace(&ns),
+            ModifierType::RecursionDepth(depth) => builder = builder.categorymembers_recursion_depth(depth),
+            ModifierType::NoRedirect => builder = builder.no_redirect(),
+            ModifierType::OnlyRedirect => builder = builder.only_redirect(),
+            ModifierType::DirectBacklink => builder = builder.direct_backlink(),
+        }
+    }
+    Ok((input, builder.build()))
 }
