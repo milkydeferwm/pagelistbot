@@ -1,0 +1,18 @@
+[
+    (
+        "limit(0)",
+        Ok(ModifierType::ResultLimit(0))
+    ),
+    (
+        "limit( 1 )",
+        Ok(ModifierType::ResultLimit(1))
+    ),
+    (
+        "limit (-1)",
+        Ok(ModifierType::ResultLimit(-1))
+    ),
+    (
+        "limit ( +10000 )",
+        Ok(ModifierType::ResultLimit(10000))
+    )
+]
