@@ -75,3 +75,29 @@ where
     )(input)?;
     Ok((input, ModifierType::ResolveRedirects))
 }
+
+/// Parse a Namespace modifier. Assume no leading or trailing spaces.
+/// 
+/// `ns(xx,xx,xx)`
+/// 
+/// `xx` is an `i64` integer, and there might be whitespaces between tokens.
+#[cfg_attr(
+    test,
+    parse_test(test_namespace, "test/namespace.in"),
+)]
+fn parse_namespace<'a, E>(input: StrSpan) -> IResult<StrSpan, ModifierType>
+where
+    E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
+{
+    let (input, nsvec) = preceded(
+        tag_no_case("ns"),
+        ws(
+            delimited(
+                char('('),
+                ws(separated_list1(char(','), ws(parse_i64))),
+                char(')')
+            )
+        )
+    )(input)?;
+    Ok((input, ModifierType::Namespace(std::collections::HashSet::from_iter(nsvec))))
+}
