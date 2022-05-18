@@ -1,0 +1,6 @@
+[
+    (
+        "u{03AF}",
+        Ok(std::char::from_u32(0x03AF).unwrap())
+    )
+]

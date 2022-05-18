@@ -1,0 +1,22 @@
+[
+    (
+        "\"Hello world!\"",
+        Ok(String::from("Hello world!"))
+    ),
+    (
+        "\"你好\"",
+        Ok(String::from("你好"))
+    ),
+    (
+        "\"こんにちは\"",
+        Ok(String::from("こんにちは"))
+    ),
+    (
+        "\"An example where\\na newline character exists\"",
+        Ok(String::from("An example where\na newline character exists"))
+    ),
+    (
+        "\"\\\"Main Page\\\"\"",
+        Ok(String::from("\"Main Page\""))
+    )
+]

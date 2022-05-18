@@ -3,11 +3,15 @@
 mod parser_types;
 
 mod expr;
+mod string;
 
-type NomSpan<'a> = nom_locate::LocatedSpan<&'a str>;
+type StrSpan<'a> = nom_locate::LocatedSpan<&'a str>;
 
-pub fn parse(input: &str) -> Result<crate::ast::Expr, nom::error::Error<NomSpan>> {
+pub fn parse<'a, E>(input: &str) -> Result<crate::ast::Expr, E>
+where
+    E: nom::error::ParseError<StrSpan<'a>> + nom::error::FromExternalError<StrSpan<'a>, std::num::ParseIntError>
+{
     use nom::Finish;
 
-    expr::parse(NomSpan::new(input)).finish().map(|(_, res)| res)
+    expr::parse(StrSpan::new(input)).finish().map(|(_, res)| res)
 }

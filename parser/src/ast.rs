@@ -1,29 +1,28 @@
 //! Abstract syntax tree used for parsing and output
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Span<'a> {
+pub struct Span {
     pub offset: usize,
     pub line: u32,
     pub column: usize,
-    pub fragment: &'a str,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Expr<'a> {
-    Page { span: Span<'a>, titles: Vec<&'a str> },
+pub enum Expr {
+    Page { span: Span, titles: Vec<String> },
 
-    Intersection { span: Span<'a>, set1: Box<Expr<'a>>, set2: Box<Expr<'a>> },
-    Union { span: Span<'a>, set1: Box<Expr<'a>>, set2: Box<Expr<'a>> },
-    Difference { span: Span<'a>, set1: Box<Expr<'a>>, set2: Box<Expr<'a>> },
-    Xor { span: Span<'a>, set1: Box<Expr<'a>>, set2: Box<Expr<'a>> },
+    Intersection { span: Span, set1: Box<Expr>, set2: Box<Expr> },
+    Union { span: Span, set1: Box<Expr>, set2: Box<Expr> },
+    Difference { span: Span, set1: Box<Expr>, set2: Box<Expr> },
+    Xor { span: Span, set1: Box<Expr>, set2: Box<Expr> },
 
-    Link { span: Span<'a>, target: Box<Expr<'a>>, modifier: Modifier },
-    BackLink { span: Span<'a>, target: Box<Expr<'a>>, modifier: Modifier },
-    Embed {span: Span<'a>, target: Box<Expr<'a>>, modifier: Modifier },
-    InCategory { span: Span<'a>, target: Box<Expr<'a>>, modifier: Modifier },
-    Prefix { span: Span<'a>, target: Box<Expr<'a>>, modifier: Modifier },
+    Link { span: Span, target: Box<Expr>, modifier: Modifier },
+    BackLink { span: Span, target: Box<Expr>, modifier: Modifier },
+    Embed {span: Span, target: Box<Expr>, modifier: Modifier },
+    InCategory { span: Span, target: Box<Expr>, modifier: Modifier },
+    Prefix { span: Span, target: Box<Expr>, modifier: Modifier },
 
-    Toggle { span: Span<'a>, target: Box<Expr<'a>> },
+    Toggle { span: Span, target: Box<Expr> },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
