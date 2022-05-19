@@ -54,7 +54,7 @@ where
         input,
         Expr::Page {
             span: Span { offset: pos.location_offset(), line: pos.location_line(), column: pos.get_utf8_column() },
-            titles: list
+            titles: std::collections::HashSet::from_iter(list)
         }
     ))
 }
