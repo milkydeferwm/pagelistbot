@@ -4,16 +4,6 @@ use std::collections::HashSet;
 
 use crate::ast::*;
 
-impl Modifier {
-    pub(crate) fn from_builder(builder: ModifierBuilder) -> Self {
-        builder.build()
-    }
-
-    pub(crate) fn builder() -> ModifierBuilder {
-        ModifierBuilder::new()
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct ModifierBuilder {
     // Applies to all operations
