@@ -140,6 +140,10 @@ where
 /// `embed(<ExprTier1>)<modifier list>`
 /// 
 /// With optional whitespaces between tokens
+#[cfg_attr(
+    test,
+    parse_test(test_embed_expr, "test/expr/embed_expr.in"),
+)]
 fn parse_embed_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
@@ -174,6 +178,10 @@ where
 /// `incat(<ExprTier1>)<modifier list>`
 /// 
 /// With optional whitespaces between tokens
+#[cfg_attr(
+    test,
+    parse_test(test_incat_expr, "test/expr/incat_expr.in"),
+)]
 fn parse_incat_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
@@ -208,6 +216,10 @@ where
 /// `prefix(<ExprTier1>)<modifier list>`
 /// 
 /// With optional whitespaces between tokens
+#[cfg_attr(
+    test,
+    parse_test(test_prefix_expr, "test/expr/prefix_expr.in"),
+)]
 fn parse_prefix_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
@@ -243,6 +255,10 @@ where
 /// `toggle(<ExprTier1>)`
 /// 
 /// With optional whitespaces between tokens
+#[cfg_attr(
+    test,
+    parse_test(test_toggle_expr, "test/expr/toggle_expr.in"),
+)]
 fn parse_toggle_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>

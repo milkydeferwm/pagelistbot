@@ -1,0 +1,66 @@
+[
+    (
+        "incat(\"Main Page\")",
+        Ok(Expr::InCategory {
+            span: Span {
+                offset: 0,
+                line: 1,
+                column: 1,
+            },
+            target: Box::new(Expr::Page {
+                span: Span {
+                    offset: 6,
+                    line: 1,
+                    column: 7,
+                },
+                titles: HashSet::from_iter(["Main Page".to_string()]),
+            }),
+            modifier: Modifier::new()
+        })
+    ),
+    (
+        "InCat (\"Main Page\", \"Page List Bot\")",
+        Ok(Expr::InCategory {
+            span: Span {
+                offset: 0,
+                line: 1,
+                column: 1,
+            },
+            target: Box::new(Expr::Page {
+                span: Span {
+                    offset: 7,
+                    line: 1,
+                    column: 8,
+                },
+                titles: HashSet::from_iter(["Main Page".to_string(), "Page List Bot".to_string()]),
+            }),
+            modifier: Modifier::new()
+        })
+    ),
+    (
+        "INCAT( \"Main Page\" ) .resolve .ns(1)",
+        Ok(Expr::InCategory {
+            span: Span {
+                offset: 0,
+                line: 1,
+                column: 1,
+            },
+            target: Box::new(Expr::Page {
+                span: Span {
+                    offset: 7,
+                    line: 1,
+                    column: 8,
+                },
+                titles: HashSet::from_iter(["Main Page".to_string()]),
+            }),
+            modifier: Modifier {
+                result_limit: None,
+                resolve_redirects: true,
+                namespace: Some(HashSet::from_iter([1_i64])),
+                categorymembers_recursion_depth: 0,
+                filter_redirects: RedirectFilterStrategy::All,
+                backlink_trace_redirects: true,
+            }
+        })
+    )
+]
