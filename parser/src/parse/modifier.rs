@@ -27,7 +27,7 @@ use pagelistbot_parser_test_macro::parse_test;
     test,
     parse_test(test_result_limit, "test/modifier/result_limit.in"),
 )]
-fn parse_result_limit<'a, E>(input: StrSpan) -> IResult<StrSpan, ModifierType>
+fn parse_result_limit<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, ModifierType, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -55,7 +55,7 @@ where
     test,
     parse_test(test_resolve_redirects, "test/modifier/resolve_redirects.in"),
 )]
-fn parse_resolve_redirects<'a, E>(input: StrSpan) -> IResult<StrSpan, ModifierType>
+fn parse_resolve_redirects<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, ModifierType, E>
 where
     E: ParseError<StrSpan<'a>>
 {
@@ -83,7 +83,7 @@ where
     test,
     parse_test(test_namespace, "test/modifier/namespace.in"),
 )]
-fn parse_namespace<'a, E>(input: StrSpan) -> IResult<StrSpan, ModifierType>
+fn parse_namespace<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, ModifierType, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -109,7 +109,7 @@ where
     test,
     parse_test(test_recursion_depth, "test/modifier/recursion_depth.in"),
 )]
-fn parse_recursion_depth<'a, E>(input: StrSpan) -> IResult<StrSpan, ModifierType>
+fn parse_recursion_depth<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, ModifierType, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -137,7 +137,7 @@ where
     test,
     parse_test(test_no_redirect, "test/modifier/no_redirect.in"),
 )]
-fn parse_no_redirect<'a, E>(input: StrSpan) -> IResult<StrSpan, ModifierType>
+fn parse_no_redirect<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, ModifierType, E>
 where
     E: ParseError<StrSpan<'a>>
 {
@@ -167,7 +167,7 @@ where
     test,
     parse_test(test_only_redirect, "test/modifier/only_redirect.in"),
 )]
-fn parse_only_redirect<'a, E>(input: StrSpan) -> IResult<StrSpan, ModifierType>
+fn parse_only_redirect<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, ModifierType, E>
 where
     E: ParseError<StrSpan<'a>>
 {
@@ -197,7 +197,7 @@ where
     test,
     parse_test(test_direct_backlink, "test/modifier/direct_backlink.in"),
 )]
-fn parse_direct_backlink<'a, E>(input: StrSpan) -> IResult<StrSpan, ModifierType>
+fn parse_direct_backlink<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, ModifierType, E>
 where
     E: ParseError<StrSpan<'a>>
 {
@@ -228,7 +228,7 @@ where
     test,
     parse_test(test_modifier, "test/modifier/modifier.in"),
 )]
-fn parse_modifier<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, ModifierType>
+fn parse_modifier<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, ModifierType, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -261,7 +261,7 @@ where
     test,
     parse_test(test_modifier_list, "test/modifier/modifier_list.in"),
 )]
-pub(crate) fn parse_modifier_list<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Modifier>
+pub(crate) fn parse_modifier_list<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Modifier, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
