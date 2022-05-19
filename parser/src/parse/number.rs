@@ -41,6 +41,6 @@ where
                 many1(one_of("0123456789"))
             ))
         ),
-        |res: StrSpan| i64::from_str_radix(&res, 10)
+        |res: StrSpan| res.parse::<i64>()
     )(input)
 }
