@@ -265,7 +265,7 @@ where
 {
     let (input, pos) = position(input)?;
     let (input, target) = preceded(
-        tag_no_case("incat"),
+        tag_no_case("toggle"),
         ws(
             delimited(
                 char('('),
