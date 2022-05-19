@@ -1,5 +1,7 @@
 //! Abstract syntax tree used for parsing and output
 
+use std::collections::HashSet;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Span {
     pub offset: usize,
@@ -9,7 +11,7 @@ pub struct Span {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Expr {
-    Page { span: Span, titles: Vec<String> },
+    Page { span: Span, titles: HashSet<String> },
 
     Intersection { span: Span, set1: Box<Expr>, set2: Box<Expr> },
     Union { span: Span, set1: Box<Expr>, set2: Box<Expr> },
@@ -31,7 +33,7 @@ pub struct Modifier {
     pub result_limit: Option<i64>,
     pub resolve_redirects: bool,
     // Only available for certain operations
-    pub namespace: Option<std::collections::HashSet<i64>>,
+    pub namespace: Option<HashSet<i64>>,
     pub categorymembers_recursion_depth: i64,
     pub filter_redirects: RedirectFilterStrategy,
     pub backlink_trace_redirects: bool,
