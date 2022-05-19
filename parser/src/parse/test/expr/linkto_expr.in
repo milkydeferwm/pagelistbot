@@ -1,7 +1,7 @@
 [
     (
-        "link(\"Main Page\")",
-        Ok(Expr::Link {
+        "linkto(\"Main Page\")",
+        Ok(Expr::BackLink {
             span: Span {
                 offset: 0,
                 line: 1,
@@ -9,9 +9,9 @@
             },
             target: Box::new(Expr::Page {
                 span: Span {
-                    offset: 5,
+                    offset: 7,
                     line: 1,
-                    column: 6,
+                    column: 8,
                 },
                 titles: vec!["Main Page".to_string()],
             }),
@@ -19,8 +19,8 @@
         })
     ),
     (
-        "Link (\"Main Page\", \"Page List Bot\")",
-        Ok(Expr::Link {
+        "LinkTo (\"Main Page\", \"Page List Bot\")",
+        Ok(Expr::BackLink {
             span: Span {
                 offset: 0,
                 line: 1,
@@ -28,9 +28,9 @@
             },
             target: Box::new(Expr::Page {
                 span: Span {
-                    offset: 6,
+                    offset: 8,
                     line: 1,
-                    column: 7,
+                    column: 9,
                 },
                 titles: vec!["Main Page".to_string(), "Page List Bot".to_string()],
             }),
@@ -38,8 +38,8 @@
         })
     ),
     (
-        "LINK(\"Main Page\" ) .resolve .ns(1)",
-        Ok(Expr::Link {
+        "LINKTO( \"Main Page\" ) .resolve .ns(1)",
+        Ok(Expr::BackLink {
             span: Span {
                 offset: 0,
                 line: 1,
@@ -47,9 +47,9 @@
             },
             target: Box::new(Expr::Page {
                 span: Span {
-                    offset: 5,
+                    offset: 8,
                     line: 1,
-                    column: 6,
+                    column: 9,
                 },
                 titles: vec!["Main Page".to_string()],
             }),

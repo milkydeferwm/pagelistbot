@@ -102,6 +102,10 @@ where
 /// `linkto(<ExprTier1>)<modifier list>`
 /// 
 /// With optional whitespaces between tokens
+#[cfg_attr(
+    test,
+    parse_test(test_linkto_expr, "test/expr/linkto_expr.in"),
+)]
 fn parse_linkto_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
