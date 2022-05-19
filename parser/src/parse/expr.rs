@@ -5,7 +5,7 @@ use nom::branch::alt;
 use nom::bytes::complete::tag_no_case;
 use nom::character::complete::char;
 use nom::error::{ParseError, FromExternalError};
-use nom::multi::separated_list1;
+use nom::multi::{separated_list1, many0};
 use nom::sequence::{delimited, preceded, tuple};
 
 use nom_locate::{position, LocatedSpan};
@@ -241,7 +241,7 @@ where
 /// With optional whitespaces between tokens
 fn parse_toggle_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr>
 where
-    E: nom::error::ParseError<StrSpan<'a>> + nom::error::FromExternalError<StrSpan<'a>, std::num::ParseIntError>
+    E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
     let (input, pos) = position(input)?;
     let (input, target) = preceded(
@@ -264,11 +264,111 @@ where
     ))
 }
 
-fn parse_expr_tier1<'a, E>(input: StrSpan) -> IResult<StrSpan, Expr>
+/// Parse a term. Assume no leading or trailing whitespaces
+/// 
+/// A term is
+/// * `(<ExprTier1>)`
+/// * `<Page>`
+/// * `<other unary exprs>`
+fn parse_term<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr>
 where
-    E: nom::error::ParseError<StrSpan<'a>> + nom::error::FromExternalError<StrSpan<'a>, std::num::ParseIntError>
+    E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
-    todo!()
+    alt((
+        delimited(
+            char('('),
+            ws(parse_expr_tier1::<E>),
+            char(')'),
+        ),
+        parse_page_expr::<E>,
+        parse_link_expr::<E>,
+        parse_linkto_expr::<E>,
+        parse_embed_expr::<E>,
+        parse_incat_expr::<E>,
+        parse_prefix_expr::<E>,
+        parse_toggle_expr::<E>,
+    ))(input)
+}
+
+/// Parse a binary expression (`&`). Assume no leading or trailing whitespaces
+/// * `<Term>&<Term>`
+fn parse_expr_tier3<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr>
+where
+    E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
+{
+    let (input, pos) = position(input)?;
+    let (input, set1) = ws(parse_term::<E>)(input)?;
+    let (input, exprs) = many0(tuple((
+        char('&'),
+        ws(parse_term::<E>)
+    )))(input)?;
+    let folded = exprs.into_iter().fold(set1, |acc, (op, set2)| {
+        match op {
+            '&' => Expr::Intersection {
+                span: Span { offset: pos.location_offset(), line: pos.location_line(), column: pos.get_utf8_column() },
+                set1: Box::new(acc),
+                set2: Box::new(set2),
+            },
+            _ => unreachable!(),
+        }
+    });
+    Ok((input, folded))
+}
+
+/// Parse a binary expression (`^`). Assume no leading or trailing whitespaces
+/// * `<ExprTier3>^<ExprTier3>`
+fn parse_expr_tier2<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr>
+where
+    E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
+{
+    let (input, pos) = position(input)?;
+    let (input, set1) = ws(parse_expr_tier3::<E>)(input)?;
+    let (input, exprs) = many0(tuple((
+        char('^'),
+        ws(parse_expr_tier3::<E>)
+    )))(input)?;
+    let folded = exprs.into_iter().fold(set1, |acc, (op, set2)| {
+        match op {
+            '^' => Expr::Xor {
+                span: Span { offset: pos.location_offset(), line: pos.location_line(), column: pos.get_utf8_column() },
+                set1: Box::new(acc),
+                set2: Box::new(set2),
+            },
+            _ => unreachable!(),
+        }
+    });
+    Ok((input, folded))
+}
+
+/// Parse a binary expression (`+`, `-`). Assume no leading or trailing whitespaces
+/// * `<ExprTier2>+<ExprTier2>`
+/// * `<ExprTier2>-<ExprTier2>`
+fn parse_expr_tier1<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr>
+where
+    E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
+{
+    let (input, pos) = position(input)?;
+    let (input, set1) = ws(parse_expr_tier2::<E>)(input)?;
+    let (input, exprs) = many0(tuple((
+        alt((char('+'), char('-'))),
+        ws(parse_expr_tier2::<E>)
+    )))(input)?;
+    let folded = exprs.into_iter().fold(set1, |acc, (op, set2)| {
+        match op {
+            '+' => Expr::Union {
+                span: Span { offset: pos.location_offset(), line: pos.location_line(), column: pos.get_utf8_column() },
+                set1: Box::new(acc),
+                set2: Box::new(set2),
+            },
+            '-' => Expr::Difference {
+                span: Span { offset: pos.location_offset(), line: pos.location_line(), column: pos.get_utf8_column() },
+                set1: Box::new(acc),
+                set2: Box::new(set2),
+            },
+            _ => unreachable!(),
+        }
+    });
+    Ok((input, folded))
 }
 
 pub fn parse<'a, E>(input: StrSpan) -> IResult<StrSpan, Expr, E>
