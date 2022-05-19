@@ -1,4 +1,7 @@
 pub mod ast;
 
 #[cfg(feature="parse")]
-mod parser_types;
+mod parse;
+
+#[cfg(feature="parse")]
+pub use parse::parse;

@@ -9,6 +9,9 @@ edition = "2021"
 nom = { version = "7", optional = true }
 nom_locate = { version = "4", optional = true }
 
+[dev-dependencies]
+pagelistbot_parser_test_macro = { path = "./test_macro" }
+
 [features]
 default = [ "parse" ]
 parse = [ "nom", "nom_locate" ]

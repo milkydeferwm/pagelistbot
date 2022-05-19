@@ -1,0 +1,26 @@
+[
+    (
+        "ns(0)",
+        Ok(ModifierType::Namespace(std::collections::HashSet::from_iter(Vec::<i64>::from([0]))))
+    ),
+    (
+        "ns(0,1)",
+        Ok(ModifierType::Namespace(std::collections::HashSet::from_iter(Vec::<i64>::from([0, 1]))))
+    ),
+    (
+        "ns(0, 1, 2, 3)",
+        Ok(ModifierType::Namespace(std::collections::HashSet::from_iter(Vec::<i64>::from([0, 1, 2, 3]))))
+    ),
+    (
+        "NS( 0,4 )",
+        Ok(ModifierType::Namespace(std::collections::HashSet::from_iter(Vec::<i64>::from([0, 4]))))
+    ),
+    (
+        "ns( -1, 101)",
+        Ok(ModifierType::Namespace(std::collections::HashSet::from_iter(Vec::<i64>::from([-1, 101]))))
+    ),
+    (
+        "ns(0,0,0,0,0,0,0)",
+        Ok(ModifierType::Namespace(std::collections::HashSet::from_iter(Vec::<i64>::from([0]))))
+    ),
+]
