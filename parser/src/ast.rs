@@ -50,6 +50,12 @@ impl Modifier {
     }
 }
 
+impl Default for Modifier {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RedirectFilterStrategy {
     NoRedirect,

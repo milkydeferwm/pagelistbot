@@ -38,7 +38,7 @@ where
 
     let parse_u32 = map_res(parse_delimited_hex, move |hex| u32::from_str_radix(&hex, 16));
 
-    map_opt(parse_u32, |value| std::char::from_u32(value))(input)
+    map_opt(parse_u32, std::char::from_u32)(input)
 }
 
 /// Parse an escaped character: \n, \t, \r, \u{00AC}, etc.
