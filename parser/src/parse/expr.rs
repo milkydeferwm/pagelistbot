@@ -30,9 +30,9 @@ use pagelistbot_parser_test_macro::parse_test;
     test,
     parse_test(test_page_expr, "test/expr/page_expr.in"),
 )]
-fn parse_page_expr<'a, E>(input: StrSpan) -> IResult<StrSpan, Expr>
+fn parse_page_expr<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
-    E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
+    E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
     let (input, pos) = position(input)?;
     let (input, list) = alt((
@@ -67,7 +67,7 @@ where
     test,
     parse_test(test_link_expr, "test/expr/link_expr.in"),
 )]
-fn parse_link_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr>
+fn parse_link_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -101,7 +101,7 @@ where
 /// `linkto(<ExprTier1>)<modifier list>`
 /// 
 /// With optional whitespaces between tokens
-fn parse_linkto_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr>
+fn parse_linkto_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -135,7 +135,7 @@ where
 /// `embed(<ExprTier1>)<modifier list>`
 /// 
 /// With optional whitespaces between tokens
-fn parse_embed_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr>
+fn parse_embed_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -169,7 +169,7 @@ where
 /// `incat(<ExprTier1>)<modifier list>`
 /// 
 /// With optional whitespaces between tokens
-fn parse_incat_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr>
+fn parse_incat_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -203,7 +203,7 @@ where
 /// `prefix(<ExprTier1>)<modifier list>`
 /// 
 /// With optional whitespaces between tokens
-fn parse_prefix_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr>
+fn parse_prefix_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -238,7 +238,7 @@ where
 /// `toggle(<ExprTier1>)`
 /// 
 /// With optional whitespaces between tokens
-fn parse_toggle_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr>
+fn parse_toggle_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -269,7 +269,7 @@ where
 /// * `(<ExprTier1>)`
 /// * `<Page>`
 /// * `<other unary exprs>`
-fn parse_term<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr>
+fn parse_term<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -291,7 +291,7 @@ where
 
 /// Parse a binary expression (`&`). Assume no leading or trailing whitespaces
 /// * `<Term>&<Term>`
-fn parse_expr_tier3<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr>
+fn parse_expr_tier3<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -316,7 +316,7 @@ where
 
 /// Parse a binary expression (`^`). Assume no leading or trailing whitespaces
 /// * `<ExprTier3>^<ExprTier3>`
-fn parse_expr_tier2<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr>
+fn parse_expr_tier2<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -342,7 +342,7 @@ where
 /// Parse a binary expression (`+`, `-`). Assume no leading or trailing whitespaces
 /// * `<ExprTier2>+<ExprTier2>`
 /// * `<ExprTier2>-<ExprTier2>`
-fn parse_expr_tier1<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr>
+fn parse_expr_tier1<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -370,9 +370,9 @@ where
     Ok((input, folded))
 }
 
-pub fn parse<'a, E>(input: StrSpan) -> IResult<StrSpan, Expr, E>
+pub(crate) fn parse<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
-    E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
+    E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
-    todo!()
+    ws(parse_expr_tier1::<E>)(input)
 }
