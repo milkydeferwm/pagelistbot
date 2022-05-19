@@ -4,6 +4,7 @@ use nom::IResult;
 use nom::branch::alt;
 use nom::bytes::complete::tag_no_case;
 use nom::character::complete::char;
+use nom::combinator::all_consuming;
 use nom::error::{ParseError, FromExternalError};
 use nom::multi::{separated_list1, many0};
 use nom::sequence::{delimited, preceded, tuple};
@@ -374,5 +375,5 @@ pub(crate) fn parse<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
-    ws(parse_expr_tier1::<E>)(input)
+    all_consuming(ws(parse_expr_tier1::<E>))(input)
 }
