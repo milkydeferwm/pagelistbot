@@ -8,11 +8,10 @@ use nom::error::{ParseError, FromExternalError};
 use nom::multi::{separated_list1, many0};
 use nom::sequence::{delimited, preceded, tuple};
 
-use nom_locate::{position, LocatedSpan};
+use nom_locate::position;
 
 use crate::ast::*;
 use super::StrSpan;
-use super::parser_types::*;
 use super::modifier::parse_modifier_list;
 use super::string::parse_string;
 use super::util::ws;
@@ -70,7 +69,7 @@ where
 )]
 fn parse_link_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr>
 where
-    E: nom::error::ParseError<StrSpan<'a>> + nom::error::FromExternalError<StrSpan<'a>, std::num::ParseIntError>
+    E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
     let (input, pos) = position(input)?;
     let (input, (target, modifier)) = tuple((
@@ -104,7 +103,7 @@ where
 /// With optional whitespaces between tokens
 fn parse_linkto_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr>
 where
-    E: nom::error::ParseError<StrSpan<'a>> + nom::error::FromExternalError<StrSpan<'a>, std::num::ParseIntError>
+    E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
     let (input, pos) = position(input)?;
     let (input, (target, modifier)) = tuple((
@@ -138,7 +137,7 @@ where
 /// With optional whitespaces between tokens
 fn parse_embed_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr>
 where
-    E: nom::error::ParseError<StrSpan<'a>> + nom::error::FromExternalError<StrSpan<'a>, std::num::ParseIntError>
+    E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
     let (input, pos) = position(input)?;
     let (input, (target, modifier)) = tuple((
@@ -172,7 +171,7 @@ where
 /// With optional whitespaces between tokens
 fn parse_incat_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr>
 where
-    E: nom::error::ParseError<StrSpan<'a>> + nom::error::FromExternalError<StrSpan<'a>, std::num::ParseIntError>
+    E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
     let (input, pos) = position(input)?;
     let (input, (target, modifier)) = tuple((
@@ -206,7 +205,7 @@ where
 /// With optional whitespaces between tokens
 fn parse_prefix_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr>
 where
-    E: nom::error::ParseError<StrSpan<'a>> + nom::error::FromExternalError<StrSpan<'a>, std::num::ParseIntError>
+    E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
     let (input, pos) = position(input)?;
     let (input, (target, modifier)) = tuple((
