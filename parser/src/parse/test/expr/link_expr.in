@@ -15,7 +15,7 @@
                 },
                 titles: vec!["Main Page".to_string()],
             }),
-            modifier: ModifierBuilder::new().build()
+            modifier: Modifier::new()
         })
     )
 ]
