@@ -1,0 +1,79 @@
+[
+    (
+        "\"Main Page\", \"Wikipedia:Village pump\", \"Never Gonna Give You Up\"",
+        Ok(Expr::Page {
+            span: Span {
+                offset: 0,
+                line: 1,
+                column: 1,
+            },
+            titles: vec!["Main Page".to_string(), "Wikipedia:Village pump".to_string(), "Never Gonna Give You Up".to_string()]
+        })
+    ),
+    (
+        "\"Main Page\",\"Wikipedia:Village pump\",\"Never Gonna Give You Up\"",
+        Ok(Expr::Page {
+            span: Span {
+                offset: 0,
+                line: 1,
+                column: 1,
+            },
+            titles: vec!["Main Page".to_string(), "Wikipedia:Village pump".to_string(), "Never Gonna Give You Up".to_string()]
+        })
+    ),
+    (
+        "\"Main Page\" , \"Wikipedia:Village pump\" , \"Never Gonna Give You Up\"",
+        Ok(Expr::Page {
+            span: Span {
+                offset: 0,
+                line: 1,
+                column: 1,
+            },
+            titles: vec!["Main Page".to_string(), "Wikipedia:Village pump".to_string(), "Never Gonna Give You Up".to_string()]
+        })
+    ),
+    (
+        "page( \"Main Page\", \"Wikipedia:Village pump\", \"Never Gonna Give You Up\" )",
+        Ok(Expr::Page {
+            span: Span {
+                offset: 0,
+                line: 1,
+                column: 1,
+            },
+            titles: vec!["Main Page".to_string(), "Wikipedia:Village pump".to_string(), "Never Gonna Give You Up".to_string()]
+        })
+    ),
+    (
+        "page(\"Main Page\", \"Wikipedia:Village pump\", \"Never Gonna Give You Up\")",
+        Ok(Expr::Page {
+            span: Span {
+                offset: 0,
+                line: 1,
+                column: 1,
+            },
+            titles: vec!["Main Page".to_string(), "Wikipedia:Village pump".to_string(), "Never Gonna Give You Up".to_string()]
+        })
+    ),
+    (
+        "PagE( \"Main Page\", \"Wikipedia:Village pump\", \"Never Gonna Give You Up\" )",
+        Ok(Expr::Page {
+            span: Span {
+                offset: 0,
+                line: 1,
+                column: 1,
+            },
+            titles: vec!["Main Page".to_string(), "Wikipedia:Village pump".to_string(), "Never Gonna Give You Up".to_string()]
+        })
+    ),
+    (
+        "page(\"Earth (disambiguation)\")",
+        Ok(Expr::Page {
+            span: Span {
+                offset: 0,
+                line: 1,
+                column: 1,
+            },
+            titles: vec!["Earth (disambiguation)".to_string()]
+        })
+    )
+]

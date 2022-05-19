@@ -1,0 +1,22 @@
+[
+    (
+        "noredir",
+        Ok(ModifierType::NoRedirect)
+    ),
+    (
+        "NOREDIR",
+        Ok(ModifierType::NoRedirect)
+    ),
+    (
+        "Noredir()",
+        Ok(ModifierType::NoRedirect)
+    ),
+    (
+        "NoRedir ()",
+        Ok(ModifierType::NoRedirect)
+    ),
+    (
+        "noredir ( )",
+        Ok(ModifierType::NoRedirect)
+    )
+]

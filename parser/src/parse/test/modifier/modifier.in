@@ -1,0 +1,30 @@
+[
+    (
+        ".limit (-1)",
+        Ok(ModifierType::ResultLimit(-1))
+    ),
+    (
+        ". resolve",
+        Ok(ModifierType::ResolveRedirects)
+    ),
+    (
+        ".ns ( 0, 1,2, 3)",
+        Ok(ModifierType::Namespace(std::collections::HashSet::from_iter(Vec::<i64>::from([0, 1, 2, 3]))))
+    ),
+    (
+        ". DEPTH ( +10000 )",
+        Ok(ModifierType::RecursionDepth(10000))
+    ),
+    (
+        ".Noredir()",
+        Ok(ModifierType::NoRedirect)
+    ),
+    (
+        ". OnlyRedir ()",
+        Ok(ModifierType::OnlyRedirect)
+    ),
+    (
+        ".direct",
+        Ok(ModifierType::DirectBacklink)
+    ),
+]

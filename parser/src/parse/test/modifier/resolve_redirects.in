@@ -1,0 +1,22 @@
+[
+    (
+        "resolve",
+        Ok(ModifierType::ResolveRedirects)
+    ),
+    (
+        "RESOLVE",
+        Ok(ModifierType::ResolveRedirects)
+    ),
+    (
+        "Resolve()",
+        Ok(ModifierType::ResolveRedirects)
+    ),
+    (
+        "resolve ()",
+        Ok(ModifierType::ResolveRedirects)
+    ),
+    (
+        "resolve ( )",
+        Ok(ModifierType::ResolveRedirects)
+    )
+]
