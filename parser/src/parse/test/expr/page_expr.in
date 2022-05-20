@@ -2,77 +2,49 @@
     (
         "\"Main Page\", \"Wikipedia:Village pump\", \"Never Gonna Give You Up\"",
         Ok(Expr::Page {
-            span: Span {
-                offset: 0,
-                line: 1,
-                column: 1,
-            },
+            span: Span { begin: 0, end: 64 },
             titles: HashSet::from_iter(["Main Page".to_string(), "Wikipedia:Village pump".to_string(), "Never Gonna Give You Up".to_string()])
         })
     ),
     (
         "\"Main Page\",\"Wikipedia:Village pump\",\"Never Gonna Give You Up\"",
         Ok(Expr::Page {
-            span: Span {
-                offset: 0,
-                line: 1,
-                column: 1,
-            },
+            span: Span { begin: 0, end: 62 },
             titles: HashSet::from_iter(["Main Page".to_string(), "Wikipedia:Village pump".to_string(), "Never Gonna Give You Up".to_string()])
         })
     ),
     (
         "\"Main Page\" , \"Wikipedia:Village pump\" , \"Never Gonna Give You Up\"",
         Ok(Expr::Page {
-            span: Span {
-                offset: 0,
-                line: 1,
-                column: 1,
-            },
+            span: Span { begin: 0, end: 66 },
             titles: HashSet::from_iter(["Main Page".to_string(), "Wikipedia:Village pump".to_string(), "Never Gonna Give You Up".to_string()])
         })
     ),
     (
         "page( \"Main Page\", \"Wikipedia:Village pump\", \"Never Gonna Give You Up\" )",
         Ok(Expr::Page {
-            span: Span {
-                offset: 0,
-                line: 1,
-                column: 1,
-            },
+            span: Span { begin: 0, end: 72 },
             titles: HashSet::from_iter(["Main Page".to_string(), "Wikipedia:Village pump".to_string(), "Never Gonna Give You Up".to_string()])
         })
     ),
     (
         "page(\"Main Page\", \"Wikipedia:Village pump\", \"Never Gonna Give You Up\")",
         Ok(Expr::Page {
-            span: Span {
-                offset: 0,
-                line: 1,
-                column: 1,
-            },
+            span: Span { begin: 0, end: 70 },
             titles: HashSet::from_iter(["Main Page".to_string(), "Wikipedia:Village pump".to_string(), "Never Gonna Give You Up".to_string()])
         })
     ),
     (
         "PagE( \"Main Page\", \"Wikipedia:Village pump\", \"Never Gonna Give You Up\" )",
         Ok(Expr::Page {
-            span: Span {
-                offset: 0,
-                line: 1,
-                column: 1,
-            },
+            span: Span { begin: 0, end: 72 },
             titles: HashSet::from_iter(["Main Page".to_string(), "Wikipedia:Village pump".to_string(), "Never Gonna Give You Up".to_string()])
         })
     ),
     (
         "page(\"Earth (disambiguation)\")",
         Ok(Expr::Page {
-            span: Span {
-                offset: 0,
-                line: 1,
-                column: 1,
-            },
+            span: Span { begin: 0, end: 30 },
             titles: HashSet::from_iter(["Earth (disambiguation)".to_string()])
         })
     )

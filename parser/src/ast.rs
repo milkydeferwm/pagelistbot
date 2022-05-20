@@ -4,9 +4,8 @@ use std::collections::HashSet;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Span {
-    pub offset: usize,
-    pub line: u32,
-    pub column: usize,
+    pub begin: usize,
+    pub end: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

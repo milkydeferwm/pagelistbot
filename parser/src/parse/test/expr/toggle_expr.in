@@ -2,17 +2,9 @@
     (
         "toggle(\"Main Page\")",
         Ok(Expr::Toggle {
-            span: Span {
-                offset: 0,
-                line: 1,
-                column: 1,
-            },
+            span: Span { begin: 0, end: 19 },
             target: Box::new(Expr::Page {
-                span: Span {
-                    offset: 7,
-                    line: 1,
-                    column: 8,
-                },
+                span: Span { begin: 7, end: 18 },
                 titles: HashSet::from_iter(["Main Page".to_string()]),
             })
         })
@@ -20,17 +12,9 @@
     (
         "Toggle (\"Main Page\", \"Page List Bot\")",
         Ok(Expr::Toggle {
-            span: Span {
-                offset: 0,
-                line: 1,
-                column: 1,
-            },
+            span: Span { begin: 0, end: 37 },
             target: Box::new(Expr::Page {
-                span: Span {
-                    offset: 8,
-                    line: 1,
-                    column: 9,
-                },
+                span: Span { begin: 8, end: 36 },
                 titles: HashSet::from_iter(["Main Page".to_string(), "Page List Bot".to_string()]),
             })
         })
@@ -38,17 +22,9 @@
     (
         "TOGGLE( \"Main Page\" )   ",
         Ok(Expr::Toggle {
-            span: Span {
-                offset: 0,
-                line: 1,
-                column: 1,
-            },
+            span: Span { begin: 0, end: 21 },
             target: Box::new(Expr::Page {
-                span: Span {
-                    offset: 8,
-                    line: 1,
-                    column: 9,
-                },
+                span: Span { begin: 8, end: 19 },
                 titles: HashSet::from_iter(["Main Page".to_string()]),
             })
         })
