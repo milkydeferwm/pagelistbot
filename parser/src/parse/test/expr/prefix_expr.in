@@ -24,7 +24,7 @@
     (
         "PREFIX( \"Main Page\" ) .resolve .ns(1)",
         Ok(Expr::Prefix {
-            span: Span { begin: 0, end: 36 },
+            span: Span { begin: 0, end: 37 },
             target: Box::new(Expr::Page {
                 span: Span { begin: 8, end: 19 },
                 titles: HashSet::from_iter(["Main Page".to_string()]),

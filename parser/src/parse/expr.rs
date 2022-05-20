@@ -15,7 +15,7 @@ use crate::ast::*;
 use super::StrSpan;
 use super::modifier::parse_modifier_list;
 use super::string::parse_string;
-use super::util::ws;
+use super::util::*;
 
 #[cfg(test)]
 use pagelistbot_parser_test_macro::parse_test;
@@ -37,13 +37,13 @@ where
 {
     let (input, s_pos) = position(input)?;
     let (input, list) = alt((
-        separated_list1(char(','), ws(parse_string)),
+        separated_list1(ws(char(',')), parse_string),
         preceded(
             tag_no_case("page"),
-            ws(
+            leading_ws(
                 delimited(
                     char('('),
-                    ws(separated_list1(char(','), ws(parse_string))),
+                    ws(separated_list1(ws(char(',')), parse_string)),
                     char(')')
                 )
             )
@@ -77,7 +77,7 @@ where
     let (input, (target, modifier)) = tuple((
         preceded(
             tag_no_case("link"),
-            ws(
+            leading_ws(
                 delimited(
                     char('('),
                     ws(parse_expr_tier1::<E>),
@@ -85,7 +85,7 @@ where
                 )
             )
         ),
-        ws(parse_modifier_list::<E>)
+        leading_ws(parse_modifier_list::<E>)
     ))(input)?;
     let (input, e_pos) = position(input)?;
 
@@ -116,7 +116,7 @@ where
     let (input, (target, modifier)) = tuple((
         preceded(
             tag_no_case("linkto"),
-            ws(
+            leading_ws(
                 delimited(
                     char('('),
                     ws(parse_expr_tier1::<E>),
@@ -155,7 +155,7 @@ where
     let (input, (target, modifier)) = tuple((
         preceded(
             tag_no_case("embed"),
-            ws(
+            leading_ws(
                 delimited(
                     char('('),
                     ws(parse_expr_tier1::<E>),
@@ -194,7 +194,7 @@ where
     let (input, (target, modifier)) = tuple((
         preceded(
             tag_no_case("incat"),
-            ws(
+            leading_ws(
                 delimited(
                     char('('),
                     ws(parse_expr_tier1::<E>),
@@ -233,7 +233,7 @@ where
     let (input, (target, modifier)) = tuple((
         preceded(
             tag_no_case("prefix"),
-            ws(
+            leading_ws(
                 delimited(
                     char('('),
                     ws(parse_expr_tier1::<E>),
@@ -272,7 +272,7 @@ where
     let (input, s_pos) = position(input)?;
     let (input, target) = preceded(
         tag_no_case("toggle"),
-        ws(
+        leading_ws(
             delimited(
                 char('('),
                 ws(parse_expr_tier1::<E>),
@@ -324,10 +324,10 @@ where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
     let (input, s_pos) = position(input)?;
-    let (input, set1) = ws(parse_term::<E>)(input)?;
+    let (input, set1) = parse_term::<E>(input)?;
     let (input, exprs) = many0(tuple((
-        char('&'),
-        ws(parse_term::<E>)
+        ws(char('&')),
+        parse_term::<E>
     )))(input)?;
     let (input, e_pos) = position(input)?;
     let folded = exprs.into_iter().fold(set1, |acc, (op, set2)| {
@@ -350,10 +350,10 @@ where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
     let (input, s_pos) = position(input)?;
-    let (input, set1) = ws(parse_expr_tier3::<E>)(input)?;
+    let (input, set1) = parse_expr_tier3::<E>(input)?;
     let (input, exprs) = many0(tuple((
-        char('^'),
-        ws(parse_expr_tier3::<E>)
+        ws(char('^')),
+        parse_expr_tier3::<E>
     )))(input)?;
     let (input, e_pos) = position(input)?;
     let folded = exprs.into_iter().fold(set1, |acc, (op, set2)| {
@@ -377,10 +377,10 @@ where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
     let (input, s_pos) = position(input)?;
-    let (input, set1) = ws(parse_expr_tier2::<E>)(input)?;
+    let (input, set1) = parse_expr_tier2::<E>(input)?;
     let (input, exprs) = many0(tuple((
-        alt((char('+'), char('-'))),
-        ws(parse_expr_tier2::<E>)
+        ws(alt((char('+'), char('-')))),
+        parse_expr_tier2::<E>
     )))(input)?;
     let (input, e_pos) = position(input)?;
     let folded = exprs.into_iter().fold(set1, |acc, (op, set2)| {
