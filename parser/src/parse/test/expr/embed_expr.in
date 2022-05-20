@@ -2,17 +2,9 @@
     (
         "embed(\"Main Page\")",
         Ok(Expr::Embed {
-            span: Span {
-                offset: 0,
-                line: 1,
-                column: 1,
-            },
+            span: Span { begin: 0, end: 18 },
             target: Box::new(Expr::Page {
-                span: Span {
-                    offset: 6,
-                    line: 1,
-                    column: 7,
-                },
+                span: Span { begin: 6, end: 17 },
                 titles: HashSet::from_iter(["Main Page".to_string()]),
             }),
             modifier: Modifier::new()
@@ -21,17 +13,9 @@
     (
         "Embed (\"Main Page\", \"Page List Bot\")",
         Ok(Expr::Embed {
-            span: Span {
-                offset: 0,
-                line: 1,
-                column: 1,
-            },
+            span: Span { begin: 0, end: 36 },
             target: Box::new(Expr::Page {
-                span: Span {
-                    offset: 7,
-                    line: 1,
-                    column: 8,
-                },
+                span: Span { begin: 7, end: 35 },
                 titles: HashSet::from_iter(["Main Page".to_string(), "Page List Bot".to_string()]),
             }),
             modifier: Modifier::new()
@@ -40,17 +24,9 @@
     (
         "EMBED( \"Main Page\" ) .resolve .ns(1)",
         Ok(Expr::Embed {
-            span: Span {
-                offset: 0,
-                line: 1,
-                column: 1,
-            },
+            span: Span { begin: 0, end: 35 },
             target: Box::new(Expr::Page {
-                span: Span {
-                    offset: 7,
-                    line: 1,
-                    column: 8,
-                },
+                span: Span { begin: 7, end: 18 },
                 titles: HashSet::from_iter(["Main Page".to_string()]),
             }),
             modifier: Modifier {

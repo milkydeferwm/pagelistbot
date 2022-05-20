@@ -35,7 +35,7 @@ fn parse_page_expr<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
-    let (input, pos) = position(input)?;
+    let (input, s_pos) = position(input)?;
     let (input, list) = alt((
         separated_list1(char(','), ws(parse_string)),
         preceded(
@@ -49,11 +49,12 @@ where
             )
         )
     ))(input)?;
+    let (input, e_pos) = position(input)?;
 
     Ok((
         input,
         Expr::Page {
-            span: Span { offset: pos.location_offset(), line: pos.location_line(), column: pos.get_utf8_column() },
+            span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
             titles: std::collections::HashSet::from_iter(list)
         }
     ))
@@ -72,7 +73,7 @@ fn parse_link_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, 
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
-    let (input, pos) = position(input)?;
+    let (input, s_pos) = position(input)?;
     let (input, (target, modifier)) = tuple((
         preceded(
             tag_no_case("link"),
@@ -86,11 +87,12 @@ where
         ),
         ws(parse_modifier_list::<E>)
     ))(input)?;
+    let (input, e_pos) = position(input)?;
 
     Ok((
         input,
         Expr::Link {
-            span: Span { offset: pos.location_offset(), line: pos.location_line(), column: pos.get_utf8_column() },
+            span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
             target: Box::new(target),
             modifier,
         }
@@ -110,7 +112,7 @@ fn parse_linkto_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
-    let (input, pos) = position(input)?;
+    let (input, s_pos) = position(input)?;
     let (input, (target, modifier)) = tuple((
         preceded(
             tag_no_case("linkto"),
@@ -124,11 +126,12 @@ where
         ),
         ws(parse_modifier_list::<E>)
     ))(input)?;
+    let (input, e_pos) = position(input)?;
 
     Ok((
         input,
         Expr::BackLink {
-            span: Span { offset: pos.location_offset(), line: pos.location_line(), column: pos.get_utf8_column() },
+            span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
             target: Box::new(target),
             modifier,
         }
@@ -148,7 +151,7 @@ fn parse_embed_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr,
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
-    let (input, pos) = position(input)?;
+    let (input, s_pos) = position(input)?;
     let (input, (target, modifier)) = tuple((
         preceded(
             tag_no_case("embed"),
@@ -162,11 +165,12 @@ where
         ),
         ws(parse_modifier_list::<E>)
     ))(input)?;
+    let (input, e_pos) = position(input)?;
 
     Ok((
         input,
         Expr::Embed {
-            span: Span { offset: pos.location_offset(), line: pos.location_line(), column: pos.get_utf8_column() },
+            span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
             target: Box::new(target),
             modifier,
         }
@@ -186,7 +190,7 @@ fn parse_incat_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr,
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
-    let (input, pos) = position(input)?;
+    let (input, s_pos) = position(input)?;
     let (input, (target, modifier)) = tuple((
         preceded(
             tag_no_case("incat"),
@@ -200,11 +204,12 @@ where
         ),
         ws(parse_modifier_list::<E>)
     ))(input)?;
+    let (input, e_pos) = position(input)?;
 
     Ok((
         input,
         Expr::InCategory {
-            span: Span { offset: pos.location_offset(), line: pos.location_line(), column: pos.get_utf8_column() },
+            span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
             target: Box::new(target),
             modifier,
         }
@@ -224,7 +229,7 @@ fn parse_prefix_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
-    let (input, pos) = position(input)?;
+    let (input, s_pos) = position(input)?;
     let (input, (target, modifier)) = tuple((
         preceded(
             tag_no_case("prefix"),
@@ -238,11 +243,12 @@ where
         ),
         ws(parse_modifier_list::<E>)
     ))(input)?;
+    let (input, e_pos) = position(input)?;
 
     Ok((
         input,
         Expr::Prefix {
-            span: Span { offset: pos.location_offset(), line: pos.location_line(), column: pos.get_utf8_column() },
+            span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
             target: Box::new(target),
             modifier,
         }
@@ -263,7 +269,7 @@ fn parse_toggle_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
-    let (input, pos) = position(input)?;
+    let (input, s_pos) = position(input)?;
     let (input, target) = preceded(
         tag_no_case("toggle"),
         ws(
@@ -274,11 +280,12 @@ where
             )
         )
     )(input)?;
+    let (input, e_pos) = position(input)?;
 
     Ok((
         input,
         Expr::Toggle {
-            span: Span { offset: pos.location_offset(), line: pos.location_line(), column: pos.get_utf8_column() },
+            span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
             target: Box::new(target),
         }
     ))
@@ -316,16 +323,17 @@ fn parse_expr_tier3<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
-    let (input, pos) = position(input)?;
+    let (input, s_pos) = position(input)?;
     let (input, set1) = ws(parse_term::<E>)(input)?;
     let (input, exprs) = many0(tuple((
         char('&'),
         ws(parse_term::<E>)
     )))(input)?;
+    let (input, e_pos) = position(input)?;
     let folded = exprs.into_iter().fold(set1, |acc, (op, set2)| {
         match op {
             '&' => Expr::Intersection {
-                span: Span { offset: pos.location_offset(), line: pos.location_line(), column: pos.get_utf8_column() },
+                span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
                 set1: Box::new(acc),
                 set2: Box::new(set2),
             },
@@ -341,16 +349,17 @@ fn parse_expr_tier2<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
-    let (input, pos) = position(input)?;
+    let (input, s_pos) = position(input)?;
     let (input, set1) = ws(parse_expr_tier3::<E>)(input)?;
     let (input, exprs) = many0(tuple((
         char('^'),
         ws(parse_expr_tier3::<E>)
     )))(input)?;
+    let (input, e_pos) = position(input)?;
     let folded = exprs.into_iter().fold(set1, |acc, (op, set2)| {
         match op {
             '^' => Expr::Xor {
-                span: Span { offset: pos.location_offset(), line: pos.location_line(), column: pos.get_utf8_column() },
+                span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
                 set1: Box::new(acc),
                 set2: Box::new(set2),
             },
@@ -367,21 +376,22 @@ fn parse_expr_tier1<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
-    let (input, pos) = position(input)?;
+    let (input, s_pos) = position(input)?;
     let (input, set1) = ws(parse_expr_tier2::<E>)(input)?;
     let (input, exprs) = many0(tuple((
         alt((char('+'), char('-'))),
         ws(parse_expr_tier2::<E>)
     )))(input)?;
+    let (input, e_pos) = position(input)?;
     let folded = exprs.into_iter().fold(set1, |acc, (op, set2)| {
         match op {
             '+' => Expr::Union {
-                span: Span { offset: pos.location_offset(), line: pos.location_line(), column: pos.get_utf8_column() },
+                span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
                 set1: Box::new(acc),
                 set2: Box::new(set2),
             },
             '-' => Expr::Difference {
-                span: Span { offset: pos.location_offset(), line: pos.location_line(), column: pos.get_utf8_column() },
+                span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
                 set1: Box::new(acc),
                 set2: Box::new(set2),
             },
