@@ -13,7 +13,7 @@ use crate::ast::*;
 use super::StrSpan;
 use super::parser_types::*;
 use super::number::parse_i64;
-use super::util::ws;
+use super::util::*;
 
 #[cfg(test)]
 use pagelistbot_parser_test_macro::parse_test;
@@ -33,7 +33,7 @@ where
 {
     let (input, limit) = preceded(
         tag_no_case("limit"),
-        ws(
+        leading_ws(
             delimited(
                 char('('),
                 ws(parse_i64),
@@ -62,7 +62,7 @@ where
     let (input, _) = preceded(
         tag_no_case("resolve"),
         opt(
-            ws(
+            leading_ws(
                 delimited(
                     char('('),
                     multispace0,
@@ -89,10 +89,10 @@ where
 {
     let (input, nsvec) = preceded(
         tag_no_case("ns"),
-        ws(
+        leading_ws(
             delimited(
                 char('('),
-                ws(separated_list1(char(','), ws(parse_i64))),
+                ws(separated_list1(ws(char(',')), parse_i64)),
                 char(')')
             )
         )
@@ -115,7 +115,7 @@ where
 {
     let (input, depth) = preceded(
         tag_no_case("depth"),
-        ws(
+        leading_ws(
             delimited(
                 char('('),
                 ws(parse_i64),
@@ -144,7 +144,7 @@ where
     let (input, _) = preceded(
         tag_no_case("noredir"),
         opt(
-            ws(
+            leading_ws(
                 delimited(
                     char('('),
                     multispace0,
@@ -174,7 +174,7 @@ where
     let (input, _) = preceded(
         tag_no_case("onlyredir"),
         opt(
-            ws(
+            leading_ws(
                 delimited(
                     char('('),
                     multispace0,
@@ -204,7 +204,7 @@ where
     let (input, _) = preceded(
         tag_no_case("direct"),
         opt(
-            ws(
+            leading_ws(
                 delimited(
                     char('('),
                     multispace0,
@@ -234,7 +234,7 @@ where
 {
     preceded(
         char('.'),
-        ws(
+        leading_ws(
             alt((
                 parse_result_limit::<E>,
                 parse_resolve_redirects::<E>,
@@ -265,19 +265,32 @@ pub(crate) fn parse_modifier_list<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrS
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
-    let (input, list) = many0(ws(parse_modifier::<E>))(input)?;
-
     let mut builder = ModifierBuilder::new();
-    for modifier in list {
-        match modifier {
-            ModifierType::ResultLimit(limit) => builder = builder.result_limit(limit),
-            ModifierType::ResolveRedirects => builder = builder.resolve_redirects(),
-            ModifierType::Namespace(ns) => builder = builder.namespace(&ns),
-            ModifierType::RecursionDepth(depth) => builder = builder.categorymembers_recursion_depth(depth),
-            ModifierType::NoRedirect => builder = builder.no_redirect(),
-            ModifierType::OnlyRedirect => builder = builder.only_redirect(),
-            ModifierType::DirectBacklink => builder = builder.direct_backlink(),
+
+    // FIXME: This is a known bug (https://github.com/Geal/nom/issues/1288). Should replace the workaround when nom 8 is out.
+    // let (input, list) = separated_list0(multispace0, parse_modifier::<E>)(input)?;
+
+    // WORKAROUND
+    let (input, modifier) = opt(parse_modifier::<E>)(input)?;
+    if let Some(modifier) = modifier {
+        let mut list = vec![modifier];
+        // list not empty, do the remaining
+        let (input, other_list) = many0(preceded(multispace0, parse_modifier::<E>))(input)?;
+        list.extend(other_list);
+
+        for modifier in list {
+            match modifier {
+                ModifierType::ResultLimit(limit) => builder = builder.result_limit(limit),
+                ModifierType::ResolveRedirects => builder = builder.resolve_redirects(),
+                ModifierType::Namespace(ns) => builder = builder.namespace(&ns),
+                ModifierType::RecursionDepth(depth) => builder = builder.categorymembers_recursion_depth(depth),
+                ModifierType::NoRedirect => builder = builder.no_redirect(),
+                ModifierType::OnlyRedirect => builder = builder.only_redirect(),
+                ModifierType::DirectBacklink => builder = builder.direct_backlink(),
+            }
         }
+        return Ok((input, builder.build()))
     }
+
     Ok((input, builder.build()))
 }

@@ -1,32 +1,32 @@
 [
     (
-        "link(\"Main Page\")",
-        Ok(Expr::Link {
-            span: Span { begin: 0, end: 17 },
+        "incat(\"Main Page\")",
+        Ok(Expr::InCategory {
+            span: Span { begin: 0, end: 18 },
             target: Box::new(Expr::Page {
-                span: Span { begin: 5, end: 16 },
+                span: Span { begin: 6, end: 17 },
                 titles: HashSet::from_iter(["Main Page".to_string()]),
             }),
             modifier: Modifier::new()
         })
     ),
     (
-        "Link (\"Main Page\", \"Page List Bot\")",
-        Ok(Expr::Link {
-            span: Span { begin: 0, end: 35 },
+        "InCat (\"Main Page\", \"Page List Bot\")",
+        Ok(Expr::InCategory {
+            span: Span { begin: 0, end: 36 },
             target: Box::new(Expr::Page {
-                span: Span { begin: 6, end: 34 },
+                span: Span { begin: 7, end: 35 },
                 titles: HashSet::from_iter(["Main Page".to_string(), "Page List Bot".to_string()]),
             }),
             modifier: Modifier::new()
         })
     ),
     (
-        "LINK(\"Main Page\" ) .resolve .ns(1)",
-        Ok(Expr::Link {
-            span: Span { begin: 0, end: 34 },
+        "INCAT( \"Main Page\" ) .resolve .ns(1)",
+        Ok(Expr::InCategory {
+            span: Span { begin: 0, end: 36 },
             target: Box::new(Expr::Page {
-                span: Span { begin: 5, end: 16 },
+                span: Span { begin: 7, end: 18 },
                 titles: HashSet::from_iter(["Main Page".to_string()]),
             }),
             modifier: Modifier {
