@@ -1,82 +1,120 @@
 [
     (
         "\"A\"^\"B\"",
-        Ok(Expr::Xor {
+        Ok(Node {
             span: Span { begin: 0, end: 7 },
-            set1: Box::new(Expr::Page {
-                span: Span { begin: 0, end: 3 },
-                titles: HashSet::from_iter(["A".to_string()])
-            }),
-            set2: Box::new(Expr::Page {
-                span: Span { begin: 4, end: 7 },
-                titles: HashSet::from_iter(["B".to_string()])
-            })
+            expr: Expr::Xor {
+                set1: Box::new(Node {
+                    span: Span { begin: 0, end: 3 },
+                    expr: Expr::Page {
+                        titles: HashSet::from_iter(["A".to_string()])
+                    }
+                }),
+                set2: Box::new(Node {
+                    span: Span { begin: 4, end: 7 },
+                    expr: Expr::Page {
+                        titles: HashSet::from_iter(["B".to_string()])
+                    }
+                })
+            }
         })
     ),
     (
         "\"A\" ^ \"B\"",
-        Ok(Expr::Xor {
+        Ok(Node {
             span: Span { begin: 0, end: 9 },
-            set1: Box::new(Expr::Page {
-                span: Span { begin: 0, end: 3 },
-                titles: HashSet::from_iter(["A".to_string()])
-            }),
-            set2: Box::new(Expr::Page {
-                span: Span { begin: 6, end: 9 },
-                titles: HashSet::from_iter(["B".to_string()])
-            })
+            expr: Expr::Xor {
+                set1: Box::new(Node {
+                    span: Span { begin: 0, end: 3 },
+                    expr: Expr::Page {
+                        titles: HashSet::from_iter(["A".to_string()])
+                    }
+                }),
+                set2: Box::new(Node {
+                    span: Span { begin: 6, end: 9 },
+                    expr: Expr::Page {
+                        titles: HashSet::from_iter(["B".to_string()])
+                    }
+                }),
+            }
         })
     ),
     (
         "\"A\" ^ \"B\" ^ \"C\"",
-        Ok(Expr::Xor {
+        Ok(Node {
             span: Span { begin: 0, end: 15 },
-            set1: Box::new(Expr::Xor {
-                span: Span { begin: 0, end: 9 },
-                set1: Box::new(Expr::Page {
-                    span: Span { begin: 0, end: 3 },
-                    titles: HashSet::from_iter(["A".to_string()])
+            expr: Expr::Xor {
+                set1: Box::new(Node {
+                    span: Span { begin: 0, end: 9 },
+                    expr: Expr::Xor {
+                        set1: Box::new(Node {
+                            span: Span { begin: 0, end: 3 },
+                            expr: Expr::Page {
+                                titles: HashSet::from_iter(["A".to_string()])
+                            }
+                        }),
+                        set2:Box::new(Node {
+                            span: Span { begin: 6, end: 9 },
+                            expr: Expr::Page {
+                                titles: HashSet::from_iter(["B".to_string()])
+                            }
+                        })
+                    }
                 }),
-                set2:Box::new(Expr::Page {
-                    span: Span { begin: 6, end: 9 },
-                    titles: HashSet::from_iter(["B".to_string()])
+                set2: Box::new(Node {
+                    span: Span { begin: 12, end: 15 },
+                    expr: Expr::Page {
+                        titles: HashSet::from_iter(["C".to_string()])
+                    }
                 })
-            }),
-            set2: Box::new(Expr::Page {
-                span: Span { begin: 12, end: 15 },
-                titles: HashSet::from_iter(["C".to_string()])
-            })
+            }
         })
     ),
     (
         "\"A\" ^ toggle(page(\"B\") ^ \"B\") & \"C\" ",
-        Ok(Expr::Xor {
+        Ok(Node {
             span: Span { begin: 0 , end: 35 },
-            set1: Box::new(Expr::Page {
-                span: Span { begin: 0, end: 3 },
-                titles: HashSet::from_iter(["A".to_string()])
-            }),
-            set2: Box::new(Expr::Intersection {
-                span: Span { begin: 6 , end: 35 },
-                set1: Box::new(Expr::Toggle {
-                    span: Span { begin: 6 , end: 29 },
-                    target: Box::new(Expr::Xor {
-                        span: Span { begin: 13 , end: 28 },
-                        set1: Box::new(Expr::Page {
-                            span: Span { begin: 13 , end: 22 },
-                            titles: HashSet::from_iter(["B".to_string()])
-                        }),
-                        set2: Box::new(Expr::Page {
-                            span: Span { begin: 25 , end: 28 },
-                            titles: HashSet::from_iter(["B".to_string()])
-                        })
-                    })
+            expr: Expr::Xor {
+                set1: Box::new(Node {
+                    span: Span { begin: 0, end: 3 },
+                    expr: Expr::Page {
+                        titles: HashSet::from_iter(["A".to_string()])
+                    }
                 }),
-                set2: Box::new(Expr::Page {
-                    span: Span { begin: 32 , end: 35 },
-                    titles: HashSet::from_iter(["C".to_string()])
+                set2: Box::new(Node {
+                    span: Span { begin: 6 , end: 35 },
+                    expr: Expr::Intersection {
+                        set1: Box::new(Node {
+                            span: Span { begin: 6 , end: 29 },
+                            expr: Expr::Toggle {
+                                target: Box::new(Node {
+                                    span: Span { begin: 13 , end: 28 },
+                                    expr: Expr::Xor {
+                                        set1: Box::new(Node {
+                                            span: Span { begin: 13 , end: 22 },
+                                            expr: Expr::Page {
+                                                titles: HashSet::from_iter(["B".to_string()])
+                                            }
+                                        }),
+                                        set2: Box::new(Node {
+                                            span: Span { begin: 25 , end: 28 },
+                                            expr: Expr::Page {
+                                                titles: HashSet::from_iter(["B".to_string()])
+                                            }
+                                        })
+                                    }
+                                })
+                            }
+                        }),
+                        set2: Box::new(Node {
+                            span: Span { begin: 32 , end: 35 },
+                            expr: Expr::Page {
+                                titles: HashSet::from_iter(["C".to_string()])
+                            }
+                        })
+                    }
                 })
-            })
+            }
         })
     ),
 ]
