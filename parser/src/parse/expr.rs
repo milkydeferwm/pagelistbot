@@ -349,6 +349,10 @@ where
 
 /// Parse a binary expression (`^`). Assume no leading or trailing whitespaces
 /// * `<ExprTier3>^<ExprTier3>`
+#[cfg_attr(
+    test,
+    parse_test(test_expr_tier2, "test/expr/expr_tier2.in"),
+)]
 fn parse_expr_tier2<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
@@ -376,6 +380,10 @@ where
 /// Parse a binary expression (`+`, `-`). Assume no leading or trailing whitespaces
 /// * `<ExprTier2>+<ExprTier2>`
 /// * `<ExprTier2>-<ExprTier2>`
+#[cfg_attr(
+    test,
+    parse_test(test_expr_tier1, "test/expr/expr_tier1.in"),
+)]
 fn parse_expr_tier1<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
@@ -405,6 +413,10 @@ where
     Ok((input, folded))
 }
 
+#[cfg_attr(
+    test,
+    parse_test(test_whitespaced_expr, "test/expr/whitespaced_expr.in"),
+)]
 pub(crate) fn parse<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>

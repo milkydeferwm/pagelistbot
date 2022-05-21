@@ -1,0 +1,30 @@
+[
+    (
+        "\"a\"",
+        Ok(Expr::Page {
+            span: Span { begin: 0, end: 3 },
+            titles: HashSet::from_iter(["a".to_string()]),
+        })
+    ),
+    (
+        " \"a\"",
+        Ok(Expr::Page {
+            span: Span { begin: 1, end: 4 },
+            titles: HashSet::from_iter(["a".to_string()]),
+        })
+    ),
+    (
+        "\"a\" ",
+        Ok(Expr::Page {
+            span: Span { begin: 0, end: 3 },
+            titles: HashSet::from_iter(["a".to_string()]),
+        })
+    ),
+    (
+        "  \"a\"  ",
+        Ok(Expr::Page {
+            span: Span { begin: 2, end: 5 },
+            titles: HashSet::from_iter(["a".to_string()]),
+        })
+    )
+]
