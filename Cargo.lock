@@ -59,6 +59,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "pagelistbot_solver_core"
+version = "3.0.0"
+dependencies = [
+ "pagelistbot_parser",
+]
+
+[[package]]
 name = "proc-macro2"
 version = "1.0.39"
 source = "registry+https://github.com/rust-lang/crates.io-index"
