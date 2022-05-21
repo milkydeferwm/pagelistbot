@@ -319,6 +319,10 @@ where
 
 /// Parse a binary expression (`&`). Assume no leading or trailing whitespaces
 /// * `<Term>&<Term>`
+#[cfg_attr(
+    test,
+    parse_test(test_expr_tier3, "test/expr/expr_tier3.in"),
+)]
 fn parse_expr_tier3<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
 where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
