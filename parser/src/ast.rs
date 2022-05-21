@@ -9,21 +9,27 @@ pub struct Span {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Node {
+    pub span: Span,
+    pub expr: Expr,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Expr {
-    Page { span: Span, titles: HashSet<String> },
+    Page { titles: HashSet<String> },
 
-    Intersection { span: Span, set1: Box<Expr>, set2: Box<Expr> },
-    Union { span: Span, set1: Box<Expr>, set2: Box<Expr> },
-    Difference { span: Span, set1: Box<Expr>, set2: Box<Expr> },
-    Xor { span: Span, set1: Box<Expr>, set2: Box<Expr> },
+    Intersection { set1: Box<Node>, set2: Box<Node> },
+    Union { set1: Box<Node>, set2: Box<Node> },
+    Difference { set1: Box<Node>, set2: Box<Node> },
+    Xor { set1: Box<Node>, set2: Box<Node> },
 
-    Link { span: Span, target: Box<Expr>, modifier: Modifier },
-    BackLink { span: Span, target: Box<Expr>, modifier: Modifier },
-    Embed {span: Span, target: Box<Expr>, modifier: Modifier },
-    InCategory { span: Span, target: Box<Expr>, modifier: Modifier },
-    Prefix { span: Span, target: Box<Expr>, modifier: Modifier },
+    Link { target: Box<Node>, modifier: Modifier },
+    BackLink { target: Box<Node>, modifier: Modifier },
+    Embed { target: Box<Node>, modifier: Modifier },
+    InCategory { target: Box<Node>, modifier: Modifier },
+    Prefix { target: Box<Node>, modifier: Modifier },
 
-    Toggle { span: Span, target: Box<Expr> },
+    Toggle { target: Box<Node> },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
