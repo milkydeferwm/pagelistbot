@@ -1,41 +1,53 @@
 [
     (
         "incat(\"Main Page\")",
-        Ok(Expr::InCategory {
+        Ok(Node {
             span: Span { begin: 0, end: 18 },
-            target: Box::new(Expr::Page {
-                span: Span { begin: 6, end: 17 },
-                titles: HashSet::from_iter(["Main Page".to_string()]),
-            }),
-            modifier: Modifier::new()
+            expr: Expr::InCategory {
+                target: Box::new(Node {
+                    span: Span { begin: 6, end: 17 },
+                    expr: Expr::Page {
+                        titles: HashSet::from_iter(["Main Page".to_string()]),
+                    },
+                }),
+                modifier: Modifier::new()
+            },
         })
     ),
     (
         "InCat (\"Main Page\", \"Page List Bot\")",
-        Ok(Expr::InCategory {
+        Ok(Node {
             span: Span { begin: 0, end: 36 },
-            target: Box::new(Expr::Page {
-                span: Span { begin: 7, end: 35 },
-                titles: HashSet::from_iter(["Main Page".to_string(), "Page List Bot".to_string()]),
-            }),
-            modifier: Modifier::new()
+            expr: Expr::InCategory {
+                target: Box::new(Node {
+                    span: Span { begin: 7, end: 35 },
+                    expr: Expr::Page {
+                        titles: HashSet::from_iter(["Main Page".to_string(), "Page List Bot".to_string()]),
+                    }
+                }),
+                modifier: Modifier::new()
+            }
         })
     ),
     (
         "INCAT( \"Main Page\" ) .resolve .ns(1)",
-        Ok(Expr::InCategory {
+        Ok(Node {
             span: Span { begin: 0, end: 36 },
-            target: Box::new(Expr::Page {
-                span: Span { begin: 7, end: 18 },
-                titles: HashSet::from_iter(["Main Page".to_string()]),
-            }),
-            modifier: Modifier {
-                result_limit: None,
-                resolve_redirects: true,
-                namespace: Some(HashSet::from_iter([1_i64])),
-                categorymembers_recursion_depth: 0,
-                filter_redirects: RedirectFilterStrategy::All,
-                backlink_trace_redirects: true,
+            expr: Expr::InCategory {
+                target: Box::new(Node {
+                    span: Span { begin: 7, end: 18 },
+                    expr: Expr::Page {
+                        titles: HashSet::from_iter(["Main Page".to_string()]),
+                    }
+                }),
+                modifier: Modifier {
+                    result_limit: None,
+                    resolve_redirects: true,
+                    namespace: Some(HashSet::from_iter([1_i64])),
+                    categorymembers_recursion_depth: 0,
+                    filter_redirects: RedirectFilterStrategy::All,
+                    backlink_trace_redirects: true,
+                }
             }
         })
     )
