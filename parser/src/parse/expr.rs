@@ -331,10 +331,10 @@ where
     let (input, set1) = parse_term::<E>(input)?;
     let (input, exprs) = many0(tuple((
         ws(char('&')),
-        parse_term::<E>
+        parse_term::<E>,
+        position
     )))(input)?;
-    let (input, e_pos) = position(input)?;
-    let folded = exprs.into_iter().fold(set1, |acc, (op, set2)| {
+    let folded = exprs.into_iter().fold(set1, |acc, (op, set2, e_pos)| {
         match op {
             '&' => Expr::Intersection {
                 span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
@@ -357,10 +357,10 @@ where
     let (input, set1) = parse_expr_tier3::<E>(input)?;
     let (input, exprs) = many0(tuple((
         ws(char('^')),
-        parse_expr_tier3::<E>
+        parse_expr_tier3::<E>,
+        position
     )))(input)?;
-    let (input, e_pos) = position(input)?;
-    let folded = exprs.into_iter().fold(set1, |acc, (op, set2)| {
+    let folded = exprs.into_iter().fold(set1, |acc, (op, set2, e_pos)| {
         match op {
             '^' => Expr::Xor {
                 span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
@@ -384,10 +384,10 @@ where
     let (input, set1) = parse_expr_tier2::<E>(input)?;
     let (input, exprs) = many0(tuple((
         ws(alt((char('+'), char('-')))),
-        parse_expr_tier2::<E>
+        parse_expr_tier2::<E>,
+        position
     )))(input)?;
-    let (input, e_pos) = position(input)?;
-    let folded = exprs.into_iter().fold(set1, |acc, (op, set2)| {
+    let folded = exprs.into_iter().fold(set1, |acc, (op, set2, e_pos)| {
         match op {
             '+' => Expr::Union {
                 span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
