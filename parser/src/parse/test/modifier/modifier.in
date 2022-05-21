@@ -9,7 +9,7 @@
     ),
     (
         ".ns ( 0, 1,2, 3)",
-        Ok(ModifierType::Namespace(std::collections::HashSet::from_iter(Vec::<i64>::from([0, 1, 2, 3]))))
+        Ok(ModifierType::Namespace(std::collections::HashSet::from_iter([0_i64, 1_i64, 2_i64, 3_i64])))
     ),
     (
         ". DEPTH ( +10000 )",
