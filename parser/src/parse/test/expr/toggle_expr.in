@@ -1,32 +1,44 @@
 [
     (
         "toggle(\"Main Page\")",
-        Ok(Expr::Toggle {
+        Ok(Node {
             span: Span { begin: 0, end: 19 },
-            target: Box::new(Expr::Page {
-                span: Span { begin: 7, end: 18 },
-                titles: HashSet::from_iter(["Main Page".to_string()]),
-            })
+            expr: Expr::Toggle {
+                target: Box::new(Node {
+                    span: Span { begin: 7, end: 18 },
+                    expr: Expr::Page {
+                        titles: HashSet::from_iter(["Main Page".to_string()]),
+                    }
+                })
+            }
         })
     ),
     (
         "Toggle (\"Main Page\", \"Page List Bot\")",
-        Ok(Expr::Toggle {
+        Ok(Node {
             span: Span { begin: 0, end: 37 },
-            target: Box::new(Expr::Page {
-                span: Span { begin: 8, end: 36 },
-                titles: HashSet::from_iter(["Main Page".to_string(), "Page List Bot".to_string()]),
-            })
+            expr: Expr::Toggle {
+                target: Box::new(Node {
+                    span: Span { begin: 8, end: 36 },
+                    expr: Expr::Page {
+                        titles: HashSet::from_iter(["Main Page".to_string(), "Page List Bot".to_string()]),
+                    }
+                })
+            }
         })
     ),
     (
         "TOGGLE( \"Main Page\" )   ",
-        Ok(Expr::Toggle {
+        Ok(Node {
             span: Span { begin: 0, end: 21 },
-            target: Box::new(Expr::Page {
-                span: Span { begin: 8, end: 19 },
-                titles: HashSet::from_iter(["Main Page".to_string()]),
-            })
+            expr: Expr::Toggle {
+                target: Box::new(Node {
+                    span: Span { begin: 8, end: 19 },
+                    expr: Expr::Page {
+                        titles: HashSet::from_iter(["Main Page".to_string()]),
+                    }
+                })
+            }
         })
     )
 ]
