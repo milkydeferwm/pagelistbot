@@ -31,7 +31,7 @@ use pagelistbot_parser_test_macro::parse_test;
     test,
     parse_test(test_page_expr, "test/expr/page_expr.in"),
 )]
-fn parse_page_expr<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
+fn parse_page_expr<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Node, E>
 where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -53,9 +53,11 @@ where
 
     Ok((
         input,
-        Expr::Page {
+        Node {
             span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
-            titles: std::collections::HashSet::from_iter(list)
+            expr: Expr::Page {
+                titles: std::collections::HashSet::from_iter(list)
+            }
         }
     ))
 }
@@ -69,7 +71,7 @@ where
     test,
     parse_test(test_link_expr, "test/expr/link_expr.in"),
 )]
-fn parse_link_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
+fn parse_link_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Node, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -91,10 +93,12 @@ where
 
     Ok((
         input,
-        Expr::Link {
+        Node {
             span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
-            target: Box::new(target),
-            modifier,
+            expr: Expr::Link {
+                target: Box::new(target),
+                modifier,
+            }
         }
     ))
 }
@@ -108,7 +112,7 @@ where
     test,
     parse_test(test_linkto_expr, "test/expr/linkto_expr.in"),
 )]
-fn parse_linkto_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
+fn parse_linkto_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Node, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -130,10 +134,12 @@ where
 
     Ok((
         input,
-        Expr::BackLink {
+        Node {
             span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
-            target: Box::new(target),
-            modifier,
+            expr: Expr::BackLink {
+                target: Box::new(target),
+                modifier,
+            }
         }
     ))
 }
@@ -147,7 +153,7 @@ where
     test,
     parse_test(test_embed_expr, "test/expr/embed_expr.in"),
 )]
-fn parse_embed_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
+fn parse_embed_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Node, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -169,10 +175,12 @@ where
 
     Ok((
         input,
-        Expr::Embed {
+        Node {
             span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
-            target: Box::new(target),
-            modifier,
+            expr: Expr::Embed {
+                target: Box::new(target),
+                modifier,
+            }
         }
     ))
 }
@@ -186,7 +194,7 @@ where
     test,
     parse_test(test_incat_expr, "test/expr/incat_expr.in"),
 )]
-fn parse_incat_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
+fn parse_incat_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Node, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -208,10 +216,12 @@ where
 
     Ok((
         input,
-        Expr::InCategory {
+        Node {
             span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
-            target: Box::new(target),
-            modifier,
+            expr: Expr::InCategory {
+                target: Box::new(target),
+                modifier,
+            }
         }
     ))
 }
@@ -225,7 +235,7 @@ where
     test,
     parse_test(test_prefix_expr, "test/expr/prefix_expr.in"),
 )]
-fn parse_prefix_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
+fn parse_prefix_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Node, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -247,10 +257,12 @@ where
 
     Ok((
         input,
-        Expr::Prefix {
+        Node {
             span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
-            target: Box::new(target),
-            modifier,
+            expr: Expr::Prefix {
+                target: Box::new(target),
+                modifier,
+            }
         }
     ))
 }
@@ -265,7 +277,7 @@ where
     test,
     parse_test(test_toggle_expr, "test/expr/toggle_expr.in"),
 )]
-fn parse_toggle_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
+fn parse_toggle_expr<'a, E: 'a>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Node, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -284,9 +296,11 @@ where
 
     Ok((
         input,
-        Expr::Toggle {
+        Node {
             span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
-            target: Box::new(target),
+            expr: Expr::Toggle {
+                target: Box::new(target),
+            }
         }
     ))
 }
@@ -297,7 +311,7 @@ where
 /// * `(<ExprTier1>)`
 /// * `<Page>`
 /// * `<other unary exprs>`
-fn parse_term<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
+fn parse_term<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Node, E>
 where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -323,7 +337,7 @@ where
     test,
     parse_test(test_expr_tier3, "test/expr/expr_tier3.in"),
 )]
-fn parse_expr_tier3<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
+fn parse_expr_tier3<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Node, E>
 where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -336,10 +350,12 @@ where
     )))(input)?;
     let folded = exprs.into_iter().fold(set1, |acc, (op, set2, e_pos)| {
         match op {
-            '&' => Expr::Intersection {
+            '&' => Node {
                 span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
-                set1: Box::new(acc),
-                set2: Box::new(set2),
+                expr: Expr::Intersection {
+                    set1: Box::new(acc),
+                    set2: Box::new(set2),
+                },
             },
             _ => unreachable!(),
         }
@@ -353,7 +369,7 @@ where
     test,
     parse_test(test_expr_tier2, "test/expr/expr_tier2.in"),
 )]
-fn parse_expr_tier2<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
+fn parse_expr_tier2<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Node, E>
 where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -366,10 +382,12 @@ where
     )))(input)?;
     let folded = exprs.into_iter().fold(set1, |acc, (op, set2, e_pos)| {
         match op {
-            '^' => Expr::Xor {
+            '^' => Node {
                 span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
-                set1: Box::new(acc),
-                set2: Box::new(set2),
+                expr: Expr::Xor {
+                    set1: Box::new(acc),
+                    set2: Box::new(set2),
+                },
             },
             _ => unreachable!(),
         }
@@ -384,7 +402,7 @@ where
     test,
     parse_test(test_expr_tier1, "test/expr/expr_tier1.in"),
 )]
-fn parse_expr_tier1<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
+fn parse_expr_tier1<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Node, E>
 where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
@@ -397,15 +415,19 @@ where
     )))(input)?;
     let folded = exprs.into_iter().fold(set1, |acc, (op, set2, e_pos)| {
         match op {
-            '+' => Expr::Union {
+            '+' => Node {
                 span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
-                set1: Box::new(acc),
-                set2: Box::new(set2),
+                expr: Expr::Union {
+                    set1: Box::new(acc),
+                    set2: Box::new(set2),
+                },
             },
-            '-' => Expr::Difference {
+            '-' => Node {
                 span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
-                set1: Box::new(acc),
-                set2: Box::new(set2),
+                expr: Expr::Difference {
+                    set1: Box::new(acc),
+                    set2: Box::new(set2),
+                },
             },
             _ => unreachable!(),
         }
@@ -417,7 +439,7 @@ where
     test,
     parse_test(test_whitespaced_expr, "test/expr/whitespaced_expr.in"),
 )]
-pub(crate) fn parse<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Expr, E>
+pub(crate) fn parse<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, Node, E>
 where
     E: 'a + ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>
 {
