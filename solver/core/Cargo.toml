@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 "pagelistbot_parser" = { path = "../../parser", default-features = false }
+"mwtitle" = "0.1"
+async-trait = "0.1"
