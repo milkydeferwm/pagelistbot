@@ -97,7 +97,7 @@ where
             )
         )
     )(input)?;
-    Ok((input, ModifierType::Namespace(std::collections::HashSet::from_iter(nsvec))))
+    Ok((input, ModifierType::Namespace(std::collections::BTreeSet::from_iter(nsvec))))
 }
 
 /// Parse a RecursionDepth modifier. Assume no leading or trailing whitespaces.

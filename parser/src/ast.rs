@@ -1,6 +1,6 @@
 //! Abstract syntax tree used for parsing and output
 
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Span {
@@ -16,7 +16,7 @@ pub struct Node {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Expr {
-    Page { titles: HashSet<String> },
+    Page { titles: BTreeSet<String> },
 
     Intersection { set1: Box<Node>, set2: Box<Node> },
     Union { set1: Box<Node>, set2: Box<Node> },
@@ -38,7 +38,7 @@ pub struct Modifier {
     pub result_limit: Option<i64>,
     pub resolve_redirects: bool,
     // Only available for certain operations
-    pub namespace: Option<HashSet<i64>>,
+    pub namespace: Option<BTreeSet<i64>>,
     pub categorymembers_recursion_depth: i64,
     pub filter_redirects: RedirectFilterStrategy,
     pub backlink_trace_redirects: bool,
