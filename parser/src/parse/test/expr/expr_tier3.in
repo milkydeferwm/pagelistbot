@@ -7,13 +7,13 @@
                 set1: Box::new(Node {
                     span: Span { begin: 0, end: 3 },
                     expr: Expr::Page {
-                        titles: HashSet::from_iter(["A".to_string()])
+                        titles: BTreeSet::from_iter(["A".to_string()])
                     }
                 }),
                 set2: Box::new(Node {
                     span: Span { begin: 4, end: 7 },
                     expr: Expr::Page {
-                        titles: HashSet::from_iter(["B".to_string()])
+                        titles: BTreeSet::from_iter(["B".to_string()])
                     }
                 })
             }
@@ -27,13 +27,13 @@
                 set1: Box::new(Node {
                     span: Span { begin: 0, end: 3 },
                     expr: Expr::Page {
-                        titles: HashSet::from_iter(["A".to_string()])
+                        titles: BTreeSet::from_iter(["A".to_string()])
                     }
                 }),
                 set2: Box::new(Node {
                     span: Span { begin: 6, end: 9 },
                     expr: Expr::Page {
-                        titles: HashSet::from_iter(["B".to_string()])
+                        titles: BTreeSet::from_iter(["B".to_string()])
                     }
                 }),
             }
@@ -50,13 +50,13 @@
                         set1: Box::new(Node {
                             span: Span { begin: 0, end: 3 },
                             expr: Expr::Page {
-                                titles: HashSet::from_iter(["A".to_string()])
+                                titles: BTreeSet::from_iter(["A".to_string()])
                             }
                         }),
                         set2:Box::new(Node {
                             span: Span { begin: 6, end: 9 },
                             expr: Expr::Page {
-                                titles: HashSet::from_iter(["B".to_string()])
+                                titles: BTreeSet::from_iter(["B".to_string()])
                             }
                         })
                     }
@@ -64,7 +64,7 @@
                 set2: Box::new(Node {
                     span: Span { begin: 12, end: 15 },
                     expr: Expr::Page {
-                        titles: HashSet::from_iter(["C".to_string()])
+                        titles: BTreeSet::from_iter(["C".to_string()])
                     }
                 })
             }
@@ -78,7 +78,7 @@
                 set1: Box::new(Node {
                     span: Span { begin: 0, end: 3 },
                     expr: Expr::Page {
-                        titles: HashSet::from_iter(["A".to_string()])
+                        titles: BTreeSet::from_iter(["A".to_string()])
                     }
                 }),
                 set2: Box::new(Node {
@@ -93,13 +93,13 @@
                                         set1: Box::new(Node {
                                             span: Span { begin: 14 , end: 23 },
                                             expr: Expr::Page {
-                                                titles: HashSet::from_iter(["B".to_string()])
+                                                titles: BTreeSet::from_iter(["B".to_string()])
                                             }
                                         }),
                                         set2: Box::new(Node {
                                             span: Span { begin: 26 , end: 29 },
                                             expr: Expr::Page {
-                                                titles: HashSet::from_iter(["B".to_string()])
+                                                titles: BTreeSet::from_iter(["B".to_string()])
                                             }
                                         })
                                     }
@@ -109,7 +109,7 @@
                         set2: Box::new(Node {
                             span: Span { begin: 33 , end: 36 },
                             expr: Expr::Page {
-                                titles: HashSet::from_iter(["C".to_string()])
+                                titles: BTreeSet::from_iter(["C".to_string()])
                             }
                         })
                     }
