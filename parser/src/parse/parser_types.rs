@@ -1,6 +1,6 @@
 #![cfg(feature="parse")]
 
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 use crate::ast::*;
 
@@ -10,7 +10,7 @@ pub(crate) struct ModifierBuilder {
     result_limit: Option<i64>,
     resolve_redirects: bool,
     // Only available for certain operations
-    namespace: Option<HashSet<i64>>,
+    namespace: Option<BTreeSet<i64>>,
     categorymembers_recursion_depth: Option<i64>,
     filter_redirects: Option<RedirectFilterStrategy>,
     backlink_trace_redirects: bool,
@@ -60,7 +60,7 @@ impl ModifierBuilder {
         self
     }
 
-    pub(crate) fn namespace(mut self, value: &HashSet<i64>) -> Self {
+    pub(crate) fn namespace(mut self, value: &BTreeSet<i64>) -> Self {
         if let Some(ns) = self.namespace {
             self.namespace = Some(ns.intersection(value).copied().collect())
         } else {
@@ -106,7 +106,7 @@ pub(crate) enum ModifierType {
     ResultLimit(i64),
     ResolveRedirects,
 
-    Namespace(HashSet<i64>),
+    Namespace(BTreeSet<i64>),
     RecursionDepth(i64),
     NoRedirect,
     OnlyRedirect,

@@ -19,7 +19,7 @@ pub fn parse_test(attr: TokenStream, item: TokenStream) -> TokenStream {
         #[test]
         fn #test_fn_name () {
             use nom::Finish;
-            use std::collections::HashSet;
+            use std::collections::BTreeSet;
 
             let input = include!( #test_fn_input );
             for (input, expected) in input {
