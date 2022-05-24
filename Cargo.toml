@@ -2,4 +2,7 @@
 members = [
   "parser",
   "parser/test_macro",
+  "solver/core",
+  "solver/recursive_tree",
+  "provider/core",
 ]

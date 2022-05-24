@@ -1,0 +1,11 @@
+[package]
+name = "pagelistbot_solver_core"
+version = "3.0.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+"pagelistbot_parser" = { path = "../../parser", default-features = false }
+"mwtitle" = "0.1"
+async-trait = "0.1"
