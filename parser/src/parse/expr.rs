@@ -56,7 +56,7 @@ where
         Node {
             span: Span { begin: s_pos.location_offset(), end: e_pos.location_offset() },
             expr: Expr::Page {
-                titles: std::collections::HashSet::from_iter(list)
+                titles: std::collections::BTreeSet::from_iter(list)
             }
         }
     ))

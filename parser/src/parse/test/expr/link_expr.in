@@ -7,7 +7,7 @@
                 target: Box::new(Node {
                     span: Span { begin: 5, end: 16 },
                     expr: Expr::Page {
-                        titles: HashSet::from_iter(["Main Page".to_string()]),
+                        titles: BTreeSet::from_iter(["Main Page".to_string()]),
                     },
                 }),
                 modifier: Modifier::new()
@@ -22,7 +22,7 @@
                 target: Box::new(Node {
                     span: Span { begin: 6, end: 34 },
                     expr: Expr::Page {
-                        titles: HashSet::from_iter(["Main Page".to_string(), "Page List Bot".to_string()]),
+                        titles: BTreeSet::from_iter(["Main Page".to_string(), "Page List Bot".to_string()]),
                     }
                 }),
                 modifier: Modifier::new()
@@ -37,13 +37,13 @@
                 target: Box::new(Node {
                     span: Span { begin: 5, end: 16 },
                     expr: Expr::Page {
-                        titles: HashSet::from_iter(["Main Page".to_string()]),
+                        titles: BTreeSet::from_iter(["Main Page".to_string()]),
                     }
                 }),
                 modifier: Modifier {
                     result_limit: None,
                     resolve_redirects: true,
-                    namespace: Some(HashSet::from_iter([1_i64])),
+                    namespace: Some(BTreeSet::from_iter([1_i64])),
                     categorymembers_recursion_depth: 0,
                     filter_redirects: RedirectFilterStrategy::All,
                     backlink_trace_redirects: true,
