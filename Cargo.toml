@@ -1,3 +1,10 @@
+[package]
+name = "pagelistbot"
+version = "3.0.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
 [workspace]
 members = [
   "parser",
@@ -6,3 +13,8 @@ members = [
   "solver/recursive_tree",
   "provider/core",
 ]
+
+[dependencies]
+pagelistbot_parser = { path = "parser", features = [ "parse" ] }
+
+[dev-dependencies]
