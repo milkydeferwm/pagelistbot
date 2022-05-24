@@ -4,18 +4,21 @@
 //! also provides other crates a layer of abstract, so that other parts 
 //! of the solver can easily switch between implementations.
 
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 use mwtitle::Title;
-use pagelistbot_parser::ast::Expr;
+use pagelistbot_parser::ast::Node;
 
 /// Trait for all solver implementations.
 #[async_trait::async_trait]
 pub trait Solver<'a> {
-    async fn solve(ast: &'a Expr) -> Result<(HashSet<Title>, Vec<Error<'a>>), Error<'a>>;
+    async fn solve(&'a self, ast: &'a Node) -> Result<(BTreeSet<Title>, Vec<Error<'a>>), Error<'a>>;
 }
 
+/// Common error type for all solver implementations.
 #[derive(Debug)]
 pub struct Error<'a> {
-    pub node: &'a Expr,
+    pub node: &'a Node,
     pub content: Box<dyn std::error::Error>,
 }
+
+unsafe impl<'a> Send for Error<'a> {}
