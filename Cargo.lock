@@ -83,6 +83,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "pagelistbot"
+version = "3.0.0"
+dependencies = [
+ "pagelistbot_parser",
+]
+
+[[package]]
 name = "pagelistbot_parser"
 version = "3.0.0"
 dependencies = [
