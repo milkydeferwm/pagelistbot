@@ -16,21 +16,21 @@ jobs:
           toolchain: stable
       - uses: actions/checkout@v3
       - name: Build
-        run: cargo build --release
+        run: cargo build --release --package pagelistbot
       - uses: actions/upload-artifact@v2
         with:
           name: windows
           path: target/release/pagelistbot.exe
 
   build macos:
-    runs-on: windows-latest
+    runs-on: macOs-latest
     steps:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
       - uses: actions/checkout@v3
       - name: Build
-        run: cargo build --release
+        run: cargo build --release --package pagelistbot
       - uses: actions/upload-artifact@v2
         with:
           name: macOS
