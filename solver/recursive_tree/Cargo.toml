@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 "pagelistbot_solver_core" = { path = "../core" }
 "pagelistbot_provider_core" = { path = "../../provider/core" }
-"pagelistbot_parser" = { path = "../../parser", default-features = false }
+"pagelistbot_parser" = { path = "../../parser" }
 "mwtitle" = "0.1"
 async-trait = "0.1"
 async-recursion = "1.0"
