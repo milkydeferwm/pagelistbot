@@ -7,7 +7,7 @@
                 target: Box::new(Node {
                     span: Span { begin: 7, end: 18 },
                     expr: Expr::Page {
-                        titles: HashSet::from_iter(["Main Page".to_string()]),
+                        titles: BTreeSet::from_iter(["Main Page".to_string()]),
                     }
                 })
             }
@@ -21,7 +21,7 @@
                 target: Box::new(Node {
                     span: Span { begin: 8, end: 36 },
                     expr: Expr::Page {
-                        titles: HashSet::from_iter(["Main Page".to_string(), "Page List Bot".to_string()]),
+                        titles: BTreeSet::from_iter(["Main Page".to_string(), "Page List Bot".to_string()]),
                     }
                 })
             }
@@ -35,7 +35,7 @@
                 target: Box::new(Node {
                     span: Span { begin: 8, end: 19 },
                     expr: Expr::Page {
-                        titles: HashSet::from_iter(["Main Page".to_string()]),
+                        titles: BTreeSet::from_iter(["Main Page".to_string()]),
                     }
                 })
             }
