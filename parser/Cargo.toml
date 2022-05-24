@@ -13,5 +13,5 @@ nom_locate = { version = "4", optional = true }
 pagelistbot_parser_test_macro = { path = "./test_macro" }
 
 [features]
-default = [ "parse" ]
+default = [ ]
 parse = [ "nom", "nom_locate" ]
