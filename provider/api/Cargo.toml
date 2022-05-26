@@ -1,0 +1,13 @@
+[package]
+name = "pagelistbot_provider_api"
+version = "3.0.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+"pagelistbot_parser" = { path = "../../parser" }
+"pagelistbot_solver_core" = { path = "../../solver/core" }
+"pagelistbot_provider_core" = { path = "../core" }
+"mwtitle" = { version = "0.1" }
+"mwapi" = "0.3.1"
