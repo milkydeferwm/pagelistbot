@@ -12,6 +12,7 @@ members = [
   "solver/core",
   "solver/recursive_tree",
   "provider/core",
+  "provider/api",
 ]
 
 [dependencies]
