@@ -19,3 +19,8 @@ members = [
 pagelistbot_parser = { path = "parser", features = [ "parse" ] }
 
 [dev-dependencies]
+
+[profile.release]
+opt-level = 'z'
+lto = true
+codegen-units = 1
