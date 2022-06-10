@@ -1,7 +1,7 @@
 [
     (
-        ".limit (-1)",
-        Ok(ModifierType::ResultLimit(-1))
+        ".limit (inf)",
+        Ok(ModifierType::ResultLimit(NumberOrInf::Infinity))
     ),
     (
         ". resolve",
@@ -13,7 +13,7 @@
     ),
     (
         ". DEPTH ( +10000 )",
-        Ok(ModifierType::RecursionDepth(10000))
+        Ok(ModifierType::RecursionDepth(NumberOrInf::Finite(10000)))
     ),
     (
         ".Noredir()",

@@ -1,22 +1,22 @@
 [
     (
-        ".limit (-1). resolve .ns ( 0, 1,2, 3) . DEPTH ( +10000 ).Noredir() . OnlyRedir().direct",
+        ".limit (inf). resolve .ns ( 0, 1,2, 3) . DEPTH ( +10000 ).Noredir() . OnlyRedir().direct",
         Ok(Modifier {
-            result_limit: Some(-1),
+            result_limit: Some(NumberOrInf::Infinity),
             resolve_redirects: true,
             namespace: Some(std::collections::BTreeSet::from_iter([0_i64, 1_i64, 2_i64, 3_i64])),
-            categorymembers_recursion_depth: 10000,
+            categorymembers_recursion_depth: NumberOrInf::Finite(10000),
             filter_redirects: RedirectFilterStrategy::OnlyRedirect,
             backlink_trace_redirects: false,
         })
     ),
     (
-        ".limit (-1). resolve .ns ( 0, 1,2, 3) . DEPTH ( 2 ).Noredir() .direct . deptH(-10 ).ns(3, 6, 1). limit( 50000)",
+        ".limit (INF ). resolve .ns ( 0, 1,2, 3) . DEPTH ( 2 ).Noredir() .direct . deptH( inf).ns(3, 6, 1). limit( 50000)",
         Ok(Modifier {
-            result_limit: Some(50000),
+            result_limit: Some(NumberOrInf::Finite(50000)),
             resolve_redirects: true,
             namespace: Some(std::collections::BTreeSet::from_iter([1_i64, 3_i64])),
-            categorymembers_recursion_depth: 2,
+            categorymembers_recursion_depth: NumberOrInf::Finite(2),
             filter_redirects: RedirectFilterStrategy::NoRedirect,
             backlink_trace_redirects: false,
         })
@@ -27,7 +27,7 @@
             result_limit: None,
             resolve_redirects: false,
             namespace: None,
-            categorymembers_recursion_depth: 0,
+            categorymembers_recursion_depth: NumberOrInf::Finite(0),
             filter_redirects: RedirectFilterStrategy::All,
             backlink_trace_redirects: true,
         })

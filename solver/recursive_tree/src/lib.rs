@@ -5,13 +5,13 @@
 use std::collections::BTreeSet;
 
 use mwtitle::Title;
-use pagelistbot_parser::ast::{Node, Expr, Modifier};
+use pagelistbot_parser::ast::{Node, Expr, Modifier, NumberOrInf};
 use pagelistbot_solver_core::{Solver, Error};
 use pagelistbot_provider_core::{PagePair, DataProvider};
 
 pub struct RecursiveTreeSolver {
     provider: Box<dyn DataProvider>,
-    default_limit: i64,
+    default_limit: NumberOrInf<usize>,
 }
 
 #[async_trait::async_trait]
@@ -29,22 +29,13 @@ impl<'a> Solver<'a> for RecursiveTreeSolver {
 
 impl<'a> RecursiveTreeSolver {
 
-    pub fn new(provider: Box<dyn DataProvider>, default_limit: i64) -> Self {
+    pub fn new(provider: Box<dyn DataProvider>, default_limit: NumberOrInf<usize>) -> Self {
         Self { provider, default_limit }
     }
 
     fn convert_modifier(&self, modifier: &'a Modifier) -> Modifier {
-        let limit_converter = |lim: Option<i64>| {
-            let lim = lim.unwrap_or(self.default_limit);
-            if lim >= 0 {
-                Some(lim)
-            } else {
-                None
-            }
-        };
-
         Modifier {
-            result_limit: limit_converter(modifier.result_limit),
+            result_limit: Some(modifier.result_limit.unwrap_or(self.default_limit)),
             ..modifier.to_owned()
         }
     }

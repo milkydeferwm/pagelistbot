@@ -7,11 +7,11 @@ use crate::ast::*;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct ModifierBuilder {
     // Applies to all operations
-    result_limit: Option<i64>,
+    result_limit: Option<NumberOrInf<usize>>,
     resolve_redirects: bool,
     // Only available for certain operations
     namespace: Option<BTreeSet<i64>>,
-    categorymembers_recursion_depth: Option<i64>,
+    categorymembers_recursion_depth: Option<NumberOrInf<usize>>,
     filter_redirects: Option<RedirectFilterStrategy>,
     backlink_trace_redirects: bool,
 }
@@ -33,21 +33,16 @@ impl ModifierBuilder {
             result_limit: self.result_limit,
             resolve_redirects: self.resolve_redirects,
             namespace: self.namespace,
-            categorymembers_recursion_depth: self.categorymembers_recursion_depth.unwrap_or(0),
+            categorymembers_recursion_depth: self.categorymembers_recursion_depth.unwrap_or(NumberOrInf::Finite(0)),
             filter_redirects: self.filter_redirects.unwrap_or(RedirectFilterStrategy::All),
             backlink_trace_redirects: self.backlink_trace_redirects,
         }
     }
 
-    pub(crate) fn result_limit(mut self, value: i64) -> Self {
+    pub(crate) fn result_limit(mut self, value: NumberOrInf<usize>) -> Self {
         if let Some(rl) = self.result_limit {
-            // If value < 0, whether or not rl is also < 0, keeping the original value intact is always semantically correct
-            if value >= 0 {
-                if rl < 0 {
-                    self.result_limit = Some(value);
-                } else {
-                    self.result_limit = Some(i64::min(rl, value));
-                }
+            if value < rl {
+                self.result_limit = Some(value);
             }
         } else {
             self.result_limit = Some(value);
@@ -69,15 +64,10 @@ impl ModifierBuilder {
         self
     }
 
-    pub(crate) fn categorymembers_recursion_depth(mut self, value: i64) -> Self {
+    pub(crate) fn categorymembers_recursion_depth(mut self, value: NumberOrInf<usize>) -> Self {
         if let Some(rd) = self.categorymembers_recursion_depth {
-            // If value < 0, whether or not rl is also < 0, keeping the original value intact is always semantically correct
-            if value >= 0 {
-                if rd < 0 {
-                    self.categorymembers_recursion_depth = Some(value);
-                } else {
-                    self.categorymembers_recursion_depth = Some(i64::min(rd, value));
-                }
+            if value < rd {
+                self.categorymembers_recursion_depth = Some(value);
             }
         } else {
             self.categorymembers_recursion_depth = Some(value);
@@ -103,11 +93,11 @@ impl ModifierBuilder {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum ModifierType {
-    ResultLimit(i64),
+    ResultLimit(NumberOrInf<usize>),
     ResolveRedirects,
 
     Namespace(BTreeSet<i64>),
-    RecursionDepth(i64),
+    RecursionDepth(NumberOrInf<usize>),
     NoRedirect,
     OnlyRedirect,
     DirectBacklink,
