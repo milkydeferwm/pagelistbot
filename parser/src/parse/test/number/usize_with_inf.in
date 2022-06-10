@@ -1,0 +1,30 @@
+[
+    (
+        "+10",
+        Ok(NumberOrInf::Finite(10))
+    ),
+    (
+        "inf",
+        Ok(NumberOrInf::Infinity)
+    ),
+    (
+        "12345",
+        Ok(NumberOrInf::Finite(12345))
+    ),
+    (
+        "0",
+        Ok(NumberOrInf::Finite(0)),
+    ),
+    (
+        "+0",
+        Ok(NumberOrInf::Finite(0))
+    ),
+    (
+        "0001",
+        Ok(NumberOrInf::Finite(1))
+    ),
+    (
+        "010110",
+        Ok(NumberOrInf::Finite(10110))
+    )
+]

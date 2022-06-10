@@ -35,11 +35,11 @@ pub enum Expr {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Modifier {
     // Applies to all operations
-    pub result_limit: Option<i64>,
+    pub result_limit: Option<NumberOrInf<usize>>,
     pub resolve_redirects: bool,
     // Only available for certain operations
     pub namespace: Option<BTreeSet<i64>>,
-    pub categorymembers_recursion_depth: i64,
+    pub categorymembers_recursion_depth: NumberOrInf<usize>,
     pub filter_redirects: RedirectFilterStrategy,
     pub backlink_trace_redirects: bool,
 }
@@ -50,7 +50,7 @@ impl Modifier {
             result_limit: None,
             resolve_redirects: false,
             namespace: None,
-            categorymembers_recursion_depth: 0,
+            categorymembers_recursion_depth: NumberOrInf::Finite(0),
             filter_redirects: RedirectFilterStrategy::All,
             backlink_trace_redirects: true,
         }
@@ -76,6 +76,26 @@ impl core::fmt::Display for RedirectFilterStrategy {
             Self::NoRedirect => write!(f, "nonredirects"),
             Self::OnlyRedirect => write!(f, "redirects"),
             Self::All => write!(f, "all"),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NumberOrInf<T> {
+    Finite(T),
+    Infinity,
+}
+
+impl<T> PartialOrd for NumberOrInf<T>
+where
+    T: PartialEq + PartialOrd
+{
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
+        match (self, other) {
+            (Self::Infinity, Self::Infinity) => Some(core::cmp::Ordering::Equal),
+            (Self::Infinity, _) => Some(core::cmp::Ordering::Greater),
+            (_, Self::Infinity) => Some(core::cmp::Ordering::Less),
+            (Self::Finite(a), Self::Finite(b)) => a.partial_cmp(b),
         }
     }
 }

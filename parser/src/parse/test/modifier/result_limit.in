@@ -1,18 +1,26 @@
 [
     (
         "limit(0)",
-        Ok(ModifierType::ResultLimit(0))
+        Ok(ModifierType::ResultLimit(NumberOrInf::Finite(0)))
     ),
     (
         "limit( 1 )",
-        Ok(ModifierType::ResultLimit(1))
+        Ok(ModifierType::ResultLimit(NumberOrInf::Finite(1)))
     ),
     (
-        "limit (-1)",
-        Ok(ModifierType::ResultLimit(-1))
+        "limit (inf)",
+        Ok(ModifierType::ResultLimit(NumberOrInf::Infinity))
+    ),
+    (
+        "limit( Inf )",
+        Ok(ModifierType::ResultLimit(NumberOrInf::Infinity))
+    ),
+    (
+        "limit (  INF)",
+        Ok(ModifierType::ResultLimit(NumberOrInf::Infinity))
     ),
     (
         "limit ( +10000 )",
-        Ok(ModifierType::ResultLimit(10000))
+        Ok(ModifierType::ResultLimit(NumberOrInf::Finite(10000)))
     )
 ]
