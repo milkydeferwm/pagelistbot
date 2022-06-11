@@ -43,7 +43,7 @@
                 modifier: Modifier {
                     result_limit: None,
                     resolve_redirects: true,
-                    namespace: Some(BTreeSet::from_iter([1_i64])),
+                    namespace: Some(BTreeSet::from_iter([1_i32])),
                     categorymembers_recursion_depth: NumberOrInf::Finite(0),
                     filter_redirects: RedirectFilterStrategy::All,
                     backlink_trace_redirects: true,
