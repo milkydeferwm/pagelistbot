@@ -80,7 +80,7 @@ impl<'a> APIDataProvider<'a> {
                                 let title = if let Value::String(t) = &page["associatedpage"] { t } else { "Special:BadTitle" };
                                 self.title_codec.new_title(title)?
                             };
-                            let associated_exists = if Value::Null == page["subjectid"] && Value::Null == page["talkid"] { false } else { true };
+                            let associated_exists = !(Value::Null == page["subjectid"] && Value::Null == page["talkid"]);
 
                             let pair: PagePair = (
                                 PageInfo {
@@ -149,14 +149,14 @@ impl<'a> DataProvider for APIDataProvider<'a> {
         let mut warn: Vec<Box<dyn Error + Send + Sync>> = Vec::new();
 
         let mut normalized_titles: BTreeSet<Title> = BTreeSet::new();
-        for raw_title in titles.into_iter() {
+        for raw_title in titles {
             let t = self.title_codec.new_title(raw_title)?;
             normalized_titles.insert(t);
         }
         let normalized_titles: Vec<String> = normalized_titles.into_iter().map(|t| self.title_codec.to_pretty(&t)).collect();
 
         // Query in chunks of 50. Although we can query in chunks of 500 if we have `apihighlimits`, we don't really know that.
-        let chunks = normalized_titles.chunks(50).into_iter();
+        let chunks = normalized_titles.chunks(50);
         for chunk in chunks {
             let (this_set, this_warn) = self.api_with_limit(&[
                 ("action".to_string(), "query".to_string()),
@@ -209,7 +209,7 @@ impl<'a> DataProvider for APIDataProvider<'a> {
             }
 
             // Iterate in chunks of 50, this is an API call that allows multiple titles, although we still only allow to query for one page
-            let chunks = title.chunks(50).into_iter();
+            let chunks = title.chunks(50);
             for chunk in chunks {
                 params = params.clone();
                 params.push(("titles".to_string(), chunk.join("|")));
@@ -475,7 +475,7 @@ impl<'a> DataProvider for APIDataProvider<'a> {
         if !titles.is_empty() {
             let work_titles: Vec<&Title> = titles.iter().take(QUERY_PAGE_LIMIT).collect();
             if titles.len() > QUERY_PAGE_LIMIT {
-                warn.push(APIDataProviderError::TooManyPages(QUERY_PAGE_LIMIT, titles.len(), work_titles.iter().map(|t| self.title_codec.to_pretty(t)).collect::<Vec<String>>().clone()).into());
+                warn.push(APIDataProviderError::TooManyPages(QUERY_PAGE_LIMIT, titles.len(), work_titles.iter().map(|t| self.title_codec.to_pretty(t)).collect::<Vec<String>>()).into());
             }
 
             let mut params = vec![
