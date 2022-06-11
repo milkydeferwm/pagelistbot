@@ -22,7 +22,7 @@ use pagelistbot_parser_test_macro::parse_test;
 /// 
 /// `limit(xx)`
 /// 
-/// `xx` is an `i64` integer, and there might be whitespaces between tokens.
+/// `xx` is a `usize` integer or string `inf`, and there might be whitespaces between tokens.
 #[cfg_attr(
     test,
     parse_test(test_result_limit, "test/modifier/result_limit.in"),
@@ -78,7 +78,7 @@ where
 /// 
 /// `ns(xx,xx,xx)`
 /// 
-/// `xx` is an `i64` integer, and there might be whitespaces between tokens.
+/// `xx` is an `i32` integer, and there might be whitespaces between tokens.
 #[cfg_attr(
     test,
     parse_test(test_namespace, "test/modifier/namespace.in"),
@@ -92,7 +92,7 @@ where
         cut(leading_ws(
             delimited(
                 char('('),
-                ws(separated_list1(ws(char(',')), parse_i64)),
+                ws(separated_list1(ws(char(',')), parse_i32)),
                 char(')')
             )
         ))
@@ -104,7 +104,7 @@ where
 /// 
 /// `depth(xx)`
 /// 
-/// `xx` is an `i64` integer, and there might be whitespaces between tokens.
+/// `xx` is a `usize` integer or string `inf`, and there might be whitespaces between tokens.
 #[cfg_attr(
     test,
     parse_test(test_recursion_depth, "test/modifier/recursion_depth.in"),
