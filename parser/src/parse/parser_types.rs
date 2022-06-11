@@ -10,7 +10,7 @@ pub(crate) struct ModifierBuilder {
     result_limit: Option<NumberOrInf<usize>>,
     resolve_redirects: bool,
     // Only available for certain operations
-    namespace: Option<BTreeSet<i64>>,
+    namespace: Option<BTreeSet<i32>>,
     categorymembers_recursion_depth: Option<NumberOrInf<usize>>,
     filter_redirects: Option<RedirectFilterStrategy>,
     backlink_trace_redirects: bool,
@@ -55,7 +55,7 @@ impl ModifierBuilder {
         self
     }
 
-    pub(crate) fn namespace(mut self, value: &BTreeSet<i64>) -> Self {
+    pub(crate) fn namespace(mut self, value: &BTreeSet<i32>) -> Self {
         if let Some(ns) = self.namespace {
             self.namespace = Some(ns.intersection(value).copied().collect())
         } else {
@@ -96,7 +96,7 @@ pub(crate) enum ModifierType {
     ResultLimit(NumberOrInf<usize>),
     ResolveRedirects,
 
-    Namespace(BTreeSet<i64>),
+    Namespace(BTreeSet<i32>),
     RecursionDepth(NumberOrInf<usize>),
     NoRedirect,
     OnlyRedirect,

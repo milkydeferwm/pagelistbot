@@ -38,7 +38,7 @@ pub struct Modifier {
     pub result_limit: Option<NumberOrInf<usize>>,
     pub resolve_redirects: bool,
     // Only available for certain operations
-    pub namespace: Option<BTreeSet<i64>>,
+    pub namespace: Option<BTreeSet<i32>>,
     pub categorymembers_recursion_depth: NumberOrInf<usize>,
     pub filter_redirects: RedirectFilterStrategy,
     pub backlink_trace_redirects: bool,
@@ -88,7 +88,7 @@ pub enum NumberOrInf<T> {
 
 impl<T> PartialOrd for NumberOrInf<T>
 where
-    T: PartialEq + PartialOrd
+    T: PartialOrd
 {
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
         match (self, other) {
@@ -96,6 +96,32 @@ where
             (Self::Infinity, _) => Some(core::cmp::Ordering::Greater),
             (_, Self::Infinity) => Some(core::cmp::Ordering::Less),
             (Self::Finite(a), Self::Finite(b)) => a.partial_cmp(b),
+        }
+    }
+}
+
+impl<T> Ord for NumberOrInf<T>
+where
+    T: Ord
+{
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        match (self, other) {
+            (Self::Infinity, Self::Infinity) => core::cmp::Ordering::Equal,
+            (Self::Infinity, _) => core::cmp::Ordering::Greater,
+            (_, Self::Infinity) => core::cmp::Ordering::Less,
+            (Self::Finite(a), Self::Finite(b)) => a.cmp(b),
+        }
+    }
+}
+
+impl<T> core::fmt::Display for NumberOrInf<T>
+where
+    T: core::fmt::Display
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Infinity => write!(f, "infinity"),
+            Self::Finite(v) => v.fmt(f),
         }
     }
 }

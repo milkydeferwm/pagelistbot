@@ -31,9 +31,9 @@ use pagelistbot_parser_test_macro::parse_test;
 /// * *maybe more?*
 #[cfg_attr(
     test,
-    parse_test(test_i64, "test/number/i64.in")
+    parse_test(test_i32, "test/number/i32.in")
 )]
-pub(crate) fn parse_i64<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, i64, E>
+pub(crate) fn parse_i32<'a, E>(input: StrSpan<'a>) -> IResult<StrSpan<'a>, i32, E>
 where
     E: ParseError<StrSpan<'a>> + FromExternalError<StrSpan<'a>, std::num::ParseIntError>,
 {
@@ -44,7 +44,7 @@ where
                 many1(one_of("0123456789"))
             ))
         ),
-        |res: StrSpan| res.parse::<i64>()
+        |res: StrSpan| res.parse::<i32>()
     )(input)
 }
 
