@@ -29,7 +29,7 @@ impl<'a> APIDataProvider<'a> {
     /// `limit` must be `Some(_)`.
     /// 
     /// Returns a `Result<T, E>`, where
-    /// * `T` contains three parts: `set` is the result set, `warn` is the warnings during the query.
+    /// * `T` contains two parts: `set` is the result set, `warn` is the warnings during the query.
     /// * `E` is the unrecoverable error encountered during the query.
     #[inline]
     async fn api_with_limit(&self, params: &[(String, String)], limit: Option<NumberOrInf<usize>>) -> Result<(BTreeSet<PagePair>, Vec<Box<dyn Error + Send + Sync>>), Box<dyn Error + Send + Sync>> {
@@ -38,8 +38,6 @@ impl<'a> APIDataProvider<'a> {
         }
         let limit = limit.unwrap();
         let mut set: BTreeSet<PagePair> = BTreeSet::new();
-        // In case of future need, leave this as mut
-        #[allow(unused_mut)]
         let mut warn: Vec<Box<dyn Error + Send + Sync>> = Vec::new();
         let mut continue_param: Value = Value::Null;
         loop {
