@@ -527,11 +527,14 @@ dependencies = [
 name = "pagelistbot_provider_api"
 version = "3.0.0"
 dependencies = [
+ "async-trait",
  "mwapi",
+ "mwapi_errors",
  "mwtitle",
  "pagelistbot_parser",
  "pagelistbot_provider_core",
  "pagelistbot_solver_core",
+ "serde_json",
 ]
 
 [[package]]

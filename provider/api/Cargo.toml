@@ -9,5 +9,8 @@ edition = "2021"
 "pagelistbot_parser" = { path = "../../parser" }
 "pagelistbot_solver_core" = { path = "../../solver/core" }
 "pagelistbot_provider_core" = { path = "../core" }
-"mwtitle" = { version = "0.1" }
+"mwtitle" = "0.1"
 "mwapi" = "0.3.1"
+mwapi_errors = "0.1.7"
+async-trait = "0.1"
+serde_json = "1.0"

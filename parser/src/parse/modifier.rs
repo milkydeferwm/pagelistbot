@@ -4,7 +4,7 @@ use nom::IResult;
 use nom::branch::alt;
 use nom::bytes::complete::tag_no_case;
 use nom::character::complete::{char, multispace0};
-use nom::combinator::opt;
+use nom::combinator::{opt, cut};
 use nom::error::{ParseError, FromExternalError};
 use nom::multi::{separated_list1, many0};
 use nom::sequence::{delimited, preceded};
@@ -12,7 +12,7 @@ use nom::sequence::{delimited, preceded};
 use crate::ast::*;
 use super::StrSpan;
 use super::parser_types::*;
-use super::number::parse_i64;
+use super::number::*;
 use super::util::*;
 
 #[cfg(test)]
@@ -22,7 +22,7 @@ use pagelistbot_parser_test_macro::parse_test;
 /// 
 /// `limit(xx)`
 /// 
-/// `xx` is an `i64` integer, and there might be whitespaces between tokens.
+/// `xx` is a `usize` integer or string `inf`, and there might be whitespaces between tokens.
 #[cfg_attr(
     test,
     parse_test(test_result_limit, "test/modifier/result_limit.in"),
@@ -33,13 +33,13 @@ where
 {
     let (input, limit) = preceded(
         tag_no_case("limit"),
-        leading_ws(
+        cut(leading_ws(
             delimited(
                 char('('),
-                ws(parse_i64),
+                ws(parse_usize_with_inf),
                 char(')')
             )
-        )
+        ))
     )(input)?;
     Ok((input, ModifierType::ResultLimit(limit)))
 }
@@ -61,7 +61,7 @@ where
 {
     let (input, _) = preceded(
         tag_no_case("resolve"),
-        opt(
+        cut(opt(
             leading_ws(
                 delimited(
                     char('('),
@@ -69,7 +69,7 @@ where
                     char(')')
                 )
             )
-        )
+        ))
     )(input)?;
     Ok((input, ModifierType::ResolveRedirects))
 }
@@ -78,7 +78,7 @@ where
 /// 
 /// `ns(xx,xx,xx)`
 /// 
-/// `xx` is an `i64` integer, and there might be whitespaces between tokens.
+/// `xx` is an `i32` integer, and there might be whitespaces between tokens.
 #[cfg_attr(
     test,
     parse_test(test_namespace, "test/modifier/namespace.in"),
@@ -89,13 +89,13 @@ where
 {
     let (input, nsvec) = preceded(
         tag_no_case("ns"),
-        leading_ws(
+        cut(leading_ws(
             delimited(
                 char('('),
-                ws(separated_list1(ws(char(',')), parse_i64)),
+                ws(separated_list1(ws(char(',')), parse_i32)),
                 char(')')
             )
-        )
+        ))
     )(input)?;
     Ok((input, ModifierType::Namespace(std::collections::BTreeSet::from_iter(nsvec))))
 }
@@ -104,7 +104,7 @@ where
 /// 
 /// `depth(xx)`
 /// 
-/// `xx` is an `i64` integer, and there might be whitespaces between tokens.
+/// `xx` is a `usize` integer or string `inf`, and there might be whitespaces between tokens.
 #[cfg_attr(
     test,
     parse_test(test_recursion_depth, "test/modifier/recursion_depth.in"),
@@ -115,13 +115,13 @@ where
 {
     let (input, depth) = preceded(
         tag_no_case("depth"),
-        leading_ws(
+        cut(leading_ws(
             delimited(
                 char('('),
-                ws(parse_i64),
+                ws(parse_usize_with_inf),
                 char(')')
             )
-        )
+        ))
     )(input)?;
     Ok((input, ModifierType::RecursionDepth(depth)))
 }
@@ -143,7 +143,7 @@ where
 {
     let (input, _) = preceded(
         tag_no_case("noredir"),
-        opt(
+        cut(opt(
             leading_ws(
                 delimited(
                     char('('),
@@ -151,7 +151,7 @@ where
                     char(')')
                 )
             )
-        )
+        ))
     )(input)?;
     Ok((input, ModifierType::NoRedirect))
 }
@@ -173,7 +173,7 @@ where
 {
     let (input, _) = preceded(
         tag_no_case("onlyredir"),
-        opt(
+        cut(opt(
             leading_ws(
                 delimited(
                     char('('),
@@ -181,7 +181,7 @@ where
                     char(')')
                 )
             )
-        )
+        ))
     )(input)?;
     Ok((input, ModifierType::OnlyRedirect))
 }
@@ -203,7 +203,7 @@ where
 {
     let (input, _) = preceded(
         tag_no_case("direct"),
-        opt(
+        cut(opt(
             leading_ws(
                 delimited(
                     char('('),
@@ -211,7 +211,7 @@ where
                     char(')')
                 )
             )
-        )
+        ))
     )(input)?;
     Ok((input, ModifierType::DirectBacklink))
 }

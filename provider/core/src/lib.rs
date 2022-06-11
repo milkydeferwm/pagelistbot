@@ -21,13 +21,13 @@ pub struct PageInfo {
 pub type PagePair = (PageInfo, PageInfo);
 
 #[async_trait::async_trait]
-pub trait DataProvider: Sync + Send {
+pub trait DataProvider: Send + Sync {
 
-    async fn get_page_info(&self, titles: &BTreeSet<String>) -> Result<(BTreeSet<PagePair>, Vec<Box<dyn Error>>), Box<dyn Error>>;
-    async fn get_links(&self, titles: &BTreeSet<Title>, modifier: &Modifier) -> Result<(BTreeSet<PagePair>, Vec<Box<dyn Error>>), Box<dyn Error>>;
-    async fn get_backlinks(&self, titles: &BTreeSet<Title>, modifier: &Modifier) -> Result<(BTreeSet<PagePair>, Vec<Box<dyn Error>>), Box<dyn Error>>;
-    async fn get_embeds(&self, titles: &BTreeSet<Title>, modifier: &Modifier) -> Result<(BTreeSet<PagePair>, Vec<Box<dyn Error>>), Box<dyn Error>>;
-    async fn get_category_members(&self, titles: &BTreeSet<Title>, modifier: &Modifier) -> Result<(BTreeSet<PagePair>, Vec<Box<dyn Error>>), Box<dyn Error>>;
-    async fn get_prefix(&self, titles: &BTreeSet<Title>, modifier: &Modifier) -> Result<(BTreeSet<PagePair>, Vec<Box<dyn Error>>), Box<dyn Error>>;
+    async fn get_page_info(&self, titles: &BTreeSet<String>) -> Result<(BTreeSet<PagePair>, Vec<Box<dyn Error + Send + Sync>>), Box<dyn Error + Send + Sync>>;
+    async fn get_links(&self, titles: &BTreeSet<Title>, modifier: &Modifier) -> Result<(BTreeSet<PagePair>, Vec<Box<dyn Error + Send + Sync>>), Box<dyn Error + Send + Sync>>;
+    async fn get_backlinks(&self, titles: &BTreeSet<Title>, modifier: &Modifier) -> Result<(BTreeSet<PagePair>, Vec<Box<dyn Error + Send + Sync>>), Box<dyn Error + Send + Sync>>;
+    async fn get_embeds(&self, titles: &BTreeSet<Title>, modifier: &Modifier) -> Result<(BTreeSet<PagePair>, Vec<Box<dyn Error + Send + Sync>>), Box<dyn Error + Send + Sync>>;
+    async fn get_category_members(&self, titles: &BTreeSet<Title>, modifier: &Modifier) -> Result<(BTreeSet<PagePair>, Vec<Box<dyn Error + Send + Sync>>), Box<dyn Error + Send + Sync>>;
+    async fn get_prefix(&self, titles: &BTreeSet<Title>, modifier: &Modifier) -> Result<(BTreeSet<PagePair>, Vec<Box<dyn Error + Send + Sync>>), Box<dyn Error + Send + Sync>>;
 
 }

@@ -5,12 +5,13 @@
 use std::collections::BTreeSet;
 
 use mwtitle::Title;
-use pagelistbot_parser::ast::{Node, Expr, Modifier};
+use pagelistbot_parser::ast::{Node, Expr, Modifier, NumberOrInf};
 use pagelistbot_solver_core::{Solver, Error};
 use pagelistbot_provider_core::{PagePair, DataProvider};
 
 pub struct RecursiveTreeSolver {
     provider: Box<dyn DataProvider>,
+    default_limit: NumberOrInf<usize>,
 }
 
 #[async_trait::async_trait]
@@ -27,6 +28,17 @@ impl<'a> Solver<'a> for RecursiveTreeSolver {
 }
 
 impl<'a> RecursiveTreeSolver {
+
+    pub fn new(provider: Box<dyn DataProvider>, default_limit: NumberOrInf<usize>) -> Self {
+        Self { provider, default_limit }
+    }
+
+    fn convert_modifier(&self, modifier: &'a Modifier) -> Modifier {
+        Modifier {
+            result_limit: Some(modifier.result_limit.unwrap_or(self.default_limit)),
+            ..modifier.to_owned()
+        }
+    }
 
     #[async_recursion::async_recursion]
     async fn solve_internal(&'a self, node: &'a Node) -> Result<(BTreeSet<PagePair>, Vec<Error<'a>>), Error<'a>> {
@@ -60,7 +72,7 @@ impl<'a> RecursiveTreeSolver {
     async fn handle_link(&'a self, node: &'a Node, target: &'a Node, modifier: &'a Modifier) -> Result<(BTreeSet<PagePair>, Vec<Error<'a>>), Error<'a>> {
         let (titles, mut warnings) = self.solve_internal(node).await?;
         let titles = BTreeSet::from_iter(titles.into_iter().map(|(i, _)| i.title));
-        let result = self.provider.get_links(&titles, modifier).await;
+        let result = self.provider.get_links(&titles, &self.convert_modifier(modifier)).await;
         match result {
             Ok((infos, new_warnings)) => {
                 let infos = BTreeSet::from_iter(infos.into_iter());
@@ -74,7 +86,7 @@ impl<'a> RecursiveTreeSolver {
     async fn handle_backlink(&'a self, node: &'a Node, target: &'a Node, modifier: &'a Modifier) -> Result<(BTreeSet<PagePair>, Vec<Error<'a>>), Error<'a>> {
         let (titles, mut warnings) = self.solve_internal(node).await?;
         let titles = BTreeSet::from_iter(titles.into_iter().map(|(i, _)| i.title));
-        let result = self.provider.get_backlinks(&titles, modifier).await;
+        let result = self.provider.get_backlinks(&titles, &self.convert_modifier(modifier)).await;
         match result {
             Ok((infos, new_warnings)) => {
                 let infos = BTreeSet::from_iter(infos.into_iter());
@@ -88,7 +100,7 @@ impl<'a> RecursiveTreeSolver {
     async fn handle_embed(&'a self, node: &'a Node, target: &'a Node, modifier: &'a Modifier) -> Result<(BTreeSet<PagePair>, Vec<Error<'a>>), Error<'a>> {
         let (titles, mut warnings) = self.solve_internal(node).await?;
         let titles = BTreeSet::from_iter(titles.into_iter().map(|(i, _)| i.title));
-        let result = self.provider.get_embeds(&titles, modifier).await;
+        let result = self.provider.get_embeds(&titles, &self.convert_modifier(modifier)).await;
         match result {
             Ok((infos, new_warnings)) => {
                 let infos = BTreeSet::from_iter(infos.into_iter());
@@ -102,7 +114,7 @@ impl<'a> RecursiveTreeSolver {
     async fn handle_incategory(&'a self, node: &'a Node, target: &'a Node, modifier: &Modifier) -> Result<(BTreeSet<PagePair>, Vec<Error<'a>>), Error<'a>> {
         let (titles, mut warnings) = self.solve_internal(node).await?;
         let titles = BTreeSet::from_iter(titles.into_iter().map(|(i, _)| i.title));
-        let result = self.provider.get_category_members(&titles, modifier).await;
+        let result = self.provider.get_category_members(&titles, &self.convert_modifier(modifier)).await;
         match result {
             Ok((infos, new_warnings)) => {
                 let infos = BTreeSet::from_iter(infos.into_iter());
@@ -116,7 +128,7 @@ impl<'a> RecursiveTreeSolver {
     async fn handle_prefix(&'a self, node: &'a Node, target: &'a Node, modifier: &Modifier) -> Result<(BTreeSet<PagePair>, Vec<Error<'a>>), Error<'a>> {
         let (titles, mut warnings) = self.solve_internal(node).await?;
         let titles = BTreeSet::from_iter(titles.into_iter().map(|(i, _)| i.title));
-        let result = self.provider.get_prefix(&titles, modifier).await;
+        let result = self.provider.get_prefix(&titles, &self.convert_modifier(modifier)).await;
         match result {
             Ok((infos, new_warnings)) => {
                 let infos = BTreeSet::from_iter(infos.into_iter());

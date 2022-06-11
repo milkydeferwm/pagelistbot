@@ -18,7 +18,7 @@ pub trait Solver<'a> {
 #[derive(Debug)]
 pub struct Error<'a> {
     pub node: &'a Node,
-    pub content: Box<dyn std::error::Error>,
+    pub content: Box<dyn std::error::Error + Send + Sync>,
 }
 
 unsafe impl<'a> Send for Error<'a> {}
