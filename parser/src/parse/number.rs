@@ -64,7 +64,7 @@ where
                     many1(one_of("0123456789"))
                 )),
             ),
-            |res: StrSpan| res.parse::<usize>().map(|v| NumberOrInf::Finite(v))
+            |res: StrSpan| res.parse::<usize>().map(NumberOrInf::Finite)
         ),
         map_res(
             tag_no_case("inf"),
