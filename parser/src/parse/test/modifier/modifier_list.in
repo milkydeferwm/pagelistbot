@@ -4,7 +4,7 @@
         Ok(Modifier {
             result_limit: Some(NumberOrInf::Infinity),
             resolve_redirects: true,
-            namespace: Some(std::collections::BTreeSet::from_iter([0_i64, 1_i64, 2_i64, 3_i64])),
+            namespace: Some(std::collections::BTreeSet::from_iter([0_i32, 1_i32, 2_i32, 3_i32])),
             categorymembers_recursion_depth: NumberOrInf::Finite(10000),
             filter_redirects: RedirectFilterStrategy::OnlyRedirect,
             backlink_trace_redirects: false,
@@ -15,7 +15,7 @@
         Ok(Modifier {
             result_limit: Some(NumberOrInf::Finite(50000)),
             resolve_redirects: true,
-            namespace: Some(std::collections::BTreeSet::from_iter([1_i64, 3_i64])),
+            namespace: Some(std::collections::BTreeSet::from_iter([1_i32, 3_i32])),
             categorymembers_recursion_depth: NumberOrInf::Finite(2),
             filter_redirects: RedirectFilterStrategy::NoRedirect,
             backlink_trace_redirects: false,

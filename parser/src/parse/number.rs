@@ -16,7 +16,7 @@ use super::StrSpan;
 #[cfg(test)]
 use pagelistbot_parser_test_macro::parse_test;
 
-/// Parse a i64 number. Assume no leading or trailing spaces.
+/// Parse a i32 number. Assume no leading or trailing spaces.
 /// 
 /// The definition of number is heavily simplified. It must be
 /// * `xxxx`; or
