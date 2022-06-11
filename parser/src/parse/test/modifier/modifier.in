@@ -1,7 +1,7 @@
 [
     (
-        ".limit (-1)",
-        Ok(ModifierType::ResultLimit(-1))
+        ".limit (inf)",
+        Ok(ModifierType::ResultLimit(NumberOrInf::Infinity))
     ),
     (
         ". resolve",
@@ -9,11 +9,11 @@
     ),
     (
         ".ns ( 0, 1,2, 3)",
-        Ok(ModifierType::Namespace(std::collections::BTreeSet::from_iter([0_i64, 1_i64, 2_i64, 3_i64])))
+        Ok(ModifierType::Namespace(std::collections::BTreeSet::from_iter([0_i32, 1_i32, 2_i32, 3_i32])))
     ),
     (
         ". DEPTH ( +10000 )",
-        Ok(ModifierType::RecursionDepth(10000))
+        Ok(ModifierType::RecursionDepth(NumberOrInf::Finite(10000)))
     ),
     (
         ".Noredir()",

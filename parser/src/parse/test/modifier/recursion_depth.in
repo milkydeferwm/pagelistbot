@@ -1,18 +1,18 @@
 [
     (
         "depth(0)",
-        Ok(ModifierType::RecursionDepth(0))
+        Ok(ModifierType::RecursionDepth(NumberOrInf::Finite(0)))
     ),
     (
         "Depth( 1 )",
-        Ok(ModifierType::RecursionDepth(1))
+        Ok(ModifierType::RecursionDepth(NumberOrInf::Finite(1)))
     ),
     (
-        "dEpTh (-1)",
-        Ok(ModifierType::RecursionDepth(-1))
+        "dEpTh (inf)",
+        Ok(ModifierType::RecursionDepth(NumberOrInf::Infinity))
     ),
     (
         "DEPTH ( +10000 )",
-        Ok(ModifierType::RecursionDepth(10000))
+        Ok(ModifierType::RecursionDepth(NumberOrInf::Finite(10000)))
     )
 ]
