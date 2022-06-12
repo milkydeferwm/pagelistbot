@@ -17,6 +17,12 @@ members = [
 
 [dependencies]
 pagelistbot_parser = { path = "parser", features = [ "parse" ] }
+pagelistbot_solver_recursive_tree = { path = "solver/recursive_tree" }
+pagelistbot_provider_api = { path = "provider/api" }
+mwtitle = "0.1"
+mwapi = "0.3.1"
+tokio = "1.19"
+delay_timer = "0.11"
 
 [dev-dependencies]
 
