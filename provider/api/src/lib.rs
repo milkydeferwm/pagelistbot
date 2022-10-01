@@ -51,7 +51,7 @@ impl<'a> APIDataProvider<'a> {
                     })
                 )
             }
-            let query_resp = self.api.post(params).await?;
+            let query_resp: Value = self.api.post(params).await?;
             // Check if this is an error
             if let Value::Object(obj) = &query_resp["error"] {
                 let api_error: ApiError = ApiError {

@@ -116,7 +116,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d5f1c7727e460397e56abc4bddc1d49e07a1ad78fc98eb2e1c8f032a58a2f80d"
 dependencies = [
  "percent-encoding",
- "time",
+ "time 0.2.27",
  "version_check",
 ]
 
@@ -132,7 +132,7 @@ dependencies = [
  "publicsuffix",
  "serde",
  "serde_json",
- "time",
+ "time 0.2.27",
  "url",
 ]
 
@@ -433,30 +433,17 @@ dependencies = [
 
 [[package]]
 name = "mwapi"
-version = "0.3.1"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e39f0a81040968f9c62d1c431f0a24b0efb852370840a6a5371ad335c513a59d"
+checksum = "702e6c191fc4c08127a9d91ec6d229244529110ba878de2394c0df6f65dd59b9"
 dependencies = [
- "log",
- "mwapi_errors 0.1.7",
+ "mwapi_errors",
+ "mwapi_responses",
  "reqwest",
  "serde",
  "serde_json",
  "tokio",
-]
-
-[[package]]
-name = "mwapi_errors"
-version = "0.1.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c8d47fd9a9fae2757a1fcdbe17752b973cc0cac2070bdd6759bb50a7e08fbd5"
-dependencies = [
- "mwtitle 0.1.0",
- "reqwest",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
+ "tracing",
 ]
 
 [[package]]
@@ -465,22 +452,21 @@ version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ddb58137e2ef000cdec38604cc738c925b1b6506fde54f3356d1cc9ad1e2d1eb"
 dependencies = [
+ "reqwest",
  "serde",
  "serde_json",
  "thiserror",
+ "tokio",
 ]
 
 [[package]]
-name = "mwtitle"
-version = "0.1.0"
+name = "mwapi_responses"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74a3ccef98525c67008a393dcd4739111a02d568fafd09ad6fa96bf70f86e857"
+checksum = "ab0a9cdfcb5d10e7708e9c8c9a01e88fffd50e6cc9980c23fdde948affb4ee14"
 dependencies = [
- "bytemuck",
- "regex",
  "serde",
- "thiserror",
- "tinyvec",
+ "time 0.3.14",
 ]
 
 [[package]]
@@ -515,6 +501,15 @@ dependencies = [
  "bytecount",
  "memchr",
  "nom",
+]
+
+[[package]]
+name = "num_threads"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2819ce041d2ee131036f4fc9d6ae7ae125a3a40e97ba64d04fe799ad9dabbb44"
+dependencies = [
+ "libc",
 ]
 
 [[package]]
@@ -553,8 +548,8 @@ version = "3.0.0"
 dependencies = [
  "async-trait",
  "mwapi",
- "mwapi_errors 0.2.2",
- "mwtitle 0.2.1",
+ "mwapi_errors",
+ "mwtitle",
  "pagelistbot_parser",
  "pagelistbot_provider_core",
  "pagelistbot_solver_core",
@@ -566,7 +561,7 @@ name = "pagelistbot_provider_core"
 version = "3.0.0"
 dependencies = [
  "async-trait",
- "mwtitle 0.2.1",
+ "mwtitle",
  "pagelistbot_parser",
  "pagelistbot_solver_core",
 ]
@@ -576,7 +571,7 @@ name = "pagelistbot_solver_core"
 version = "3.0.0"
 dependencies = [
  "async-trait",
- "mwtitle 0.2.1",
+ "mwtitle",
  "pagelistbot_parser",
 ]
 
@@ -586,7 +581,7 @@ version = "3.0.0"
 dependencies = [
  "async-recursion",
  "async-trait",
- "mwtitle 0.2.1",
+ "mwtitle",
  "pagelistbot_parser",
  "pagelistbot_provider_core",
  "pagelistbot_solver_core",
@@ -965,9 +960,21 @@ dependencies = [
  "libc",
  "standback",
  "stdweb",
- "time-macros",
+ "time-macros 0.1.1",
  "version_check",
  "winapi",
+]
+
+[[package]]
+name = "time"
+version = "0.3.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c3f9a28b618c3a6b9251b6908e9c99e04b9e5c02e6581ccbb67d59c34ef7f9b"
+dependencies = [
+ "itoa",
+ "libc",
+ "num_threads",
+ "time-macros 0.2.4",
 ]
 
 [[package]]
@@ -979,6 +986,12 @@ dependencies = [
  "proc-macro-hack",
  "time-macros-impl",
 ]
+
+[[package]]
+name = "time-macros"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "42657b1a6f4d817cda8e7a0ace261fe0cc946cf3a80314390b22cc61ae080792"
 
 [[package]]
 name = "time-macros-impl"
