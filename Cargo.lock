@@ -451,7 +451,7 @@ version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c8d47fd9a9fae2757a1fcdbe17752b973cc0cac2070bdd6759bb50a7e08fbd5"
 dependencies = [
- "mwtitle",
+ "mwtitle 0.1.0",
  "reqwest",
  "serde",
  "serde_json",
@@ -475,6 +475,19 @@ name = "mwtitle"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "74a3ccef98525c67008a393dcd4739111a02d568fafd09ad6fa96bf70f86e857"
+dependencies = [
+ "bytemuck",
+ "regex",
+ "serde",
+ "thiserror",
+ "tinyvec",
+]
+
+[[package]]
+name = "mwtitle"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c27192984c0243f537f19f97ba17ee448ed7a6089f8b5444699eb2aedfb9d15"
 dependencies = [
  "bytemuck",
  "regex",
@@ -541,7 +554,7 @@ dependencies = [
  "async-trait",
  "mwapi",
  "mwapi_errors 0.2.2",
- "mwtitle",
+ "mwtitle 0.2.1",
  "pagelistbot_parser",
  "pagelistbot_provider_core",
  "pagelistbot_solver_core",
@@ -553,7 +566,7 @@ name = "pagelistbot_provider_core"
 version = "3.0.0"
 dependencies = [
  "async-trait",
- "mwtitle",
+ "mwtitle 0.2.1",
  "pagelistbot_parser",
  "pagelistbot_solver_core",
 ]
@@ -563,7 +576,7 @@ name = "pagelistbot_solver_core"
 version = "3.0.0"
 dependencies = [
  "async-trait",
- "mwtitle",
+ "mwtitle 0.2.1",
  "pagelistbot_parser",
 ]
 
@@ -573,7 +586,7 @@ version = "3.0.0"
 dependencies = [
  "async-recursion",
  "async-trait",
- "mwtitle",
+ "mwtitle 0.2.1",
  "pagelistbot_parser",
  "pagelistbot_provider_core",
  "pagelistbot_solver_core",
