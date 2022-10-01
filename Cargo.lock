@@ -438,7 +438,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e39f0a81040968f9c62d1c431f0a24b0efb852370840a6a5371ad335c513a59d"
 dependencies = [
  "log",
- "mwapi_errors",
+ "mwapi_errors 0.1.7",
  "reqwest",
  "serde",
  "serde_json",
@@ -457,6 +457,17 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
+]
+
+[[package]]
+name = "mwapi_errors"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ddb58137e2ef000cdec38604cc738c925b1b6506fde54f3356d1cc9ad1e2d1eb"
+dependencies = [
+ "serde",
+ "serde_json",
+ "thiserror",
 ]
 
 [[package]]
@@ -529,7 +540,7 @@ version = "3.0.0"
 dependencies = [
  "async-trait",
  "mwapi",
- "mwapi_errors",
+ "mwapi_errors 0.2.2",
  "mwtitle",
  "pagelistbot_parser",
  "pagelistbot_provider_core",
