@@ -28,11 +28,19 @@ jobs:
         os: [ ubuntu-latest, windows-latest, macOS-latest ]
 
     steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
       - uses: actions/checkout@v3
-      - name: Build
-        run: cargo build --verbose --workspace
-      - name: Run tests
-        run: cargo test --verbose --workspace
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --verbose --workspace
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --verbose --workspace
 
   toolforge:
     runs-on: ubuntu-latest
@@ -49,9 +57,14 @@ jobs:
           apt-get -y install build-essential pkg-config libssl1.1 libssl-dev
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
+          toolchain: nightly
+          override: true
       - uses: actions/checkout@v3
-      - name: Build
-        run: cargo build --verbose --workspace
-      - name: Run tests
-        run: cargo test --verbose --workspace
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --verbose --workspace
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --verbose --workspace

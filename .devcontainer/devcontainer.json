@@ -27,7 +27,14 @@
                 "files.watcherExclude": {
                     "**/target/**": true
                 },
-                "rust-analyzer.checkOnSave.command": "clippy"
+                "git.enableCommitSigning": true,
+                "rust-analyzer.checkOnSave.command": "clippy",
+                "rust-analyzer.hover.actions.references.enable": true,
+                "rust-analyzer.inlayHints.lifetimeElisionHints.enable": "skip_trivial",
+                "rust-analyzer.lens.references.adt.enable": true,
+                "rust-analyzer.lens.references.enumVariant.enable": true,
+                "rust-analyzer.lens.references.method.enable": true,
+                "rust-analyzer.lens.references.trait.enable": true
             },
 
             // Add the IDs of extensions you want installed when the container is created.

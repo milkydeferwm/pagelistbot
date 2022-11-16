@@ -13,10 +13,13 @@ jobs:
     steps:
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
+          toolchain: nightly
+          override: true
       - uses: actions/checkout@v3
-      - name: Build
-        run: cargo build --release --package pagelistbot
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --package pagelistbot
       - uses: actions/upload-artifact@v2
         with:
           name: windows
@@ -27,10 +30,13 @@ jobs:
     steps:
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
+          toolchain: nightly
+          override: true
       - uses: actions/checkout@v3
-      - name: Build
-        run: cargo build --release --package pagelistbot
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --package pagelistbot
       - uses: actions/upload-artifact@v2
         with:
           name: macOS
