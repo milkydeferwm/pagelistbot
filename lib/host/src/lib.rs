@@ -106,7 +106,7 @@ impl Drop for Host {
 }
 
 /// List of errors a host may emit.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum HostError {
     /// There is a problem creating the new API client.
     APIError(mwapi::Error),
