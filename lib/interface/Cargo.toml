@@ -7,4 +7,6 @@ repository = "https://github.com/milkydeferwm/pagelistbot"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+host = { path = "../host" }
+jsonrpsee = { version = "0.16", features = [ "macros", "client", "server" ] }
 serde = { version = "1.0", features = [ "derive" ] }
