@@ -1,5 +1,7 @@
 //! RPC interface.
 
+#![cfg(feature="rpc")]
+
 use crate::error::PageListBotError;
 use jsonrpsee::{core::RpcResult, proc_macros::rpc};
 
