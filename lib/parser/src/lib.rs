@@ -1,7 +1,5 @@
-pub mod ast;
+//! Parser for Page List Bot.
 
-#[cfg(feature="parse")]
 mod parse;
 
-#[cfg(feature="parse")]
 pub use parse::parse;

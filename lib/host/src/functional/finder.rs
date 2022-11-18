@@ -4,8 +4,8 @@ use std::collections;
 use std::sync::Arc;
 use crate::{Host, InnerHostConfig, InnerGlobalStatus, InnerAPI, TaskMapTaskInfo, HostError};
 use crate::routine::TaskCommand;
-use crate::types::{RunnerConfig, TaskDescription};
 
+use interface::types::site::{HostConfig, TaskDescription};
 use futures::{prelude::*, channel::{mpsc, oneshot}, stream};
 use mwapi_responses::query;
 use tokio::time;
@@ -258,7 +258,7 @@ impl<'exec> FinderExec<'exec> {
         let title_codec = mwtitle::TitleCodec::from_site_info(siteinfo).unwrap();
 
         // fetch latest config
-        let global_config = Self::get_content_by_title::<RunnerConfig>(&api, &self.host_config.onsite_config).await;
+        let global_config = Self::get_content_by_title::<HostConfig>(&api, &self.host_config.onsite_config).await;
         if let Err(e) = global_config { // be conservative, set global active to false
             let mut g_active = self.global_status.host_active.write().await;
             *g_active = false;
@@ -266,7 +266,7 @@ impl<'exec> FinderExec<'exec> {
         }
         // update global configs
         let (_, global_config) = global_config.unwrap();
-        let RunnerConfig { active, task_dir, header, deny_ns, default_task_config, .. } = global_config;
+        let HostConfig { active, task_dir, header, deny_ns, default_task_config, .. } = global_config;
         {
             let mut g_active = self.global_status.host_active.write().await;
             *g_active = active;

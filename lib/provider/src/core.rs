@@ -3,7 +3,7 @@
 use std::collections::BTreeSet;
 
 use mwtitle::Title;
-use parser::ast::Modifier;
+use interface::types::ast::Modifier;
 // use std::error::Error;
 
 /// Common type for a page.

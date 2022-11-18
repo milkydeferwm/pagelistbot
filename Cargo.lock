@@ -654,6 +654,7 @@ dependencies = [
  "chrono",
  "cron",
  "futures",
+ "interface",
  "md5",
  "mwapi",
  "mwapi_errors",
@@ -819,9 +820,7 @@ dependencies = [
 name = "interface"
 version = "3.0.0"
 dependencies = [
- "host",
  "jsonrpsee",
- "parser",
  "serde",
  "serde_with",
 ]
@@ -1270,10 +1269,10 @@ dependencies = [
 name = "parser"
 version = "3.0.0"
 dependencies = [
+ "interface",
  "nom",
  "nom_locate",
  "parser_test_macro",
- "serde",
 ]
 
 [[package]]
@@ -1359,11 +1358,11 @@ name = "provider"
 version = "3.0.0"
 dependencies = [
  "async-trait",
+ "interface",
  "mwapi",
  "mwapi_errors",
  "mwapi_responses",
  "mwtitle",
- "parser",
  "serde",
  "serde_json",
 ]
@@ -1745,8 +1744,8 @@ version = "3.0.0"
 dependencies = [
  "async-recursion",
  "async-trait",
+ "interface",
  "mwtitle",
- "parser",
  "provider",
 ]
 

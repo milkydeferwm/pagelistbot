@@ -2,12 +2,12 @@
 
 use core::fmt;
 use std::error;
-#[cfg(feature="serde")]
-use _serde::{Serialize, Deserialize};
+#[cfg(feature = "use_serde")]
+use serde::{Serialize, Deserialize};
 
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature="serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub enum PageListBotError {
     /// There is already a host by the same name.
     HostAlreadyExists,

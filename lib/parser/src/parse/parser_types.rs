@@ -1,8 +1,6 @@
-#![cfg(feature="parse")]
-
 use std::collections::BTreeSet;
 
-use crate::ast::*;
+use interface::types::ast::*;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct ModifierBuilder {

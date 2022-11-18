@@ -1,4 +1,3 @@
-#![cfg(feature="parse")]
 #![allow(dead_code)]
 
 use nom::IResult;

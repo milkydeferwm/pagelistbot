@@ -14,7 +14,7 @@ use std::{collections, error, sync::Arc};
 use futures::channel::mpsc;
 use tokio::{sync, task};
 use tracing::{event, Level};
-use parser::ast::NumberOrInf;
+use interface::types::ast::NumberOrInf;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct InnerHostConfig {
@@ -145,4 +145,3 @@ pub mod host_impl;
 mod host_util;
 mod functional;
 mod routine;
-mod types;

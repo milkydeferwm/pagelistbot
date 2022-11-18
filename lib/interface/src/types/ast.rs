@@ -1,12 +1,14 @@
 //! Abstract syntax tree.
 
 use std::{collections::BTreeSet, str::FromStr};
-#[cfg(feature="serde")]
-use _serde::{Serialize, Deserialize};
+#[cfg(feature = "use_serde")]
+use serde::{Serialize, Deserialize};
+#[cfg(feature = "use_serde")]
+use serde_with::{SerializeDisplay, DeserializeFromStr};
 
 /// A span object. `Span` contains full location details of the source text.
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature="serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub struct Span {
     pub begin_line: u32,
     pub begin_col: usize,
@@ -17,14 +19,14 @@ pub struct Span {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature="serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub struct Node {
     pub span: Span,
     pub expr: Expr,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature="serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub enum Expr {
     Page { titles: BTreeSet<String> },
 
@@ -43,7 +45,7 @@ pub enum Expr {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature="serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub struct Modifier {
     // Applies to all operations
     pub result_limit: Option<NumberOrInf<usize>>,
@@ -75,7 +77,7 @@ impl Default for Modifier {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature="serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub enum RedirectFilterStrategy {
     NoRedirect,
     OnlyRedirect,
@@ -93,7 +95,7 @@ impl core::fmt::Display for RedirectFilterStrategy {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature="serde", serde_as(as = "DisplayFromStr"))]
+#[cfg_attr(feature = "use_serde", derive(SerializeDisplay, DeserializeFromStr))]
 pub enum NumberOrInf<T> {
     Finite(T),
     Infinity,

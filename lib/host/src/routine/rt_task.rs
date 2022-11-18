@@ -1,7 +1,7 @@
 //! Host-dispatched task scheduler.
 
 use crate::{Host, HostError, InnerHostConfig, InnerGlobalStatus, InnerAPI};
-use crate::types;
+use interface::types::site;
 use crate::functional::task;
 use std::sync::Arc;
 use futures::{prelude::*, channel::{mpsc, oneshot}, future::FusedFuture};
@@ -16,7 +16,7 @@ pub(crate) enum TaskCommand {
     },
     /// update task
     UpdateTaskConfig {
-        new_config: types::TaskDescription,
+        new_config: site::TaskDescription,
         new_revid: u64,
         receipt: oneshot::Sender<Result<(), HostError>>,
     },
@@ -40,7 +40,7 @@ impl Host {
         inner_host_config: Arc<InnerHostConfig>,
         inner_global_status: Arc<InnerGlobalStatus>,
         inner_api: Arc<InnerAPI>,
-        task_desc: types::TaskDescription,
+        task_desc: site::TaskDescription,
         revid: u64,
         mut listener: mpsc::UnboundedReceiver<TaskCommand>)
     {
@@ -112,7 +112,7 @@ impl Host {
 
                         task_exec.set(async move {
                             // cloned host configs, copied `id`, cloned `desc`, cloned `api` and new `title_codec` are moved.
-                            let types::TaskDescription { expr, eager, config, output, .. } = desc;
+                            let site::TaskDescription { expr, eager, config, output, .. } = desc;
                             let timeout = if let Some(config) = config {
                                 config.timeout.unwrap_or(host_timeout)
                             } else { host_timeout };
@@ -272,7 +272,7 @@ pub enum TaskQueryStatus {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TaskStatus {
     pub revid: u64,
-    pub task_desc: types::TaskDescription,
+    pub task_desc: site::TaskDescription,
     pub last_run_status: TaskQueryStatus,
     pub last_run_time: chrono::DateTime<chrono::Utc>,
 }

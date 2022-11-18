@@ -1,5 +1,3 @@
-#![cfg(feature="parse")]
-
 use nom::IResult;
 use nom::branch::alt;
 use nom::bytes::complete::tag_no_case;
@@ -9,7 +7,8 @@ use nom::error::{ParseError, FromExternalError};
 use nom::multi::{separated_list1, many0};
 use nom::sequence::{delimited, preceded};
 
-use crate::ast::*;
+use interface::types::ast::*;
+
 use super::StrSpan;
 use super::parser_types::*;
 use super::number::*;

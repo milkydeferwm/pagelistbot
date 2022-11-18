@@ -2,9 +2,9 @@
 
 use std::collections::{BTreeSet, BTreeMap};
 
-use parser::ast::*;
+use interface::types::ast::*;
+use interface::types::site::{OutputFormat, OutputFormatSuccess};
 use provider::DataProvider;
-use super::super::types::{OutputFormat, OutputFormatSuccess};
 use serde_json::Value;
 use tracing::{event, Level};
 
