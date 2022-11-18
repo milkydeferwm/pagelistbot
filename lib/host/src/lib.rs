@@ -125,7 +125,6 @@ pub enum HostError {
 }
 
 impl error::Error for HostError {}
-
 impl fmt::Display for HostError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -137,6 +136,12 @@ impl fmt::Display for HostError {
             Self::TaskDoesNotExist => write!(f, "the requested task does not exist"),
             Self::HungUp => write!(f, "the requested entity unexpected hung up"),
         }
+    }
+}
+
+impl From<HostError> for interface::PageListBotError {
+    fn from(value: HostError) -> Self {
+        Self::HostError(value.to_string())
     }
 }
 
