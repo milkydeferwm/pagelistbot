@@ -10,7 +10,7 @@ repository = "https://github.com/milkydeferwm/pagelistbot"
 chrono = "0.4.22"
 jsonrpsee = { version = "0.16", features = [ "macros", "client", "server" ], optional = true }
 serde = { package = "serde", version = "1.0", features = [ "derive" ], optional = true }
-serde_with = { version = "2.1.0", optional = true }
+serde_with = { version = "2.1.0", features = [ "chrono", "chrono_0_4" ], optional = true }
 
 [features]
 use_serde = [
