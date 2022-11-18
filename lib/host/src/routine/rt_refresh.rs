@@ -171,6 +171,16 @@ pub struct RefresherStatus {
     pub last_run_time: chrono::DateTime<chrono::Utc>,
 }
 
+impl From<RefresherStatus> for interface::types::status::refresher::PageListBotRefresherStatus {
+    fn from(value: RefresherStatus) -> Self {
+        let RefresherStatus { last_run_status, last_run_time } = value;
+        Self {
+            last_run_status: last_run_status.into(),
+            last_run_time,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum RefresherRoutineStatus {
     /// No refresher process was run yet
@@ -181,4 +191,15 @@ pub enum RefresherRoutineStatus {
     Aborted,
     /// The refresher process was finished, with corresponding results.
     Finished(refresh::RefresherSummary),
+}
+
+impl From<RefresherRoutineStatus> for interface::types::status::refresher::PageListBotRefresherRoutineStatus {
+    fn from(value: RefresherRoutineStatus) -> Self {
+        match value {
+            RefresherRoutineStatus::NoRun => Self::NoRun,
+            RefresherRoutineStatus::Running => Self::Running,
+            RefresherRoutineStatus::Aborted => Self::Aborted,
+            RefresherRoutineStatus::Finished(e) => Self::Finished(e.into()),
+        }
+    }
 }
