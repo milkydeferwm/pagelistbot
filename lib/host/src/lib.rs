@@ -14,7 +14,7 @@ use std::{collections, error, sync::Arc};
 use futures::channel::mpsc;
 use tokio::{sync, task};
 use tracing::{event, Level};
-use parser::ast::NumberOrInf;
+use interface::types::ast::NumberOrInf;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct InnerHostConfig {
@@ -106,7 +106,7 @@ impl Drop for Host {
 }
 
 /// List of errors a host may emit.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum HostError {
     /// There is a problem creating the new API client.
     APIError(mwapi::Error),
@@ -125,7 +125,6 @@ pub enum HostError {
 }
 
 impl error::Error for HostError {}
-
 impl fmt::Display for HostError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -140,9 +139,14 @@ impl fmt::Display for HostError {
     }
 }
 
+impl From<HostError> for interface::PageListBotError {
+    fn from(value: HostError) -> Self {
+        Self::HostError(value.to_string())
+    }
+}
+
 // Other module uses
 pub mod host_impl;
 mod host_util;
 mod functional;
 mod routine;
-mod types;

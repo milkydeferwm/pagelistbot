@@ -5,7 +5,7 @@
 
 use std::collections::BTreeSet;
 
-use parser::ast::{Node, Expr, Modifier, NumberOrInf};
+use interface::types::ast::{Node, Expr, Modifier, NumberOrInf};
 use crate::{Answer, Solver, Error};
 use provider::{PagePair, DataProvider};
 

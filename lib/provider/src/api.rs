@@ -3,7 +3,7 @@
 use std::collections::{HashMap, BTreeSet};
 
 use mwtitle::Title;
-use parser::ast::{Modifier, NumberOrInf};
+use interface::types::ast::{Modifier, NumberOrInf};
 use crate::{PagePair, DataProvider, PageInfo};
 use std::error::Error;
 use mwapi_responses::prelude::*;

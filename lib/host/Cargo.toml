@@ -6,7 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-parser = { path = "..//parser", features = [ "parse" ] }
+interface = { path = "../interface", features = [ "use_serde" ] }
+parser = { path = "../parser" }
 solver = { path = "../solver", features = [ "full" ] }
 provider = { path = "../provider", features = [ "full" ] }
 

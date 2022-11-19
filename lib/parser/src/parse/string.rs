@@ -3,8 +3,6 @@
 //! 
 //! Refer to the online comments for more information
 
-#![cfg(feature="parse")]
-
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, take_while_m_n};
 use nom::character::complete::{char, multispace1};

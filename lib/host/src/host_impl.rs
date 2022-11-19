@@ -5,7 +5,7 @@ use crate::{Host, InnerHostConfig, InnerGlobalStatus, InnerAPI, HostError};
 use crate::functional::refresh::{UserInfoResponse, UserInfo};
 use crate::routine;
 
-use parser::ast::NumberOrInf;
+use interface::types::ast::NumberOrInf;
 use futures::{prelude::*, channel::oneshot, stream};
 use tokio::{sync, time};
 use tracing::{event, Level};

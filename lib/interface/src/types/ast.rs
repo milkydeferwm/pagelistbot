@@ -1,8 +1,14 @@
-//! Abstract syntax tree used for parsing and output
+//! Abstract syntax tree.
 
 use std::{collections::BTreeSet, str::FromStr};
+#[cfg(feature = "use_serde")]
+use serde::{Serialize, Deserialize};
+#[cfg(feature = "use_serde")]
+use serde_with::{SerializeDisplay, DeserializeFromStr};
 
+/// A span object. `Span` contains full location details of the source text.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub struct Span {
     pub begin_line: u32,
     pub begin_col: usize,
@@ -13,12 +19,14 @@ pub struct Span {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub struct Node {
     pub span: Span,
     pub expr: Expr,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub enum Expr {
     Page { titles: BTreeSet<String> },
 
@@ -37,6 +45,7 @@ pub enum Expr {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub struct Modifier {
     // Applies to all operations
     pub result_limit: Option<NumberOrInf<usize>>,
@@ -68,6 +77,7 @@ impl Default for Modifier {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub enum RedirectFilterStrategy {
     NoRedirect,
     OnlyRedirect,
@@ -85,6 +95,7 @@ impl core::fmt::Display for RedirectFilterStrategy {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "use_serde", derive(SerializeDisplay, DeserializeFromStr))]
 pub enum NumberOrInf<T> {
     Finite(T),
     Infinity,
@@ -124,7 +135,7 @@ where
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Infinity => write!(f, "infinity"),
+            Self::Infinity => write!(f, "inf"),
             Self::Finite(v) => v.fmt(f),
         }
     }
@@ -150,19 +161,5 @@ where
             "inf" | "Inf" | "iNf" | "inF" | "INf" | "InF" | "iNF" | "INF" => Ok(Self::Infinity),
             s => T::from_str(s).map(Self::Finite),
         }
-    }
-}
-
-impl<'de, T> serde::Deserialize<'de> for NumberOrInf<T>
-where
-    T: FromStr,
-    <T as FromStr>::Err: core::fmt::Display,
-{
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>
-    {
-        let buf = String::deserialize(deserializer)?;
-        Self::from_str(&buf).map_err(serde::de::Error::custom)
     }
 }

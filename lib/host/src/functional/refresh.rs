@@ -115,3 +115,15 @@ pub enum RefresherSummary {
     /// Failed to grab new user info.
     NewUserInfoFailed(mwapi::Error),
 }
+
+impl From<RefresherSummary> for interface::types::status::refresher::PageListBotRefresherSummary {
+    fn from(value: RefresherSummary) -> Self {
+        match value {
+            RefresherSummary::Validated => Self::Validated,
+            RefresherSummary::Refreshed => Self::Refreshed,
+            RefresherSummary::NewClientFailed(e) => Self::NewClientFailed(e.to_string()),
+            RefresherSummary::NewSiteInfoFailed(e) => Self::NewSiteInfoFailed(e.to_string()),
+            RefresherSummary::NewUserInfoFailed(e) => Self::NewUserInfoFailed(e.to_string()),
+        }
+    }
+}

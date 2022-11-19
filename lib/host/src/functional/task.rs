@@ -2,9 +2,9 @@
 
 use std::collections::{BTreeSet, BTreeMap};
 
-use parser::ast::*;
+use interface::types::ast::*;
+use interface::types::site::{OutputFormat, OutputFormatSuccess};
 use provider::DataProvider;
-use super::super::types::{OutputFormat, OutputFormatSuccess};
 use serde_json::Value;
 use tracing::{event, Level};
 
@@ -155,7 +155,7 @@ impl<'task, P: DataProvider> TaskExec<'task, P> {
                 let msg = format!("[Ln {}, Col {}] ‐ [Ln {}, Col {}]: {:}", e.node.span.begin_line, e.node.span.begin_col, e.node.span.end_line, e.node.span.end_col, e.content);
                 TaskError::RuntimeError { msg }
             }).map(|ans| {
-                let titles = BTreeSet::from_iter(ans.titles.into_iter());
+                let titles = Vec::from_iter(ans.titles.into_iter().map(|t| self.title_codec.to_pretty(&t)));
                 let warnings = Vec::from_iter(ans.warnings.into_iter().map(|w| {
                     format!("[Ln {}, Col {}] ‐ [Ln {}, Col {}]: {:}", w.node.span.begin_line, w.node.span.begin_col, w.node.span.end_line, w.node.span.end_col, w.content)
                 }));
@@ -229,7 +229,7 @@ impl<'task, P: DataProvider> TaskExec<'task, P> {
     /// Pages in yet-to-be-known namespaces are decoded into the main namespace and re-encoded from the main namespace, and we are safe.
     /// 
     /// Unless we construct a title directly from the namespace ID, this function won't panic.
-    fn make_body_success(&self, fmt: &OutputFormatSuccess, titles: &BTreeSet<mwtitle::Title>) -> String {
+    fn make_body_success<T: ToString>(&self, fmt: &OutputFormatSuccess, titles: &[T]) -> String {
         // `subst_wo_title` handles template substitution where no specific title is related.
         // Accepts:
         // * `$+`: total count of resulting titles.
@@ -259,7 +259,7 @@ impl<'task, P: DataProvider> TaskExec<'task, P> {
         // * `$@`: current title index.
         // * `$+`: total count of resulting titles.
         // * `$$`: print a single "$".
-        let subst_with_title = |template: &str, idx: usize, title: &mwtitle::Title| -> String {
+        let subst_with_title = |template: &str, idx: usize, title: &str| -> String {
             let mut output: String = String::new();
             let mut escape: bool = false;
             for char in template.chars() {
@@ -267,7 +267,7 @@ impl<'task, P: DataProvider> TaskExec<'task, P> {
                     match char {
                         '$' => { output.push('$'); },
                         '+' => { output.push_str(&titles.len().to_string()); },
-                        '0' => { output.push_str(&self.title_codec.to_pretty(title)); },
+                        '0' => { output.push_str(title); },
                         '@' => { output.push_str(&idx.to_string()); },
                         c => { output.push('$'); output.push(c); },
                     }
@@ -285,7 +285,7 @@ impl<'task, P: DataProvider> TaskExec<'task, P> {
         output.push_str(&subst_wo_title(&fmt.before));
         let item_str = titles.iter()
             .enumerate()
-            .map(|(idx, t)| subst_with_title(&fmt.item, idx, t))
+            .map(|(idx, t)| subst_with_title(&fmt.item, idx, &t.to_string()))
             .collect::<Vec<String>>()
             .join(&fmt.between);
         output.push_str(&item_str);
@@ -425,11 +425,12 @@ impl TaskError {
 
 }
 
-/// Struct to hold query results.
-/// Error messages are formatted.
+/// Struct to send query results out of `TaskExec`.
+/// Error messages are formatted,
+/// and titles are pretty-converted and sorted.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Answer {
-    pub titles: BTreeSet<mwtitle::Title>,
+    pub titles: Vec<String>,
     pub warnings: Vec<String>,
 }
 

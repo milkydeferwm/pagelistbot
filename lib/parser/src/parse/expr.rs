@@ -1,5 +1,3 @@
-#![cfg(feature="parse")]
-
 use nom::IResult;
 use nom::branch::alt;
 use nom::bytes::complete::tag_no_case;
@@ -11,7 +9,8 @@ use nom::sequence::{delimited, preceded, tuple};
 
 use nom_locate::position;
 
-use crate::ast::*;
+use interface::types::ast::*;
+
 use super::StrSpan;
 use super::modifier::parse_modifier_list;
 use super::string::parse_string;

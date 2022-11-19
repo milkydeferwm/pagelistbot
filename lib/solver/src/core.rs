@@ -1,6 +1,6 @@
 //! Core Page List Bot solver traits and types.
 
-use parser::ast::Node;
+use interface::types::ast::Node;
 use provider::DataProvider;
 
 /// Universal result interface.
