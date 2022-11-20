@@ -9,6 +9,8 @@ repository = "https://github.com/milkydeferwm/pagelistbot"
 [dependencies]
 host = { path = "../../lib/host" }
 interface = { path = "../../lib/interface", features = [ "rpc" ] }
+async-trait = "0.1"
 tokio = { version = "1.19", features = [ "macros", "rt", "rt-multi-thread" ] }
+jsonrpsee = { version = "0.16", features = [ "server" ] }
 
 [dev-dependencies]

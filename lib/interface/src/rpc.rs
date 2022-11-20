@@ -13,7 +13,7 @@ pub trait PageListBotRpc {
     /// The new `Host` is assigned a key (`name`) and is used to refer to this host.
     /// If there is already another host by the same name, the method will fail with `HostAlreadyExists`.
     #[method(name = "new_host")]
-    async fn new_host(&self, name: &str, api_endpoint: &str, username: &str, password: &str, prefer_bot_edit: bool, db_name: Option<&str>) -> RpcResult<Result<(), PageListBotError>>;
+    async fn new_host(&self, name: &str, api_endpoint: &str, username: &str, password: &str, onsite_config: &str, prefer_bot_edit: bool, db_name: Option<&str>) -> RpcResult<Result<(), PageListBotError>>;
 
     /// Kill an existing `Host`.
     /// 
