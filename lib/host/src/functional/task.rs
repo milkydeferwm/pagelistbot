@@ -2,11 +2,18 @@
 
 use std::collections::{BTreeSet, BTreeMap};
 
-use interface::types::ast::*;
-use interface::types::site::{OutputFormat, OutputFormatSuccess};
+use interface::types as itypes;
+use itypes::ast::*;
+use itypes::site::{OutputFormat, OutputFormatSuccess};
+use itypes::status::task::{PageListBotTaskQuerySummary, PageListBotTaskQueryError, PageListBotTaskQueryOutputPageSummary, PageListBotTaskQueryAnswer};
 use provider::DataProvider;
 use serde_json::Value;
 use tracing::{event, Level};
+
+pub(crate) type TaskError = PageListBotTaskQueryError;
+pub(crate) type Answer = PageListBotTaskQueryAnswer;
+pub(crate) type Summary = PageListBotTaskQuerySummary;
+pub(crate) type OutputPageSummaryStatus = PageListBotTaskQueryOutputPageSummary;
 
 /// The object that represents a single execution of a task.
 #[derive(Clone)]
@@ -163,6 +170,19 @@ impl<'task, P: DataProvider> TaskExec<'task, P> {
             })
     }
 
+    /// Converts a `TaskError` into corresponding error code.
+    fn make_error_code(err: &TaskError) -> &'static str {
+        match err {
+            TaskError::Timeout => "timeout",
+            TaskError::ParseError { .. } => "parse",
+            TaskError::RuntimeError { .. } => "runtime",
+            // `NoQuery` is used for indicating status to caller.
+            // Querying error code happens when making header.
+            // Making header means query has been made. `NoQuery` is impossible.
+            TaskError::NoQuery => unreachable!(),
+        }
+    }
+
     /// Make the header part of the output.
     /// A header has the following fields:
     /// * `id` (optional)
@@ -174,7 +194,7 @@ impl<'task, P: DataProvider> TaskExec<'task, P> {
     fn make_header(&self, query_result: &Result<Answer, TaskError>) -> String {
         let status = match query_result {
             Ok(_) => "success",
-            Err(e) => e.error_code(),
+            Err(e) => Self::make_error_code(e),
         };
         let mut params: BTreeMap<String, String> = BTreeMap::from_iter([
             ("status".to_string(), status.to_string()),
@@ -387,70 +407,4 @@ impl<'task, P: DataProvider> TaskExec<'task, P> {
         Summary { query_status, output_status }
     }
 
-}
-
-/// Indicates an error a task may throw.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TaskError {
-    /// The query timed out.
-    /// Check your query, or adjust the timeout.
-    Timeout,
-
-    /// There were errors during query parsing.
-    /// Fix the errors written in `msgs`.
-    ParseError { msgs: Vec<String> },
-
-    /// There was an error during query execution.
-    /// Since the query immediately aborts upon error, there would be only at most one error.
-    RuntimeError { msg: String },
-
-    /// The query did not execute.
-    /// This happens because there is no eligible page for output.
-    NoQuery,
-}
-
-impl TaskError {
-
-    const fn error_code(&self) -> &'static str {
-        match self {
-            Self::Timeout => "timeout",
-            Self::ParseError { .. } => "parse",
-            Self::RuntimeError { .. } => "runtime",
-            // `NoQuery` is used for indicating status to caller.
-            // Querying error code happens when making header.
-            // Making header means query has been made. `NoQuery` is impossible.
-            Self::NoQuery => unreachable!(),
-        }
-    }
-
-}
-
-/// Struct to send query results out of `TaskExec`.
-/// Error messages are formatted,
-/// and titles are pretty-converted and sorted.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Answer {
-    pub titles: Vec<String>,
-    pub warnings: Vec<String>,
-}
-
-/// Summary of the execution of a successful task.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Summary {
-    /// The status of the query: if successful, returns the pages found and the warnings, otherwise returns the `TaskError` object.
-    pub query_status: Result<Answer, TaskError>,
-    /// The status of invidual output page.
-    pub output_status: BTreeMap<String, OutputPageSummaryStatus>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum OutputPageSummaryStatus {
-    /// The page is successfully written, either when query successful or unsuccessful (and eager or not).
-    Ok,
-    /// The page is skipped.
-    /// This can happen when the page is found ineligible for writing, or an error occurs when checking the page.
-    Skipped,
-    /// The page should be written, but failed to write.
-    /// This can happen when the result of the `edit` post is not successful, or when not in eager mode, the original page content failed to obtain.
-    WriteError,
 }

@@ -4,6 +4,8 @@ use crate::{Host, InnerHostConfig, InnerGlobalStatus, InnerAPI, TaskMapTaskInfo,
 use crate::functional::finder;
 use std::{collections, sync::Arc};
 use futures::{prelude::*, channel::{mpsc, oneshot}, future::FusedFuture};
+use interface::types::status::PageListBotTaskFinderStatus;
+use interface::types::status::finder::PageListBotTaskFinderRoutineStatus;
 use tokio::{time, sync, task};
 use tracing::{event, Level};
 
@@ -177,6 +179,15 @@ pub struct FinderStatus {
     pub last_run_time: chrono::DateTime<chrono::Utc>,
 }
 
+impl From<FinderStatus> for PageListBotTaskFinderStatus {
+    fn from(value: FinderStatus) -> Self {
+        Self {
+            last_run_status: value.last_run_status.into(),
+            last_run_time: value.last_run_time,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum FinderRoutineStatus {
     /// No finder was run yet
@@ -187,4 +198,15 @@ pub enum FinderRoutineStatus {
     Aborted,
     /// The finder process was finished, with corresponding results.
     Finished(finder::FinderSummary),
+}
+
+impl From<FinderRoutineStatus> for PageListBotTaskFinderRoutineStatus {
+    fn from(value: FinderRoutineStatus) -> Self {
+        match value {
+            FinderRoutineStatus::NoRun => Self::NoRun,
+            FinderRoutineStatus::Running => Self::Running,
+            FinderRoutineStatus::Aborted => Self::Aborted,
+            FinderRoutineStatus::Finished(s) => Self::Finished(s.into()),
+        }
+    }
 }

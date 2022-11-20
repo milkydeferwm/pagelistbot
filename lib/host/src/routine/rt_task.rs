@@ -2,6 +2,8 @@
 
 use crate::{Host, HostError, InnerHostConfig, InnerGlobalStatus, InnerAPI};
 use interface::types::site;
+use interface::types::status::PageListBotTaskStatus;
+use interface::types::status::task::PageListBotTaskQueryStatus;
 use crate::functional::task;
 use std::sync::Arc;
 use futures::{prelude::*, channel::{mpsc, oneshot}, future::FusedFuture};
@@ -33,6 +35,9 @@ pub(crate) enum TaskCommand {
         receipt: oneshot::Sender<Result<TaskStatus, HostError>>,
     }
 }
+
+pub type TaskStatus = PageListBotTaskStatus;
+pub(crate) type TaskQueryStatus = PageListBotTaskQueryStatus;
 
 impl Host {
     /// the task routine being dispatched.
@@ -255,24 +260,4 @@ impl Host {
             event!(Level::WARN, revid, "task routine unexpectedly exited.");
         }
     }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TaskQueryStatus {
-    /// No task was run yet
-    NoRun,
-    /// The task was running
-    Running,
-    /// The task was forcefully aborted. This is different from timeout.
-    Aborted,
-    /// The task was finished, with corresponding results.
-    Finished(task::Summary),
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TaskStatus {
-    pub revid: u64,
-    pub task_desc: site::TaskDescription,
-    pub last_run_status: TaskQueryStatus,
-    pub last_run_time: chrono::DateTime<chrono::Utc>,
 }

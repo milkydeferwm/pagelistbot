@@ -55,4 +55,7 @@ pub enum PageListBotTaskChange {
     Created,
     /// Something is wrong with the task and the task is restarted.
     Restarted,
+    /// Although there is a JSON desciption under the search directory,
+    /// it does not conform to the type standard, and skipped.
+    Skipped,
 }
