@@ -2,8 +2,9 @@
 
 mod arg;
 mod rpc_server;
+mod startup;
 
-use std::{collections, sync::Arc};
+use std::{collections, sync::Arc, path::PathBuf};
 use futures::{prelude::*, stream::FuturesUnordered, future::Fuse};
 use interface::PageListBotRpcServer;
 use jsonrpsee::server::ServerBuilder;
@@ -13,17 +14,51 @@ use tracing::{event, Level};
 
 #[tokio::main]
 async fn main() {
+    // the core, also the heart, of page list bot.
+    let host_map = Arc::new(RwLock::new(collections::HashMap::new()));
     // process arguments
     let args = arg::build_args().get_matches();
-    if !args.get_flag("skip") {
-        // read startup file. currently not implemented.
-        unimplemented!()
+    if let Some(startup_file) = args.get_one::<PathBuf>("startup") {
+        // read startup file.
+        let startup_str = std::fs::read_to_string(startup_file);
+        if let Ok(startup_str) = startup_str {
+            let startup = serde_json::from_str::<startup::StartupConfig>(&startup_str);
+            if let Ok(startup) = startup {
+                let mut host_map = host_map.write().await;
+                for (k, h) in startup.sites.iter() {
+                    if let Some(cred) = startup.login.get(&h.login) {
+                        // try create `Host`
+                        let host = host::Host::try_new(
+                            &cred.username,
+                            &cred.password,
+                            &h.api_endpoint,
+                            &h.on_site_config,
+                            h.prefer_bot_edit,
+                        ).await;
+                        if let Ok(host) = host {
+                            host_map.insert(k.to_owned(), host);
+                            event!(Level::INFO, name=k, "host created on startup.")
+                        } else {
+                            let err = host.unwrap_err();
+                            event!(Level::WARN, name=k, ?err, "cannot create host on startup.")
+                        }
+                    } else {
+                        event!(Level::WARN, name=k, login=&h.login, "cannot find requested login credential in startup file.")
+                    }
+                }
+            } else {
+                let err = startup.unwrap_err();
+                event!(Level::WARN, ?err, "cannot decode startup file.")
+            }
+        } else {
+            let err = startup_str.unwrap_err();
+            event!(Level::WARN, ?err, "cannot read startup file.")
+        }
     }
     // read addr and port
     let addr = args.get_one::<String>("addr").unwrap();
     let port = args.get_one::<u16>("port").unwrap();
     // set up server
-    let host_map = Arc::new(RwLock::new(collections::HashMap::new()));
     let serv = ServerImpl::new(host_map.clone());
     let server = ServerBuilder::default().build(format!("{}:{}", addr, port)).await.unwrap();
 
