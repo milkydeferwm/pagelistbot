@@ -8,11 +8,11 @@ use interface::types::status::{PageListBotTaskFinderStatus, PageListBotRefresher
 use tokio::sync::RwLock;
 use jsonrpsee::core::RpcResult;
 
-pub struct Server {
+pub struct ServerImpl {
     host_map: Arc<RwLock<collections::HashMap<String, Host>>>,
 }
 
-impl Server {
+impl ServerImpl {
     pub fn new(host_map: Arc<RwLock<collections::HashMap<String, Host>>>) -> Self {
         Self {
             host_map,
@@ -21,9 +21,9 @@ impl Server {
 }
 
 #[async_trait]
-impl PageListBotRpcServer for Server {
+impl PageListBotRpcServer for ServerImpl {
     async fn new_host(&self, name: &str, api_endpoint: &str, username: &str, password: &str, onsite_config: &str, prefer_bot_edit: bool, db_name: Option<&str>) -> RpcResult<Result<(), PageListBotError>> {
-        let hostmap = self.host_map.write().await;
+        let mut hostmap = self.host_map.write().await;
         if hostmap.contains_key(name) {
             Ok(Err(PageListBotError::HostAlreadyExists))
         } else {
@@ -39,7 +39,7 @@ impl PageListBotRpcServer for Server {
 
     async fn kill_host(&self, name: &str, force: bool) -> RpcResult<Result<(), PageListBotError>> {
         let tokill_host = {
-            let hostmap = self.host_map.write().await;
+            let mut hostmap = self.host_map.write().await;
             hostmap.remove(name).ok_or(PageListBotError::HostDoesNotExist)
         };
         if let Ok(host) = tokill_host {
