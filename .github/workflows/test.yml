@@ -34,9 +34,9 @@ jobs:
           toolchain: ${{ env.RUSTC_VERSION }}
       - uses: actions/checkout@v3
       - name: Build
-        run: cargo +${{ env.RUSTC_VERSION }} build --verbose --workspace
+        run: cargo build --verbose --workspace
       - name: Run tests
-        run: cargo +${{ env.RUSTC_VERSION }} test --verbose --workspace
+        run: cargo test --verbose --workspace
 
   toolforge:
     runs-on: ubuntu-latest
@@ -56,6 +56,6 @@ jobs:
           toolchain: ${{ env.RUSTC_VERSION }}
       - uses: actions/checkout@v3
       - name: Build
-        run: cargo +${{ env.RUSTC_VERSION }} build --verbose --workspace
+        run: cargo build --verbose --workspace
       - name: Run tests
-        run: cargo +${{ env.RUSTC_VERSION }} test --verbose --workspace
+        run: cargo test --verbose --workspace

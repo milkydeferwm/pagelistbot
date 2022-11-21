@@ -11,33 +11,29 @@ jobs:
   build windows:
     runs-on: windows-latest
     steps:
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: nightly
-          override: true
+          toolchain: ${{ env.RUSTC_VERSION }}
       - uses: actions/checkout@v3
-      - uses: actions-rs/cargo@v1
+      - name: Build
+        run: cargo build --verbose --release --workspace
+      - uses: actions/upload-artifact@v3
         with:
-          command: build
-          args: --release --package pagelistbot
-      - uses: actions/upload-artifact@v2
-        with:
-          name: windows
-          path: target/release/pagelistbot.exe
+          name: win
+          path: |
+            target/release/daemon.exe
 
   build macos:
     runs-on: macOs-latest
     steps:
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: nightly
-          override: true
+          toolchain: ${{ env.RUSTC_VERSION }}
       - uses: actions/checkout@v3
-      - uses: actions-rs/cargo@v1
+      - name: Build
+        run: cargo build --verbose --release --workspace
+      - uses: actions/upload-artifact@v3
         with:
-          command: build
-          args: --release --package pagelistbot
-      - uses: actions/upload-artifact@v2
-        with:
-          name: macOS
-          path: target/release/pagelistbot
+          name: mac
+          path: |
+            target/release/pagelistbot
