@@ -52,7 +52,7 @@ mod test {
                 "enwiki": {
                     "login": "another",
                     "api": "https://en.wikipedia.org/w/api.php",
-                    "onsite_config": "User:Example",
+                    "on_site_config": "User:Example",
                     "db_name": "enwiki_p"
                 },
                 "meta": {
