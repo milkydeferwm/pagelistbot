@@ -1,6 +1,7 @@
 //! Arguments for the daemon.
 
-use clap::{Arg, ArgAction, Command, command, value_parser};
+use std::path::PathBuf;
+use clap::{Arg, Command, command, value_parser};
 use interface::{DEFAULT_DAEMON_ADDR, DEFAULT_DAEMON_PORT};
 
 pub(crate) fn build_args() -> Command {
@@ -17,9 +18,9 @@ pub(crate) fn build_args() -> Command {
                 .short('p')
                 .value_parser(value_parser!(u16))
                 .help("Server port to bind to."),
-            Arg::new("skip")
-                .long("skip-startup")
-                .help("Skips reading the startup file. Program will run without any host.")
-                .action(ArgAction::SetTrue),
+            Arg::new("startup")
+                .long("startup")
+                .value_parser(value_parser!(PathBuf))
+                .help("Read a startup file. Program will run with predefined hosts.")
         ])
 }

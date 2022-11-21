@@ -350,6 +350,8 @@ dependencies = [
  "host",
  "interface",
  "jsonrpsee",
+ "serde",
+ "serde_json",
  "tokio",
  "tracing",
 ]
