@@ -11,8 +11,6 @@ use rpc_server::ServerImpl;
 use tokio::{sync::RwLock, signal};
 use tracing::{event, Level};
 
-const DEFAULT_SERV_PORT: u16 = 7378; // "SERV"
-
 #[tokio::main]
 async fn main() {
     // process arguments
@@ -23,7 +21,7 @@ async fn main() {
     }
     // read addr and port
     let addr = args.get_one::<String>("addr").unwrap();
-    let port = args.get_one::<u16>("port").unwrap_or(&DEFAULT_SERV_PORT);
+    let port = args.get_one::<u16>("port").unwrap();
     // set up server
     let host_map = Arc::new(RwLock::new(collections::HashMap::new()));
     let serv = ServerImpl::new(host_map.clone());
