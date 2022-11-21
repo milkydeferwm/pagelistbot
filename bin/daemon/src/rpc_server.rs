@@ -3,7 +3,7 @@
 use std::{collections, sync::Arc};
 use async_trait::async_trait;
 use host::Host;
-use interface::{PageListBotError, PageListBotRpcServer};
+use interface::{PageListBotError, PageListBotRpcServer, rpc::NewHostConfig};
 use interface::types::status::{PageListBotTaskFinderStatus, PageListBotRefresherStatus, PageListBotTaskStatus};
 use tokio::sync::RwLock;
 use jsonrpsee::core::RpcResult;
@@ -22,12 +22,17 @@ impl ServerImpl {
 
 #[async_trait]
 impl PageListBotRpcServer for ServerImpl {
-    async fn new_host(&self, name: &str, api_endpoint: &str, username: &str, password: &str, onsite_config: &str, prefer_bot_edit: bool, db_name: Option<&str>) -> RpcResult<Result<(), PageListBotError>> {
+    async fn new_host(&self, name: &str, config: NewHostConfig) -> RpcResult<Result<(), PageListBotError>> {
         let mut hostmap = self.host_map.write().await;
         if hostmap.contains_key(name) {
             Ok(Err(PageListBotError::HostAlreadyExists))
         } else {
-            let host = Host::try_new(username, password, api_endpoint, onsite_config, prefer_bot_edit).await;
+            let host = Host::try_new(
+                &config.username,
+                &config.password,
+                &config.api_endpoint,
+                &config.onsite_config,
+                config.prefer_bot_edit).await;
             if let Ok(host) = host {
                 hostmap.insert(name.to_owned(), host);
                 Ok(Ok(()))
