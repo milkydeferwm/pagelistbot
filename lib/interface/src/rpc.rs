@@ -1,6 +1,6 @@
 //! RPC interface.
 
-#![cfg(feature="rpc")]
+#![cfg(feature = "rpc")]
 
 use crate::types::status::{PageListBotTaskFinderStatus, PageListBotRefresherStatus, PageListBotTaskStatus};
 use crate::error::PageListBotError;

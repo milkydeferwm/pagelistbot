@@ -7,7 +7,7 @@
 //! A built-in solver, `RecursiveTreeSolver`, is available through the `recursive-tree` feature gate.
 
 pub mod core;
-#[cfg(feature="recursive-tree")]
+#[cfg(feature = "recursive-tree")]
 pub mod recursive_tree;
 
 // re-exports from core
