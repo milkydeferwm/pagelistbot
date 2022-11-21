@@ -1,6 +1,6 @@
 //! A recursive-tree solver
 
-#![cfg(feature="recursive-tree")]
+#![cfg(feature = "recursive-tree")]
 #![allow(unused_variables)]
 
 use std::collections::BTreeSet;

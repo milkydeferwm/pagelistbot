@@ -4,13 +4,13 @@ use std::collections;
 use crate::types::site::TaskDescription;
 
 use chrono::{DateTime, Utc};
-#[cfg(feature="use_serde")]
+#[cfg(feature = "use_serde")]
 use serde::{Serialize, Deserialize};
-#[cfg(feature="use_serde")]
+#[cfg(feature = "use_serde")]
 use serde_with::serde_as;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature="use_serde",
+#[cfg_attr(feature = "use_serde",
     serde_as,
     derive(Serialize, Deserialize),
 )]
@@ -20,12 +20,12 @@ pub struct PageListBotTaskStatus {
     /// The task's recorded task description.
     pub task_desc: TaskDescription,
     pub last_run_status: PageListBotTaskQueryStatus,
-    #[cfg_attr(feature="use_serde", serde_as(as = "DisplayFromStr"))]
+    #[cfg_attr(feature = "use_serde", serde_as(as = "DisplayFromStr"))]
     pub last_run_time: DateTime<Utc>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature="use_serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub enum PageListBotTaskQueryStatus {
     /// No task was run yet
     NoRun,
@@ -38,7 +38,7 @@ pub enum PageListBotTaskQueryStatus {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature="use_serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub struct PageListBotTaskQuerySummary {
     /// The status of the query: if successful, returns the pages found and the warnings, otherwise returns the `PageListBotTaskQueryError` object.
     pub query_status: Result<PageListBotTaskQueryAnswer, PageListBotTaskQueryError>,
@@ -50,7 +50,7 @@ pub struct PageListBotTaskQuerySummary {
 /// Error messages are formatted,
 /// and titles are pretty-converted and sorted.
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature="use_serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub struct PageListBotTaskQueryAnswer {
     pub titles: Vec<String>,
     pub warnings: Vec<String>,
@@ -58,7 +58,7 @@ pub struct PageListBotTaskQueryAnswer {
 
 /// Indicates an error a task may throw.
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature="use_serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub enum PageListBotTaskQueryError {
     /// The query timed out.
     /// Check your query, or adjust the timeout.
@@ -78,7 +78,7 @@ pub enum PageListBotTaskQueryError {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature="use_serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub enum PageListBotTaskQueryOutputPageSummary {
     /// The page is successfully written, either when query successful or unsuccessful (and eager or not).
     Ok,

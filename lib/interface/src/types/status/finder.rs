@@ -2,24 +2,24 @@
 
 use std::collections;
 use chrono::{DateTime, Utc};
-#[cfg(feature="use_serde")]
+#[cfg(feature = "use_serde")]
 use serde::{Serialize, Deserialize};
-#[cfg(feature="use_serde")]
+#[cfg(feature = "use_serde")]
 use serde_with::serde_as;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature="use_serde",
+#[cfg_attr(feature = "use_serde",
     serde_as,
     derive(Serialize, Deserialize),
 )]
 pub struct PageListBotTaskFinderStatus {
     pub last_run_status: PageListBotTaskFinderRoutineStatus,
-    #[cfg_attr(feature="use_serde", serde_as(as = "DisplayFromStr"))]
+    #[cfg_attr(feature = "use_serde", serde_as(as = "DisplayFromStr"))]
     pub last_run_time: DateTime<Utc>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature="use_serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub enum PageListBotTaskFinderRoutineStatus {
     /// No finder was run yet
     NoRun,
@@ -32,7 +32,7 @@ pub enum PageListBotTaskFinderRoutineStatus {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature="use_serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub enum PageListBotTaskFinderSummary {
     /// The finder failed with fetching global configuration.
     GlobalConfigFailed(String),
@@ -43,7 +43,7 @@ pub enum PageListBotTaskFinderSummary {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature="use_serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub enum PageListBotTaskChange {
     /// This task is not changed.
     NoChange,
@@ -55,4 +55,7 @@ pub enum PageListBotTaskChange {
     Created,
     /// Something is wrong with the task and the task is restarted.
     Restarted,
+    /// Although there is a JSON desciption under the search directory,
+    /// it does not conform to the type standard, and skipped.
+    Skipped,
 }

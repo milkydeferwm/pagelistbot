@@ -6,6 +6,7 @@ use crate::{Host, InnerHostConfig, InnerGlobalStatus, InnerAPI, TaskMapTaskInfo,
 use crate::routine::TaskCommand;
 
 use interface::types::site::{HostConfig, TaskDescription};
+use interface::types::status::finder::{PageListBotTaskChange, PageListBotTaskFinderSummary};
 use futures::{prelude::*, channel::{mpsc, oneshot}, stream};
 use mwapi_responses::query;
 use tokio::time;
@@ -299,7 +300,7 @@ impl<'exec> FinderExec<'exec> {
 
         // prepare output
         // initialize all current task map entries as unchanged.
-        let mut update_result = collections::HashMap::from_iter(self.task_map.iter().map(|(&pid, _)| (pid, FinderTaskChange::NoChange)));
+        let mut update_result: collections::HashMap<u32, FinderTaskChange> = collections::HashMap::from_iter(self.task_map.iter().map(|(&pid, _)| (pid, FinderTaskChange::NoChange)));
         // drop tasks that no longer exists.
         {
             let dropped_futures = (*self.task_map).drain_filter(|k, _| !tasks.contains_key(k))
@@ -364,6 +365,7 @@ impl<'exec> FinderExec<'exec> {
                 } else { unreachable!() }
             }
         }
+        let update_result: collections::HashMap<u32, PageListBotTaskChange> = collections::HashMap::from_iter(update_result.into_iter().map(|(k, v)| (k, v.into())));
         FinderSummary::Success(update_result)
     }
 }
@@ -377,7 +379,17 @@ pub enum FinderSummary {
     /// The finder failed with fetching task list.
     TaskListFailed(FinderError),
     /// Success
-    Success(collections::HashMap<u32, FinderTaskChange>),
+    Success(collections::HashMap<u32, PageListBotTaskChange>),
+}
+
+impl From<FinderSummary> for PageListBotTaskFinderSummary {
+    fn from(value: FinderSummary) -> Self {
+        match value {
+            FinderSummary::GlobalConfigFailed(e) => Self::GlobalConfigFailed(e.to_string()),
+            FinderSummary::TaskListFailed(e) => Self::TaskListFailed(e.to_string()),
+            FinderSummary::Success(r) => Self::Success(r),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -396,8 +408,22 @@ pub enum FinderTaskChange {
     ToKill,
     /// INTERNAL: The task needs to be restarted.
     ToRestart(u64, TaskDescription),
-    /// INTERNAL: The task creation is skipped.
+    /// The task creation is skipped.
     Skipped,
+}
+
+impl From<FinderTaskChange> for PageListBotTaskChange {
+    fn from(value: FinderTaskChange) -> Self {
+        match value {
+            FinderTaskChange::NoChange => Self::NoChange,
+            FinderTaskChange::Killed => Self::Killed,
+            FinderTaskChange::Updated => Self::Updated,
+            FinderTaskChange::Created => Self::Created,
+            FinderTaskChange::Restarted => Self::Restarted,
+            FinderTaskChange::Skipped => Self::Skipped,
+            _ => unreachable!(),
+        }
+    }
 }
 
 /// Errors made by Finder.
@@ -411,4 +437,16 @@ pub enum FinderError {
     ContentModelNotJson,
     /// The query is successful and the page is a JSON page, but cannot deserialize the content into requred struct.
     CondentJsonDeserializeError(Arc<serde_json::Error>),
+}
+
+impl std::error::Error for FinderError {}
+impl core::fmt::Display for FinderError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::APIError(e) => write!(f, "{}", e),
+            Self::MalformedResponse => write!(f, "the API response is malformed"),
+            Self::ContentModelNotJson => write!(f, "the config page does not have a JSON content model"),
+            Self::CondentJsonDeserializeError(e) => write!(f, "{}", e),
+        }
+    }
 }

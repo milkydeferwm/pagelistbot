@@ -55,6 +55,7 @@ struct InnerAPI {
     has_bot_flag: sync::RwLock<bool>,
 }
 
+#[derive(Debug)]
 struct TaskMapTaskInfo {
     pub tx: mpsc::UnboundedSender<routine::TaskCommand>,
     pub handle: task::JoinHandle<()>,
@@ -74,6 +75,7 @@ impl Drop for TaskMapTaskInfo {
 }
 
 /// The public facing task host.
+#[derive(Debug)]
 pub struct Host {
     // Rust gurantees that struct field declared first gets destructed first.
     // thread join handles and corresponding channels
