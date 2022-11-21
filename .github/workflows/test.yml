@@ -30,7 +30,8 @@ jobs:
 
     steps:
       - uses: dtolnay/rust-toolchain@master
-        toolchain: ${{ env.RUSTC_VERSION }}
+        with:
+          toolchain: ${{ env.RUSTC_VERSION }}
       - uses: actions/checkout@v3
       - name: Build
         run: cargo +${{ env.RUSTC_VERSION }} build --verbose --workspace
@@ -51,7 +52,8 @@ jobs:
           apt-get update
           apt-get -y install build-essential pkg-config libssl1.1 libssl-dev
       - uses: dtolnay/rust-toolchain@master
-        toolchain: ${{ env.RUSTC_VERSION }}
+        with:
+          toolchain: ${{ env.RUSTC_VERSION }}
       - uses: actions/checkout@v3
       - name: Build
         run: cargo +${{ env.RUSTC_VERSION }} build --verbose --workspace
