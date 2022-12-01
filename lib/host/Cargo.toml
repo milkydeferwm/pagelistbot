@@ -14,7 +14,7 @@ provider = { path = "../provider", features = [ "full" ] }
 chrono = "0.4.22"
 cron = "0.12.0"
 mwtitle = "0.2.1"
-mwapi = "0.4.1"
+mwapi = "0.4.3"
 mwapi_errors = "0.2.2"
 mwapi_responses = "0.3.1"
 md5 = "0.7.0"
