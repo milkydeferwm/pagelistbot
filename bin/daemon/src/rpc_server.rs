@@ -42,6 +42,13 @@ impl PageListBotRpcServer for ServerImpl {
         }
     }
 
+    async fn get_host_list(&self) -> RpcResult<Vec<String>> {
+        let hostmap = self.host_map.read().await;
+        let mut hosts = hostmap.keys().cloned().collect::<Vec<String>>();
+        hosts.sort();
+        Ok(hosts)
+    }
+
     async fn kill_host(&self, name: &str, force: bool) -> RpcResult<Result<(), PageListBotError>> {
         let tokill_host = {
             let mut hostmap = self.host_map.write().await;

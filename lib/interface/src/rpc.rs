@@ -16,6 +16,10 @@ pub trait PageListBotRpc {
     #[method(name = "new_host")]
     async fn new_host(&self, name: &str, config: NewHostConfig) -> RpcResult<Result<(), PageListBotError>>;
 
+    /// Get a list of running `Host`s.
+    #[method(name = "get_host_list")]
+    async fn get_host_list(&self) -> RpcResult<Vec<String>>;
+
     /// Kill an existing `Host`.
     /// 
     /// The host is identified by its `name`.
