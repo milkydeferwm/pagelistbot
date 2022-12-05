@@ -310,22 +310,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "daemon"
-version = "3.0.0"
-dependencies = [
- "async-trait",
- "clap",
- "futures",
- "host",
- "interface",
- "jsonrpsee",
- "serde",
- "serde_json",
- "tokio",
- "tracing",
-]
-
-[[package]]
 name = "darling"
 version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1127,6 +1111,37 @@ name = "os_str_bytes"
 version = "6.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b7820b9daea5457c9f21c69448905d723fbd21136ccf521748f23fd49e723ee"
+
+[[package]]
+name = "pagelistbot-cli"
+version = "3.0.0"
+dependencies = [
+ "async-trait",
+ "clap",
+ "futures",
+ "interface",
+ "jsonrpsee",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "pagelistbot-daemon"
+version = "3.0.0"
+dependencies = [
+ "async-trait",
+ "clap",
+ "futures",
+ "host",
+ "interface",
+ "jsonrpsee",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+]
 
 [[package]]
 name = "parking_lot"
