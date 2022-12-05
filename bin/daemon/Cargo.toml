@@ -1,5 +1,5 @@
 [package]
-name = "daemon"
+name = "pagelistbot-daemon"
 version = "3.0.0"
 edition = "2021"
 repository = "https://github.com/milkydeferwm/pagelistbot"
@@ -19,3 +19,7 @@ tokio = { version = "1.22", features = [ "macros", "rt", "rt-multi-thread", "sig
 tracing = { version = "^0.1", features = [ "attributes" ] }
 
 [dev-dependencies]
+
+[[bin]]
+name = "pagelistbotd"
+path = "src/main.rs"
