@@ -42,7 +42,7 @@ pub enum PageListBotTaskFinderSummary {
     Success(collections::HashMap<u32, PageListBotTaskChange>),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub enum PageListBotTaskChange {
     /// This task is not changed.
