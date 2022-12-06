@@ -14,4 +14,4 @@ pub use error::PageListBotError;
 
 // default configurations
 pub const DEFAULT_DAEMON_ADDR: &str = "127.0.0.1";
-pub const DEFAULT_DAEMON_PORT: &str = "7378";   // SERV
+pub const DEFAULT_DAEMON_PORT: u16 = 7378;   // SERV

@@ -4,7 +4,8 @@ mod arg;
 mod rpc_server;
 mod startup;
 
-use std::{collections, sync::Arc, path::PathBuf};
+use std::{collections, sync::Arc};
+use clap::Parser;
 use futures::{prelude::*, stream::FuturesUnordered, future::Fuse};
 use interface::PageListBotRpcServer;
 use jsonrpsee::server::ServerBuilder;
@@ -17,8 +18,8 @@ async fn main() {
     // the core, also the heart, of page list bot.
     let host_map = Arc::new(RwLock::new(collections::HashMap::new()));
     // process arguments
-    let args = arg::build_args().get_matches();
-    if let Some(startup_file) = args.get_one::<PathBuf>("startup") {
+    let args = arg::Arg::parse();
+    if let Some(startup_file) = args.startup {
         // read startup file.
         let startup_str = std::fs::read_to_string(startup_file);
         if let Ok(startup_str) = startup_str {
@@ -56,8 +57,8 @@ async fn main() {
         }
     }
     // read addr and port
-    let addr = args.get_one::<String>("addr").unwrap();
-    let port = args.get_one::<u16>("port").unwrap();
+    let addr = args.addr;
+    let port = args.port;
     // set up server
     let serv = ServerImpl::new(host_map.clone());
     let server = ServerBuilder::default().build(format!("{}:{}", addr, port)).await.unwrap();
