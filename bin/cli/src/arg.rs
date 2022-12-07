@@ -6,7 +6,7 @@ use interface::{DEFAULT_DAEMON_ADDR, DEFAULT_DAEMON_PORT};
 pub(crate) struct Arg {
     #[arg(short = 'a', long = "addr", default_value_t = DEFAULT_DAEMON_ADDR.to_string())]
     pub addr: String,
-    #[arg(short = 'a', long = "addr", default_value_t = DEFAULT_DAEMON_PORT)]
+    #[arg(short = 'p', long = "port", default_value_t = DEFAULT_DAEMON_PORT)]
     pub port: u16,
     #[command(subcommand)]
     pub command: Commands,
