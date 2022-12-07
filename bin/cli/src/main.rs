@@ -12,7 +12,7 @@ async fn main() -> Result<(), ClientError> {
     let args = arg::Arg::parse();
     let addr = args.addr;
     let port = args.port;
-    let client = HttpClientBuilder::default().build(format!("{}:{}", addr, port))?;
+    let client = HttpClientBuilder::default().build(format!("http://{}:{}", addr, port))?;
 
     match args.command {
         Commands::NewHost { name, username, password, api_endpoint, db, onsite_config, bot } => handle_new_host(&client, &name, &username, &password, &api_endpoint, &db, &onsite_config, bot).await,
