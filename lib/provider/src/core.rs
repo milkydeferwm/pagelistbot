@@ -7,7 +7,7 @@ use interface::types::ast::Modifier;
 // use std::error::Error;
 
 /// Common type for a page.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PageInfo {
     /// Title object itself
     pub title: Title,
@@ -15,6 +15,18 @@ pub struct PageInfo {
     pub exists: bool,
     /// Whether this page is a redirect (this information can not be inferred when it is an associated page)
     pub redirect: Option<bool>,
+}
+
+impl PartialOrd for PageInfo {
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
+        self.title.partial_cmp(&other.title)
+    }
+}
+
+impl Ord for PageInfo {
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
+        self.title.cmp(&other.title)
+    }
 }
 
 /// A `PagePair` is a page's info and its associated page's info.
