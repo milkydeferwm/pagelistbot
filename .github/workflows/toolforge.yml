@@ -28,4 +28,5 @@ jobs:
         with:
           name: pagelistbot
           path: |
-            target/release/daemon
+            target/release/pagelistbotd
+            target/release/pagelistbot
