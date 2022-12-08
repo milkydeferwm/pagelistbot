@@ -173,8 +173,8 @@ where
     async fn handle_xor(&'solver self, node: &'query Node, set1: &'query Node, set2: &'query Node) -> Result<(BTreeSet<PagePair>, Vec<Error<'query, RecursiveTreeSolverError<D>>>), Error<'query, RecursiveTreeSolverError<D>>> {
         let (set1_result, set1_warnings) = self.solve_internal(set1).await?;
         let (set2_result, set2_warnings) = self.solve_internal(set2).await?;
-        let intersection = set1_result.symmetric_difference(&set2_result);
-        let set = BTreeSet::from_iter(intersection.cloned().collect::<BTreeSet<PagePair>>());
+        let xor = set1_result.symmetric_difference(&set2_result);
+        let set = BTreeSet::from_iter(xor.cloned().collect::<BTreeSet<PagePair>>());
         let mut warnings = Vec::new();
         warnings.extend(set1_warnings);
         warnings.extend(set2_warnings);
@@ -184,8 +184,8 @@ where
     async fn handle_difference(&'solver self, node: &'query Node, set1: &'query Node, set2: &'query Node) -> Result<(BTreeSet<PagePair>, Vec<Error<'query, RecursiveTreeSolverError<D>>>), Error<'query, RecursiveTreeSolverError<D>>> {
         let (set1_result, set1_warnings) = self.solve_internal(set1).await?;
         let (set2_result, set2_warnings) = self.solve_internal(set2).await?;
-        let intersection = set1_result.difference(&set2_result);
-        let set = BTreeSet::from_iter(intersection.cloned().collect::<BTreeSet<PagePair>>());
+        let diff = set1_result.difference(&set2_result);
+        let set = BTreeSet::from_iter(diff.cloned().collect::<BTreeSet<PagePair>>());
         let mut warnings = Vec::new();
         warnings.extend(set1_warnings);
         warnings.extend(set2_warnings);
@@ -195,8 +195,8 @@ where
     async fn handle_union(&'solver self, node: &'query Node, set1: &'query Node, set2: &'query Node) -> Result<(BTreeSet<PagePair>, Vec<Error<'query, RecursiveTreeSolverError<D>>>), Error<'query, RecursiveTreeSolverError<D>>> {
         let (set1_result, set1_warnings) = self.solve_internal(set1).await?;
         let (set2_result, set2_warnings) = self.solve_internal(set2).await?;
-        let intersection = set1_result.union(&set2_result);
-        let set = BTreeSet::from_iter(intersection.cloned().collect::<BTreeSet<PagePair>>());
+        let union = set1_result.union(&set2_result);
+        let set = BTreeSet::from_iter(union.cloned().collect::<BTreeSet<PagePair>>());
         let mut warnings = Vec::new();
         warnings.extend(set1_warnings);
         warnings.extend(set2_warnings);
