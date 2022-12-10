@@ -2,9 +2,6 @@ name: Build Toolforge
 
 on:
   workflow_dispatch:
-  
-env:
-  RUSTC_VERSION: nightly-2022-11-15
 
 jobs:
   build:
@@ -22,7 +19,7 @@ jobs:
           apt-get -y install build-essential pkg-config libssl1.1 libssl-dev
       - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: ${{ env.RUSTC_VERSION }}
+          toolchain: nightly
       - uses: actions/checkout@v3
       - name: Build
         run: cargo build --verbose --release --workspace
