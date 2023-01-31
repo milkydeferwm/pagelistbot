@@ -159,12 +159,12 @@ impl<'task, P: DataProvider> TaskExec<'task, P> {
 
         result.map_err(|_| TaskError::Timeout)?
             .map_err(|e| {
-                let msg = format!("[Ln {}, Col {}] ‐ [Ln {}, Col {}]: {:}", e.node.span.begin_line, e.node.span.begin_col, e.node.span.end_line, e.node.span.end_col, e.content);
+                let msg = format!("[Ln {}, Col {}] ‐ [Ln {}, Col {}]: {:}", e.span.begin_line, e.span.begin_col, e.span.end_line, e.span.end_col, e.content);
                 TaskError::RuntimeError { msg }
             }).map(|ans| {
                 let titles = Vec::from_iter(ans.titles.into_iter().map(|t| self.title_codec.to_pretty(&t)));
                 let warnings = Vec::from_iter(ans.warnings.into_iter().map(|w| {
-                    format!("[Ln {}, Col {}] ‐ [Ln {}, Col {}]: {:}", w.node.span.begin_line, w.node.span.begin_col, w.node.span.end_line, w.node.span.end_col, w.content)
+                    format!("[Ln {}, Col {}] ‐ [Ln {}, Col {}]: {:}", w.span.begin_line, w.span.begin_col, w.span.end_line, w.span.end_col, w.content)
                 }));
                 Answer { titles, warnings }
             })
