@@ -7,6 +7,7 @@ use itypes::ast::*;
 use itypes::site::{OutputFormat, OutputFormatSuccess};
 use itypes::status::task::{PageListBotTaskQuerySummary, PageListBotTaskQueryError, PageListBotTaskQueryOutputPageSummary, PageListBotTaskQueryAnswer};
 use provider::DataProvider;
+use provider::core::{PageInfoProvider, LinksProvider, BackLinksProvider, EmbedsProvider, CategoryMembersProvider, PrefixProvider};
 use serde_json::Value;
 use tracing::{event, Level};
 
@@ -17,7 +18,17 @@ pub(crate) type OutputPageSummaryStatus = PageListBotTaskQueryOutputPageSummary;
 
 /// The object that represents a single execution of a task.
 #[derive(Clone)]
-pub(crate) struct TaskExec<'task, P: DataProvider> {
+pub(crate) struct TaskExec<P>
+where
+    P: DataProvider + Clone + Send,
+    <P as DataProvider>::Error: Send,
+    <P as PageInfoProvider>::OutputStream: Send,
+    <P as LinksProvider>::OutputStream: Send,
+    <P as BackLinksProvider>::OutputStream: Send,
+    <P as EmbedsProvider>::OutputStream: Send,
+    <P as CategoryMembersProvider>::OutputStream: Send,
+    <P as PrefixProvider>::OutputStream: Send,
+{
     // Task specific
     pub id: Option<u64>,
     pub query: String,
@@ -43,10 +54,20 @@ pub(crate) struct TaskExec<'task, P: DataProvider> {
     pub with_bot_flag: bool,
 
     // Data provider
-    pub provider: &'task P,
+    pub provider: P,
 }
 
-impl<'task, P: DataProvider> TaskExec<'task, P> {
+impl<P> TaskExec<P>
+where
+    P: DataProvider + Clone + Send,
+    <P as DataProvider>::Error: Send,
+    <P as PageInfoProvider>::OutputStream: Send,
+    <P as LinksProvider>::OutputStream: Send,
+    <P as BackLinksProvider>::OutputStream: Send,
+    <P as EmbedsProvider>::OutputStream: Send,
+    <P as CategoryMembersProvider>::OutputStream: Send,
+    <P as PrefixProvider>::OutputStream: Send,
+{
 
     /// Helper function to retrive an output page's existing contents.
     /// This function returns everything after the leading pair of `<noinclude></noinclude>` tags, if the query is successful.
@@ -143,9 +164,9 @@ impl<'task, P: DataProvider> TaskExec<'task, P> {
                 let error_msgs = errors.into_iter().map(|(input, errorkind)| {
                     let mut errstr = format!("[Ln {}, Col {}]: ", input.location_line(), input.get_utf8_column());
                     match errorkind {
-                        nom::error::VerboseErrorKind::Nom(e) => errstr.push_str(&format!("{:?}", e)),
-                        nom::error::VerboseErrorKind::Char(c) => errstr.push_str(&format!("expeted `{}`", c)),
-                        nom::error::VerboseErrorKind::Context(s) => errstr.push_str(&format!("context error in section `{}`", s)),
+                        nom::error::VerboseErrorKind::Nom(e) => errstr.push_str(&format!("{e:?}")),
+                        nom::error::VerboseErrorKind::Char(c) => errstr.push_str(&format!("expeted `{c}`")),
+                        nom::error::VerboseErrorKind::Context(s) => errstr.push_str(&format!("context error in section `{s}`")),
                     }
                     errstr
                 }).collect();
@@ -153,18 +174,18 @@ impl<'task, P: DataProvider> TaskExec<'task, P> {
             })?;
 
         let result = {
-            let solver = solver::recursive_tree::RecursiveTreeSolver::new(self.provider, self.query_limit);
+            let solver = solver::tree::TreeSolver::new(self.provider.to_owned(), self.query_limit);
             tokio::time::timeout(tokio::time::Duration::from_secs(self.timeout), solver.solve(&ast)).await
         };
 
         result.map_err(|_| TaskError::Timeout)?
             .map_err(|e| {
-                let msg = format!("[Ln {}, Col {}] ‐ [Ln {}, Col {}]: {:}", e.node.span.begin_line, e.node.span.begin_col, e.node.span.end_line, e.node.span.end_col, e.content);
+                let msg = format!("[Ln {}, Col {}] ‐ [Ln {}, Col {}]: {:}", e.span.begin_line, e.span.begin_col, e.span.end_line, e.span.end_col, e.content);
                 TaskError::RuntimeError { msg }
             }).map(|ans| {
                 let titles = Vec::from_iter(ans.titles.into_iter().map(|t| self.title_codec.to_pretty(&t)));
                 let warnings = Vec::from_iter(ans.warnings.into_iter().map(|w| {
-                    format!("[Ln {}, Col {}] ‐ [Ln {}, Col {}]: {:}", w.node.span.begin_line, w.node.span.begin_col, w.node.span.end_line, w.node.span.end_col, w.content)
+                    format!("[Ln {}, Col {}] ‐ [Ln {}, Col {}]: {:}", w.span.begin_line, w.span.begin_col, w.span.end_line, w.span.end_col, w.content)
                 }));
                 Answer { titles, warnings }
             })
@@ -206,12 +227,12 @@ impl<'task, P: DataProvider> TaskExec<'task, P> {
         match query_result {
             Ok(ans) => {
                 for (w, idx) in ans.warnings.iter().zip(1..) {
-                    params.insert(format!("warn{}", idx), w.to_owned());
+                    params.insert(format!("warn{idx}"), w.to_owned());
                 }
             },
             Err(TaskError::ParseError { msgs }) => {
                 for (w, idx) in msgs.iter().zip(1..) {
-                    params.insert(format!("error{}", idx), w.to_owned());
+                    params.insert(format!("error{idx}"), w.to_owned());
                 }
             },
             Err(TaskError::RuntimeError { msg }) => {

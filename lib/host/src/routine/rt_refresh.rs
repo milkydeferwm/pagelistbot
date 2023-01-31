@@ -55,11 +55,13 @@ impl Host {
                             let mut api = inner_api.api.write().await;
                             let mut siteinfo = inner_api.siteinfo.write().await;
                             let mut has_bot_flag = inner_api.has_bot_flag.write().await;
+                            let mut has_apihighlimits_flag = inner_api.has_apihighlimits_flag.write().await;
                             refresh::RefresherExec {
                                 host_config,
                                 api: &mut api,
                                 siteinfo: &mut siteinfo,
                                 has_bot_flag: &mut has_bot_flag,
+                                has_apihighlimits_flag: &mut has_apihighlimits_flag,
                             }.execute().await
                         }.fuse());
                         last_run_result = RefresherRoutineStatus::Running;

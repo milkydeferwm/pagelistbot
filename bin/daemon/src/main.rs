@@ -61,7 +61,7 @@ async fn main() {
     let port = args.port;
     // set up server
     let serv = ServerImpl::new(host_map.clone());
-    let server = ServerBuilder::default().build(format!("{}:{}", addr, port)).await.unwrap();
+    let server = ServerBuilder::default().build(format!("{addr}:{port}")).await.unwrap();
 
 	let handle = server.start(serv.into_rpc()).unwrap();
     let mut handle_stop = {
@@ -88,7 +88,6 @@ async fn main() {
     let cleanup = async move {
         let mut hostmap = host_map.write().await;
         hostmap.drain()
-            .into_iter()
             .map(|(_, h)| async move { h.shutdown().await; })
             .collect::<FuturesUnordered<_>>()
             .collect::<Vec<_>>()

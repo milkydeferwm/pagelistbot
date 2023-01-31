@@ -66,6 +66,7 @@ impl Host {
             api: sync::RwLock::new(api),
             siteinfo: sync::RwLock::new(siteinfo),
             has_bot_flag: sync::RwLock::new(userinfo.rights.contains("bot")),
+            has_apihighlimits_flag: sync::RwLock::new(userinfo.rights.contains("apihighlimits")),
         });
         // assemble handlers and senders
         let (finder_handle, finder_tx) = Host::start_task_finder(host_config.clone(), global_status.clone(), task_map.clone(), inner_api.clone());
@@ -310,7 +311,7 @@ impl Host {
     pub async fn shutdown(&self) {
         futures::join!(self.close_refresher(), self.close_finder()); // takes at most 2-secs
         let mut task_map = self.inner_task_map.write().await;
-        let dropped_tasks = task_map.drain().into_iter().map(|(pid, v)| async move {
+        let dropped_tasks = task_map.drain().map(|(pid, v)| async move {
             // send shutdown instruction, with 2-sec timeout
             let (r_tx, r_rx) = oneshot::channel();
             if v.tx.unbounded_send(routine::TaskCommand::Shutdown { receipt: r_tx }).is_err() {

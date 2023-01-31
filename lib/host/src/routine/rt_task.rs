@@ -114,6 +114,10 @@ impl Host {
                             let lock = inner_api.has_bot_flag.read().await;
                             *lock
                         };
+                        let has_apihighlimits_flag = {
+                            let lock = inner_api.has_apihighlimits_flag.read().await;
+                            *lock
+                        };
 
                         task_exec.set(async move {
                             // cloned host configs, copied `id`, cloned `desc`, cloned `api` and new `title_codec` are moved.
@@ -127,7 +131,7 @@ impl Host {
 
                             let provider_api = api.clone();
                             let provider_title_codec = title_codec.clone();
-                            let provider = provider::api::APIDataProvider::new(&provider_api, &provider_title_codec);
+                            let provider = provider::api::APIDataProvider::new(provider_api, provider_title_codec, has_apihighlimits_flag);
                             task::TaskExec {
                                 id: Some(id),
                                 query: expr,
@@ -140,7 +144,7 @@ impl Host {
                                 api,
                                 title_codec,
                                 with_bot_flag: prefer_bot && has_bot_flag,
-                                provider: &provider,
+                                provider,
                             }.execute(false).await
                         }.fuse());
                         last_run_result = TaskQueryStatus::Running;

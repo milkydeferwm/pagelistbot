@@ -24,7 +24,7 @@ impl fmt::Display for PageListBotError {
         match self {
             Self::HostAlreadyExists => write!(f, "there is already a host by the same name"),
             Self::HostDoesNotExist => write!(f, "there is no host by the specified name"),
-            Self::HostError(e) => write!(f, "{}", e),
+            Self::HostError(e) => write!(f, "{e}"),
         }
     }
 }

@@ -37,6 +37,7 @@ pub(crate) struct RefresherExec<'exec> {
     pub api: &'exec mut mwapi::Client,
     pub siteinfo: &'exec mut mwtitle::SiteInfo,
     pub has_bot_flag: &'exec mut bool,
+    pub has_apihighlimits_flag: &'exec mut bool,
 }
 
 impl<'exec> RefresherExec<'exec> {
@@ -97,6 +98,7 @@ impl<'exec> RefresherExec<'exec> {
             }
             let userinfo = userinfo.unwrap();
             *(self.has_bot_flag) = userinfo.rights.contains("bot");
+            *(self.has_apihighlimits_flag) = userinfo.rights.contains("apihighlimits");
             RefresherSummary::Refreshed
         }
     }

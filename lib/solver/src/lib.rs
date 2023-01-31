@@ -6,9 +6,12 @@
 //! 
 //! A built-in solver, `RecursiveTreeSolver`, is available through the `recursive-tree` feature gate.
 
+#![allow(incomplete_features)]
+#![feature(async_fn_in_trait, is_some_and)]
+
 pub mod core;
-#[cfg(feature = "recursive-tree")]
-pub mod recursive_tree;
+#[cfg(feature = "tree-future")]
+pub mod tree;
 
 // re-exports from core
-pub use crate::core::{Solver, Answer, Error};
+pub use crate::core::{Solver, Answer, SolverError};
