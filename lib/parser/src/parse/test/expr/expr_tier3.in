@@ -1,120 +1,120 @@
 [
     (
         "\"A\"&\"B\"",
-        Ok(Node {
-            span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 8, end_offset: 7 },
-            expr: Expr::Intersection {
-                set1: Box::new(Node {
-                    span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 4, end_offset: 3 },
-                    expr: Expr::Page {
+        Ok(Node::new(
+            Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 8, end_offset: 7 },
+            Expr::Intersection {
+                set1: Box::new(Node::new(
+                    Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 4, end_offset: 3 },
+                    Expr::Page {
                         titles: BTreeSet::from_iter(["A".to_string()])
                     }
-                }),
-                set2: Box::new(Node {
-                    span: Span { begin_line: 1, begin_col: 5, begin_offset: 4, end_line: 1, end_col: 8, end_offset: 7 },
-                    expr: Expr::Page {
+                )),
+                set2: Box::new(Node::new(
+                    Span { begin_line: 1, begin_col: 5, begin_offset: 4, end_line: 1, end_col: 8, end_offset: 7 },
+                    Expr::Page {
                         titles: BTreeSet::from_iter(["B".to_string()])
                     }
-                })
+                ))
             }
-        })
+        ))
     ),
     (
         "\"A\" & \"B\"",
-        Ok(Node {
-            span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 10, end_offset: 9 },
-            expr: Expr::Intersection {
-                set1: Box::new(Node {
-                    span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 4, end_offset: 3 },
-                    expr: Expr::Page {
+        Ok(Node::new(
+            Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 10, end_offset: 9 },
+            Expr::Intersection {
+                set1: Box::new(Node::new(
+                    Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 4, end_offset: 3 },
+                    Expr::Page {
                         titles: BTreeSet::from_iter(["A".to_string()])
                     }
-                }),
-                set2: Box::new(Node {
-                    span: Span { begin_line: 1, begin_col: 7, begin_offset: 6, end_line: 1, end_col: 10, end_offset: 9 },
-                    expr: Expr::Page {
+                )),
+                set2: Box::new(Node::new(
+                    Span { begin_line: 1, begin_col: 7, begin_offset: 6, end_line: 1, end_col: 10, end_offset: 9 },
+                    Expr::Page {
                         titles: BTreeSet::from_iter(["B".to_string()])
                     }
-                }),
+                )),
             }
-        })
+        ))
     ),
     (
         "\"A\" & \"B\" & \"C\"",
-        Ok(Node {
-            span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 16, end_offset: 15 },
-            expr: Expr::Intersection {
-                set1: Box::new(Node {
-                    span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 10, end_offset: 9 },
-                    expr: Expr::Intersection {
-                        set1: Box::new(Node {
-                            span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 4, end_offset: 3 },
-                            expr: Expr::Page {
+        Ok(Node::new(
+            Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 16, end_offset: 15 },
+            Expr::Intersection {
+                set1: Box::new(Node::new(
+                    Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 10, end_offset: 9 },
+                    Expr::Intersection {
+                        set1: Box::new(Node::new(
+                            Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 4, end_offset: 3 },
+                            Expr::Page {
                                 titles: BTreeSet::from_iter(["A".to_string()])
                             }
-                        }),
-                        set2:Box::new(Node {
-                            span: Span { begin_line: 1, begin_col: 7, begin_offset: 6, end_line: 1, end_col: 10, end_offset: 9 },
-                            expr: Expr::Page {
+                        )),
+                        set2:Box::new(Node::new(
+                            Span { begin_line: 1, begin_col: 7, begin_offset: 6, end_line: 1, end_col: 10, end_offset: 9 },
+                            Expr::Page {
                                 titles: BTreeSet::from_iter(["B".to_string()])
                             }
-                        })
+                        ))
                     }
-                }),
-                set2: Box::new(Node {
-                    span: Span { begin_line: 1, begin_col: 13, begin_offset: 12, end_line: 1, end_col: 16, end_offset: 15 },
-                    expr: Expr::Page {
+                )),
+                set2: Box::new(Node::new(
+                    Span { begin_line: 1, begin_col: 13, begin_offset: 12, end_line: 1, end_col: 16, end_offset: 15 },
+                    Expr::Page {
                         titles: BTreeSet::from_iter(["C".to_string()])
                     }
-                })
+                ))
             }
-        })
+        ))
     ),
     (
         "\"A\" & (toggle(page(\"B\") & \"B\") & \"C\" )",
-        Ok(Node {
-            span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 39, end_offset: 38 },
-            expr: Expr::Intersection {
-                set1: Box::new(Node {
-                    span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 4, end_offset: 3 },
-                    expr: Expr::Page {
+        Ok(Node::new(
+            Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 39, end_offset: 38 },
+            Expr::Intersection {
+                set1: Box::new(Node::new(
+                    Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 4, end_offset: 3 },
+                    Expr::Page {
                         titles: BTreeSet::from_iter(["A".to_string()])
                     }
-                }),
-                set2: Box::new(Node {
-                    span: Span { begin_line: 1, begin_col: 8, begin_offset: 7, end_line: 1, end_col: 37, end_offset: 36 },
-                    expr: Expr::Intersection {
-                        set1: Box::new(Node {
-                            span: Span { begin_line: 1, begin_col: 8, begin_offset: 7, end_line: 1, end_col: 31, end_offset: 30 },
-                            expr: Expr::Toggle {
-                                target: Box::new(Node {
-                                    span: Span { begin_line: 1, begin_col: 15, begin_offset: 14, end_line: 1, end_col: 30, end_offset: 29 },
-                                    expr: Expr::Intersection {
-                                        set1: Box::new(Node {
-                                            span: Span { begin_line: 1, begin_col: 15, begin_offset: 14, end_line: 1, end_col: 24, end_offset: 23 },
-                                            expr: Expr::Page {
+                )),
+                set2: Box::new(Node::new(
+                    Span { begin_line: 1, begin_col: 8, begin_offset: 7, end_line: 1, end_col: 37, end_offset: 36 },
+                    Expr::Intersection {
+                        set1: Box::new(Node::new(
+                            Span { begin_line: 1, begin_col: 8, begin_offset: 7, end_line: 1, end_col: 31, end_offset: 30 },
+                            Expr::Toggle {
+                                target: Box::new(Node::new(
+                                    Span { begin_line: 1, begin_col: 15, begin_offset: 14, end_line: 1, end_col: 30, end_offset: 29 },
+                                    Expr::Intersection {
+                                        set1: Box::new(Node::new(
+                                            Span { begin_line: 1, begin_col: 15, begin_offset: 14, end_line: 1, end_col: 24, end_offset: 23 },
+                                            Expr::Page {
                                                 titles: BTreeSet::from_iter(["B".to_string()])
                                             }
-                                        }),
-                                        set2: Box::new(Node {
-                                            span: Span { begin_line: 1, begin_col: 27, begin_offset: 26, end_line: 1, end_col: 30, end_offset: 29 },
-                                            expr: Expr::Page {
+                                        )),
+                                        set2: Box::new(Node::new(
+                                            Span { begin_line: 1, begin_col: 27, begin_offset: 26, end_line: 1, end_col: 30, end_offset: 29 },
+                                            Expr::Page {
                                                 titles: BTreeSet::from_iter(["B".to_string()])
                                             }
-                                        })
+                                        ))
                                     }
-                                })
+                                ))
                             }
-                        }),
-                        set2: Box::new(Node {
-                            span: Span { begin_line: 1, begin_col: 34, begin_offset: 33, end_line: 1, end_col: 37, end_offset: 36 },
-                            expr: Expr::Page {
+                        )),
+                        set2: Box::new(Node::new(
+                            Span { begin_line: 1, begin_col: 34, begin_offset: 33, end_line: 1, end_col: 37, end_offset: 36 },
+                            Expr::Page {
                                 titles: BTreeSet::from_iter(["C".to_string()])
                             }
-                        })
+                        ))
                     }
-                })
+                ))
             }
-        })
+        ))
     ),
 ]

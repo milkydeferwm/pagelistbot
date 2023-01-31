@@ -52,19 +52,17 @@ where
 
     Ok((
         input,
-        Node {
-            span: Span {
-                begin_line: s_pos.location_line(),
-                begin_col: s_pos.get_utf8_column(),
-                begin_offset: s_pos.location_offset(),
-                end_line: e_pos.location_line(),
-                end_col: e_pos.get_utf8_column(),
-                end_offset: e_pos.location_offset(),
-            },
-            expr: Expr::Page {
-                titles: std::collections::BTreeSet::from_iter(list)
-            }
-        }
+        Node::new(Span {
+            begin_line: s_pos.location_line(),
+            begin_col: s_pos.get_utf8_column(),
+            begin_offset: s_pos.location_offset(),
+            end_line: e_pos.location_line(),
+            end_col: e_pos.get_utf8_column(),
+            end_offset: e_pos.location_offset(),
+        },
+        Expr::Page {
+            titles: std::collections::BTreeSet::from_iter(list)
+        })
     ))
 }
 
@@ -99,20 +97,18 @@ where
 
     Ok((
         input,
-        Node {
-            span: Span {
-                begin_line: s_pos.location_line(),
-                begin_col: s_pos.get_utf8_column(),
-                begin_offset: s_pos.location_offset(),
-                end_line: e_pos.location_line(),
-                end_col: e_pos.get_utf8_column(),
-                end_offset: e_pos.location_offset(),
-            },
-            expr: Expr::Link {
-                target: Box::new(target),
-                modifier,
-            }
-        }
+        Node::new(Span {
+            begin_line: s_pos.location_line(),
+            begin_col: s_pos.get_utf8_column(),
+            begin_offset: s_pos.location_offset(),
+            end_line: e_pos.location_line(),
+            end_col: e_pos.get_utf8_column(),
+            end_offset: e_pos.location_offset(),
+        },
+        Expr::Link {
+            target: Box::new(target),
+            modifier,
+        })
     ))
 }
 
@@ -147,20 +143,18 @@ where
 
     Ok((
         input,
-        Node {
-            span: Span {
-                begin_line: s_pos.location_line(),
-                begin_col: s_pos.get_utf8_column(),
-                begin_offset: s_pos.location_offset(),
-                end_line: e_pos.location_line(),
-                end_col: e_pos.get_utf8_column(),
-                end_offset: e_pos.location_offset(),
-            },
-            expr: Expr::BackLink {
-                target: Box::new(target),
-                modifier,
-            }
-        }
+        Node::new(Span {
+            begin_line: s_pos.location_line(),
+            begin_col: s_pos.get_utf8_column(),
+            begin_offset: s_pos.location_offset(),
+            end_line: e_pos.location_line(),
+            end_col: e_pos.get_utf8_column(),
+            end_offset: e_pos.location_offset(),
+        },
+        Expr::BackLink {
+            target: Box::new(target),
+            modifier,
+        })
     ))
 }
 
@@ -195,20 +189,18 @@ where
 
     Ok((
         input,
-        Node {
-            span: Span {
-                begin_line: s_pos.location_line(),
-                begin_col: s_pos.get_utf8_column(),
-                begin_offset: s_pos.location_offset(),
-                end_line: e_pos.location_line(),
-                end_col: e_pos.get_utf8_column(),
-                end_offset: e_pos.location_offset(),
-            },
-            expr: Expr::Embed {
-                target: Box::new(target),
-                modifier,
-            }
-        }
+        Node::new(Span {
+            begin_line: s_pos.location_line(),
+            begin_col: s_pos.get_utf8_column(),
+            begin_offset: s_pos.location_offset(),
+            end_line: e_pos.location_line(),
+            end_col: e_pos.get_utf8_column(),
+            end_offset: e_pos.location_offset(),
+        },
+        Expr::Embed {
+            target: Box::new(target),
+            modifier,
+        })
     ))
 }
 
@@ -243,20 +235,18 @@ where
 
     Ok((
         input,
-        Node {
-            span: Span {
-                begin_line: s_pos.location_line(),
-                begin_col: s_pos.get_utf8_column(),
-                begin_offset: s_pos.location_offset(),
-                end_line: e_pos.location_line(),
-                end_col: e_pos.get_utf8_column(),
-                end_offset: e_pos.location_offset(),
-            },
-            expr: Expr::InCategory {
-                target: Box::new(target),
-                modifier,
-            }
-        }
+        Node::new(Span {
+            begin_line: s_pos.location_line(),
+            begin_col: s_pos.get_utf8_column(),
+            begin_offset: s_pos.location_offset(),
+            end_line: e_pos.location_line(),
+            end_col: e_pos.get_utf8_column(),
+            end_offset: e_pos.location_offset(),
+        },
+        Expr::InCategory {
+            target: Box::new(target),
+            modifier,
+        })
     ))
 }
 
@@ -291,20 +281,18 @@ where
 
     Ok((
         input,
-        Node {
-            span: Span {
-                begin_line: s_pos.location_line(),
-                begin_col: s_pos.get_utf8_column(),
-                begin_offset: s_pos.location_offset(),
-                end_line: e_pos.location_line(),
-                end_col: e_pos.get_utf8_column(),
-                end_offset: e_pos.location_offset(),
-            },
-            expr: Expr::Prefix {
-                target: Box::new(target),
-                modifier,
-            }
-        }
+        Node::new(Span {
+            begin_line: s_pos.location_line(),
+            begin_col: s_pos.get_utf8_column(),
+            begin_offset: s_pos.location_offset(),
+            end_line: e_pos.location_line(),
+            end_col: e_pos.get_utf8_column(),
+            end_offset: e_pos.location_offset(),
+        },
+        Expr::Prefix {
+            target: Box::new(target),
+            modifier,
+        })
     ))
 }
 
@@ -337,19 +325,17 @@ where
 
     Ok((
         input,
-        Node {
-            span: Span {
-                begin_line: s_pos.location_line(),
-                begin_col: s_pos.get_utf8_column(),
-                begin_offset: s_pos.location_offset(),
-                end_line: e_pos.location_line(),
-                end_col: e_pos.get_utf8_column(),
-                end_offset: e_pos.location_offset(),
-            },
-            expr: Expr::Toggle {
-                target: Box::new(target),
-            }
-        }
+        Node::new(Span {
+            begin_line: s_pos.location_line(),
+            begin_col: s_pos.get_utf8_column(),
+            begin_offset: s_pos.location_offset(),
+            end_line: e_pos.location_line(),
+            end_col: e_pos.get_utf8_column(),
+            end_offset: e_pos.location_offset(),
+        },
+        Expr::Toggle {
+            target: Box::new(target),
+        })
     ))
 }
 
@@ -398,20 +384,18 @@ where
     )))(input)?;
     let folded = exprs.into_iter().fold(set1, |acc, (op, set2, e_pos)| {
         match op {
-            '&' => Node {
-                span: Span {
-                    begin_line: s_pos.location_line(),
-                    begin_col: s_pos.get_utf8_column(),
-                    begin_offset: s_pos.location_offset(),
-                    end_line: e_pos.location_line(),
-                    end_col: e_pos.get_utf8_column(),
-                    end_offset: e_pos.location_offset(),
-                },
-                expr: Expr::Intersection {
-                    set1: Box::new(acc),
-                    set2: Box::new(set2),
-                },
+            '&' => Node::new(Span {
+                begin_line: s_pos.location_line(),
+                begin_col: s_pos.get_utf8_column(),
+                begin_offset: s_pos.location_offset(),
+                end_line: e_pos.location_line(),
+                end_col: e_pos.get_utf8_column(),
+                end_offset: e_pos.location_offset(),
             },
+            Expr::Intersection {
+                set1: Box::new(acc),
+                set2: Box::new(set2),
+            }),
             _ => unreachable!(),
         }
     });
@@ -437,20 +421,18 @@ where
     )))(input)?;
     let folded = exprs.into_iter().fold(set1, |acc, (op, set2, e_pos)| {
         match op {
-            '^' => Node {
-                span: Span {
-                    begin_line: s_pos.location_line(),
-                    begin_col: s_pos.get_utf8_column(),
-                    begin_offset: s_pos.location_offset(),
-                    end_line: e_pos.location_line(),
-                    end_col: e_pos.get_utf8_column(),
-                    end_offset: e_pos.location_offset(),
-                },
-                expr: Expr::Xor {
-                    set1: Box::new(acc),
-                    set2: Box::new(set2),
-                },
+            '^' => Node::new(Span {
+                begin_line: s_pos.location_line(),
+                begin_col: s_pos.get_utf8_column(),
+                begin_offset: s_pos.location_offset(),
+                end_line: e_pos.location_line(),
+                end_col: e_pos.get_utf8_column(),
+                end_offset: e_pos.location_offset(),
             },
+            Expr::Xor {
+                set1: Box::new(acc),
+                set2: Box::new(set2),
+            }),
             _ => unreachable!(),
         }
     });
@@ -477,34 +459,30 @@ where
     )))(input)?;
     let folded = exprs.into_iter().fold(set1, |acc, (op, set2, e_pos)| {
         match op {
-            '+' => Node {
-                span: Span {
-                    begin_line: s_pos.location_line(),
-                    begin_col: s_pos.get_utf8_column(),
-                    begin_offset: s_pos.location_offset(),
-                    end_line: e_pos.location_line(),
-                    end_col: e_pos.get_utf8_column(),
-                    end_offset: e_pos.location_offset(),
-                },
-                expr: Expr::Union {
-                    set1: Box::new(acc),
-                    set2: Box::new(set2),
-                },
+            '+' => Node::new(Span {
+                begin_line: s_pos.location_line(),
+                begin_col: s_pos.get_utf8_column(),
+                begin_offset: s_pos.location_offset(),
+                end_line: e_pos.location_line(),
+                end_col: e_pos.get_utf8_column(),
+                end_offset: e_pos.location_offset(),
             },
-            '-' => Node {
-                span: Span {
-                    begin_line: s_pos.location_line(),
-                    begin_col: s_pos.get_utf8_column(),
-                    begin_offset: s_pos.location_offset(),
-                    end_line: e_pos.location_line(),
-                    end_col: e_pos.get_utf8_column(),
-                    end_offset: e_pos.location_offset(),
-                },
-                expr: Expr::Difference {
-                    set1: Box::new(acc),
-                    set2: Box::new(set2),
-                },
+            Expr::Union {
+                set1: Box::new(acc),
+                set2: Box::new(set2),
+            }),
+            '-' => Node::new(Span {
+                begin_line: s_pos.location_line(),
+                begin_col: s_pos.get_utf8_column(),
+                begin_offset: s_pos.location_offset(),
+                end_line: e_pos.location_line(),
+                end_col: e_pos.get_utf8_column(),
+                end_offset: e_pos.location_offset(),
             },
+            Expr::Difference {
+                set1: Box::new(acc),
+                set2: Box::new(set2),
+            }),
             _ => unreachable!(),
         }
     });

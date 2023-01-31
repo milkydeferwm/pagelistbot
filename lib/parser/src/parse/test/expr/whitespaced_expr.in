@@ -1,38 +1,38 @@
 [
     (
         "\"a\"",
-        Ok(Node {
-            span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 4, end_offset: 3 },
-            expr: Expr::Page {
+        Ok(Node::new(
+            Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 4, end_offset: 3 },
+            Expr::Page {
                 titles: BTreeSet::from_iter(["a".to_string()]),
             }
-        })
+        ))
     ),
     (
         " \"a\"",
-        Ok(Node {
-            span: Span { begin_line: 1, begin_col: 2, begin_offset: 1, end_line: 1, end_col: 5, end_offset: 4 },
-            expr: Expr::Page {
+        Ok(Node::new(
+            Span { begin_line: 1, begin_col: 2, begin_offset: 1, end_line: 1, end_col: 5, end_offset: 4 },
+            Expr::Page {
                 titles: BTreeSet::from_iter(["a".to_string()]),
             }
-        })
+        ))
     ),
     (
         "\"a\" ",
-        Ok(Node {
-            span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 4, end_offset: 3 },
-            expr: Expr::Page {
+        Ok(Node::new(
+            Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 4, end_offset: 3 },
+            Expr::Page {
                 titles: BTreeSet::from_iter(["a".to_string()]),
             }
-        })
+        ))
     ),
     (
         "  \"a\"  ",
-        Ok(Node {
-            span: Span { begin_line: 1, begin_col: 3, begin_offset: 2, end_line: 1, end_col: 6, end_offset: 5 },
-            expr: Expr::Page {
+        Ok(Node::new(
+            Span { begin_line: 1, begin_col: 3, begin_offset: 2, end_line: 1, end_col: 6, end_offset: 5 },
+            Expr::Page {
                 titles: BTreeSet::from_iter(["a".to_string()]),
             }
-        })
+        ))
     )
 ]

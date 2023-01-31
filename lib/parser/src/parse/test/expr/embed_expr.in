@@ -1,45 +1,45 @@
 [
     (
         "embed(\"Main Page\")",
-        Ok(Node {
-            span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 19, end_offset: 18 },
-            expr: Expr::Embed {
-                target: Box::new(Node {
-                    span: Span { begin_line: 1, begin_col: 7, begin_offset: 6, end_line: 1, end_col: 18, end_offset: 17 },
-                    expr: Expr::Page {
+        Ok(Node::new(
+            Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 19, end_offset: 18 },
+            Expr::Embed {
+                target: Box::new(Node::new(
+                    Span { begin_line: 1, begin_col: 7, begin_offset: 6, end_line: 1, end_col: 18, end_offset: 17 },
+                    Expr::Page {
                         titles: BTreeSet::from_iter(["Main Page".to_string()]),
                     },
-                }),
+                )),
                 modifier: Modifier::new()
             },
-        })
+        ))
     ),
     (
         "Embed (\"Main Page\", \"Page List Bot\")",
-        Ok(Node {
-            span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 37, end_offset: 36 },
-            expr: Expr::Embed {
-                target: Box::new(Node {
-                    span: Span { begin_line: 1, begin_col: 8, begin_offset: 7, end_line: 1, end_col: 36, end_offset: 35 },
-                    expr: Expr::Page {
+        Ok(Node::new(
+            Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 37, end_offset: 36 },
+            Expr::Embed {
+                target: Box::new(Node::new(
+                    Span { begin_line: 1, begin_col: 8, begin_offset: 7, end_line: 1, end_col: 36, end_offset: 35 },
+                    Expr::Page {
                         titles: BTreeSet::from_iter(["Main Page".to_string(), "Page List Bot".to_string()]),
                     }
-                }),
+                )),
                 modifier: Modifier::new()
             }
-        })
+        ))
     ),
     (
         "EMBED( \"Main Page\" ) .resolve .ns(1)",
-        Ok(Node {
-            span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 37, end_offset: 36 },
-            expr: Expr::Embed {
-                target: Box::new(Node {
-                    span: Span { begin_line: 1, begin_col: 8, begin_offset: 7, end_line: 1, end_col: 19, end_offset: 18 },
-                    expr: Expr::Page {
+        Ok(Node::new(
+            Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 37, end_offset: 36 },
+            Expr::Embed {
+                target: Box::new(Node::new(
+                    Span { begin_line: 1, begin_col: 8, begin_offset: 7, end_line: 1, end_col: 19, end_offset: 18 },
+                    Expr::Page {
                         titles: BTreeSet::from_iter(["Main Page".to_string()]),
                     }
-                }),
+                )),
                 modifier: Modifier {
                     result_limit: None,
                     resolve_redirects: true,
@@ -49,6 +49,6 @@
                     backlink_trace_redirects: true,
                 }
             }
-        })
+        ))
     )
 ]

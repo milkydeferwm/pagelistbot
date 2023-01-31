@@ -1,120 +1,120 @@
 [
     (
         "\"A\"^\"B\"",
-        Ok(Node {
-            span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 8, end_offset: 7 },
-            expr: Expr::Xor {
-                set1: Box::new(Node {
-                    span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 4, end_offset: 3 },
-                    expr: Expr::Page {
+        Ok(Node::new(
+            Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 8, end_offset: 7 },
+            Expr::Xor {
+                set1: Box::new(Node::new(
+                    Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 4, end_offset: 3 },
+                    Expr::Page {
                         titles: BTreeSet::from_iter(["A".to_string()])
                     }
-                }),
-                set2: Box::new(Node {
-                    span: Span { begin_line: 1, begin_col: 5, begin_offset: 4, end_line: 1, end_col: 8, end_offset: 7 },
-                    expr: Expr::Page {
+                )),
+                set2: Box::new(Node::new(
+                    Span { begin_line: 1, begin_col: 5, begin_offset: 4, end_line: 1, end_col: 8, end_offset: 7 },
+                    Expr::Page {
                         titles: BTreeSet::from_iter(["B".to_string()])
                     }
-                })
+                ))
             }
-        })
+        ))
     ),
     (
         "\"A\" ^ \"B\"",
-        Ok(Node {
-            span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 10, end_offset: 9 },
-            expr: Expr::Xor {
-                set1: Box::new(Node {
-                    span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 4, end_offset: 3 },
-                    expr: Expr::Page {
+        Ok(Node::new(
+            Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 10, end_offset: 9 },
+            Expr::Xor {
+                set1: Box::new(Node::new(
+                    Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 4, end_offset: 3 },
+                    Expr::Page {
                         titles: BTreeSet::from_iter(["A".to_string()])
                     }
-                }),
-                set2: Box::new(Node {
-                    span: Span { begin_line: 1, begin_col: 7, begin_offset: 6, end_line: 1, end_col: 10, end_offset: 9 },
-                    expr: Expr::Page {
+                )),
+                set2: Box::new(Node::new(
+                    Span { begin_line: 1, begin_col: 7, begin_offset: 6, end_line: 1, end_col: 10, end_offset: 9 },
+                    Expr::Page {
                         titles: BTreeSet::from_iter(["B".to_string()])
                     }
-                }),
+                )),
             }
-        })
+        ))
     ),
     (
         "\"A\" ^ \"B\" ^ \"C\"",
-        Ok(Node {
-            span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 16, end_offset: 15 },
-            expr: Expr::Xor {
-                set1: Box::new(Node {
-                    span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 10, end_offset: 9 },
-                    expr: Expr::Xor {
-                        set1: Box::new(Node {
-                            span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 4, end_offset: 3 },
-                            expr: Expr::Page {
+        Ok(Node::new(
+            Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 16, end_offset: 15 },
+            Expr::Xor {
+                set1: Box::new(Node::new(
+                    Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 10, end_offset: 9 },
+                    Expr::Xor {
+                        set1: Box::new(Node::new(
+                            Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 4, end_offset: 3 },
+                            Expr::Page {
                                 titles: BTreeSet::from_iter(["A".to_string()])
                             }
-                        }),
-                        set2:Box::new(Node {
-                            span: Span { begin_line: 1, begin_col: 7, begin_offset: 6, end_line: 1, end_col: 10, end_offset: 9 },
-                            expr: Expr::Page {
+                        )),
+                        set2:Box::new(Node::new(
+                            Span { begin_line: 1, begin_col: 7, begin_offset: 6, end_line: 1, end_col: 10, end_offset: 9 },
+                            Expr::Page {
                                 titles: BTreeSet::from_iter(["B".to_string()])
                             }
-                        })
+                        ))
                     }
-                }),
-                set2: Box::new(Node {
-                    span: Span { begin_line: 1, begin_col: 13, begin_offset: 12, end_line: 1, end_col: 16, end_offset: 15 },
-                    expr: Expr::Page {
+                )),
+                set2: Box::new(Node::new(
+                    Span { begin_line: 1, begin_col: 13, begin_offset: 12, end_line: 1, end_col: 16, end_offset: 15 },
+                    Expr::Page {
                         titles: BTreeSet::from_iter(["C".to_string()])
                     }
-                })
+                ))
             }
-        })
+        ))
     ),
     (
         "\"A\" ^ toggle(page(\"B\") ^ \"B\") & \"C\" ",
-        Ok(Node {
-            span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 36, end_offset: 35 },
-            expr: Expr::Xor {
-                set1: Box::new(Node {
-                    span: Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 4, end_offset: 3 },
-                    expr: Expr::Page {
+        Ok(Node::new(
+            Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 36, end_offset: 35 },
+            Expr::Xor {
+                set1: Box::new(Node::new(
+                    Span { begin_line: 1, begin_col: 1, begin_offset: 0, end_line: 1, end_col: 4, end_offset: 3 },
+                    Expr::Page {
                         titles: BTreeSet::from_iter(["A".to_string()])
                     }
-                }),
-                set2: Box::new(Node {
-                    span: Span { begin_line: 1, begin_col: 7, begin_offset: 6, end_line: 1, end_col: 36, end_offset: 35 },
-                    expr: Expr::Intersection {
-                        set1: Box::new(Node {
-                            span: Span { begin_line: 1, begin_col: 7, begin_offset: 6, end_line: 1, end_col: 30, end_offset: 29 },
-                            expr: Expr::Toggle {
-                                target: Box::new(Node {
-                                    span: Span { begin_line: 1, begin_col: 14, begin_offset: 13, end_line: 1, end_col: 29, end_offset: 28 },
-                                    expr: Expr::Xor {
-                                        set1: Box::new(Node {
-                                            span: Span { begin_line: 1, begin_col: 14, begin_offset: 13, end_line: 1, end_col: 23, end_offset: 22 },
-                                            expr: Expr::Page {
+                )),
+                set2: Box::new(Node::new(
+                    Span { begin_line: 1, begin_col: 7, begin_offset: 6, end_line: 1, end_col: 36, end_offset: 35 },
+                    Expr::Intersection {
+                        set1: Box::new(Node::new(
+                            Span { begin_line: 1, begin_col: 7, begin_offset: 6, end_line: 1, end_col: 30, end_offset: 29 },
+                            Expr::Toggle {
+                                target: Box::new(Node::new(
+                                    Span { begin_line: 1, begin_col: 14, begin_offset: 13, end_line: 1, end_col: 29, end_offset: 28 },
+                                    Expr::Xor {
+                                        set1: Box::new(Node::new(
+                                            Span { begin_line: 1, begin_col: 14, begin_offset: 13, end_line: 1, end_col: 23, end_offset: 22 },
+                                            Expr::Page {
                                                 titles: BTreeSet::from_iter(["B".to_string()])
                                             }
-                                        }),
-                                        set2: Box::new(Node {
-                                            span: Span { begin_line: 1, begin_col: 26, begin_offset: 25, end_line: 1, end_col: 29, end_offset: 28 },
-                                            expr: Expr::Page {
+                                        )),
+                                        set2: Box::new(Node::new(
+                                            Span { begin_line: 1, begin_col: 26, begin_offset: 25, end_line: 1, end_col: 29, end_offset: 28 },
+                                            Expr::Page {
                                                 titles: BTreeSet::from_iter(["B".to_string()])
                                             }
-                                        })
+                                        ))
                                     }
-                                })
+                                ))
                             }
-                        }),
-                        set2: Box::new(Node {
-                            span: Span { begin_line: 1, begin_col: 33, begin_offset: 32, end_line: 1, end_col: 36, end_offset: 35 },
-                            expr: Expr::Page {
+                        )),
+                        set2: Box::new(Node::new(
+                            Span { begin_line: 1, begin_col: 33, begin_offset: 32, end_line: 1, end_col: 36, end_offset: 35 },
+                            Expr::Page {
                                 titles: BTreeSet::from_iter(["C".to_string()])
                             }
-                        })
+                        ))
                     }
-                })
+                ))
             }
-        })
+        ))
     ),
 ]
