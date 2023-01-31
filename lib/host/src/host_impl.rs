@@ -66,6 +66,7 @@ impl Host {
             api: sync::RwLock::new(api),
             siteinfo: sync::RwLock::new(siteinfo),
             has_bot_flag: sync::RwLock::new(userinfo.rights.contains("bot")),
+            has_apihighlimits_flag: sync::RwLock::new(userinfo.rights.contains("apihighlimits")),
         });
         // assemble handlers and senders
         let (finder_handle, finder_tx) = Host::start_task_finder(host_config.clone(), global_status.clone(), task_map.clone(), inner_api.clone());

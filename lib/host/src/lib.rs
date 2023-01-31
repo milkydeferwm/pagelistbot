@@ -53,6 +53,8 @@ struct InnerAPI {
     siteinfo: sync::RwLock<mwtitle::SiteInfo>,
     /// Does the bot have a `bot` flag?
     has_bot_flag: sync::RwLock<bool>,
+    /// Does the bot have a `apihighlimits` flag?
+    has_apihighlimits_flag: sync::RwLock<bool>,
 }
 
 #[derive(Debug)]
