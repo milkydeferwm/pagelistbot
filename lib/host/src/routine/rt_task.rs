@@ -144,7 +144,7 @@ impl Host {
                                 api,
                                 title_codec,
                                 with_bot_flag: prefer_bot && has_bot_flag,
-                                provider: &provider,
+                                provider,
                             }.execute(false).await
                         }.fuse());
                         last_run_result = TaskQueryStatus::Running;

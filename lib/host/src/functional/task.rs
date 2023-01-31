@@ -7,6 +7,7 @@ use itypes::ast::*;
 use itypes::site::{OutputFormat, OutputFormatSuccess};
 use itypes::status::task::{PageListBotTaskQuerySummary, PageListBotTaskQueryError, PageListBotTaskQueryOutputPageSummary, PageListBotTaskQueryAnswer};
 use provider::DataProvider;
+use provider::core::{PageInfoProvider, LinksProvider, BackLinksProvider, EmbedsProvider, CategoryMembersProvider, PrefixProvider};
 use serde_json::Value;
 use tracing::{event, Level};
 
@@ -17,7 +18,17 @@ pub(crate) type OutputPageSummaryStatus = PageListBotTaskQueryOutputPageSummary;
 
 /// The object that represents a single execution of a task.
 #[derive(Clone)]
-pub(crate) struct TaskExec<'task, P: DataProvider> {
+pub(crate) struct TaskExec<P>
+where
+    P: DataProvider + Clone + Send,
+    <P as DataProvider>::Error: Send,
+    <P as PageInfoProvider>::OutputStream: Send,
+    <P as LinksProvider>::OutputStream: Send,
+    <P as BackLinksProvider>::OutputStream: Send,
+    <P as EmbedsProvider>::OutputStream: Send,
+    <P as CategoryMembersProvider>::OutputStream: Send,
+    <P as PrefixProvider>::OutputStream: Send,
+{
     // Task specific
     pub id: Option<u64>,
     pub query: String,
@@ -43,10 +54,20 @@ pub(crate) struct TaskExec<'task, P: DataProvider> {
     pub with_bot_flag: bool,
 
     // Data provider
-    pub provider: &'task P,
+    pub provider: P,
 }
 
-impl<'task, P: DataProvider> TaskExec<'task, P> {
+impl<P> TaskExec<P>
+where
+    P: DataProvider + Clone + Send,
+    <P as DataProvider>::Error: Send,
+    <P as PageInfoProvider>::OutputStream: Send,
+    <P as LinksProvider>::OutputStream: Send,
+    <P as BackLinksProvider>::OutputStream: Send,
+    <P as EmbedsProvider>::OutputStream: Send,
+    <P as CategoryMembersProvider>::OutputStream: Send,
+    <P as PrefixProvider>::OutputStream: Send,
+{
 
     /// Helper function to retrive an output page's existing contents.
     /// This function returns everything after the leading pair of `<noinclude></noinclude>` tags, if the query is successful.
@@ -153,7 +174,7 @@ impl<'task, P: DataProvider> TaskExec<'task, P> {
             })?;
 
         let result = {
-            let solver = solver::recursive_tree::RecursiveTreeSolver::new(self.provider, self.query_limit);
+            let solver = solver::tree::TreeSolver::new(self.provider.to_owned(), self.query_limit);
             tokio::time::timeout(tokio::time::Duration::from_secs(self.timeout), solver.solve(&ast)).await
         };
 
