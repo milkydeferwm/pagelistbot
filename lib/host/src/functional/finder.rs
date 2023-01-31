@@ -443,10 +443,10 @@ impl std::error::Error for FinderError {}
 impl core::fmt::Display for FinderError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::APIError(e) => write!(f, "{}", e),
+            Self::APIError(e) => write!(f, "{e}"),
             Self::MalformedResponse => write!(f, "the API response is malformed"),
             Self::ContentModelNotJson => write!(f, "the config page does not have a JSON content model"),
-            Self::CondentJsonDeserializeError(e) => write!(f, "{}", e),
+            Self::CondentJsonDeserializeError(e) => write!(f, "{e}"),
         }
     }
 }

@@ -311,7 +311,7 @@ impl Host {
     pub async fn shutdown(&self) {
         futures::join!(self.close_refresher(), self.close_finder()); // takes at most 2-secs
         let mut task_map = self.inner_task_map.write().await;
-        let dropped_tasks = task_map.drain().into_iter().map(|(pid, v)| async move {
+        let dropped_tasks = task_map.drain().map(|(pid, v)| async move {
             // send shutdown instruction, with 2-sec timeout
             let (r_tx, r_rx) = oneshot::channel();
             if v.tx.unbounded_send(routine::TaskCommand::Shutdown { receipt: r_tx }).is_err() {

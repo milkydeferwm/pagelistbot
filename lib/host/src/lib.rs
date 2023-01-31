@@ -132,11 +132,11 @@ impl error::Error for HostError {}
 impl fmt::Display for HostError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::APIError(e) => write!(f, "API error: {}", e),
+            Self::APIError(e) => write!(f, "API error: {e}"),
             Self::IsShuttingDown => write!(f, "the requested entity is already shutting down"),
             Self::NotRunning => write!(f, "the requested routine is already at sleep"),
             Self::AlreadyRunning => write!(f, "the requested routine is already running"),
-            Self::TaskDescriptionNotNewer(newer) => write!(f, "the requested task routine has a newer task description version: {}", newer),
+            Self::TaskDescriptionNotNewer(newer) => write!(f, "the requested task routine has a newer task description version: {newer}"),
             Self::TaskDoesNotExist => write!(f, "the requested task does not exist"),
             Self::HungUp => write!(f, "the requested entity unexpected hung up"),
         }

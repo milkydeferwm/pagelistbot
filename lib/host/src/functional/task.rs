@@ -164,9 +164,9 @@ where
                 let error_msgs = errors.into_iter().map(|(input, errorkind)| {
                     let mut errstr = format!("[Ln {}, Col {}]: ", input.location_line(), input.get_utf8_column());
                     match errorkind {
-                        nom::error::VerboseErrorKind::Nom(e) => errstr.push_str(&format!("{:?}", e)),
-                        nom::error::VerboseErrorKind::Char(c) => errstr.push_str(&format!("expeted `{}`", c)),
-                        nom::error::VerboseErrorKind::Context(s) => errstr.push_str(&format!("context error in section `{}`", s)),
+                        nom::error::VerboseErrorKind::Nom(e) => errstr.push_str(&format!("{e:?}")),
+                        nom::error::VerboseErrorKind::Char(c) => errstr.push_str(&format!("expeted `{c}`")),
+                        nom::error::VerboseErrorKind::Context(s) => errstr.push_str(&format!("context error in section `{s}`")),
                     }
                     errstr
                 }).collect();
@@ -227,12 +227,12 @@ where
         match query_result {
             Ok(ans) => {
                 for (w, idx) in ans.warnings.iter().zip(1..) {
-                    params.insert(format!("warn{}", idx), w.to_owned());
+                    params.insert(format!("warn{idx}"), w.to_owned());
                 }
             },
             Err(TaskError::ParseError { msgs }) => {
                 for (w, idx) in msgs.iter().zip(1..) {
-                    params.insert(format!("error{}", idx), w.to_owned());
+                    params.insert(format!("error{idx}"), w.to_owned());
                 }
             },
             Err(TaskError::RuntimeError { msg }) => {
