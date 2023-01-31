@@ -7,7 +7,7 @@ use serde::{Serialize, Deserialize};
 use serde_with::{SerializeDisplay, DeserializeFromStr};
 
 /// A span object. `Span` contains full location details of the source text.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub struct Span {
     pub begin_line: u32,
@@ -21,8 +21,41 @@ pub struct Span {
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub struct Node {
-    pub span: Span,
-    pub expr: Expr,
+    span: Span,
+    expr: Expr,
+}
+
+impl Node {
+    pub fn new(span: Span, expr: Expr) -> Self {
+        Self { span, expr }
+    }
+    pub fn get_span(&self) -> Span {
+        self.span
+    }
+
+    pub fn get_expr(&self) -> &Expr {
+        &self.expr
+    }
+
+    pub fn get_titles(&self) -> &BTreeSet<String> {
+        self.expr.get_titles()
+    }
+
+    pub fn get_child(&self) -> &Node {
+        self.expr.get_child()
+    }
+
+    pub fn get_modifier(&self) -> &Modifier {
+        self.expr.get_modifier()
+    }
+
+    pub fn get_child_left(&self) -> &Node {
+        self.expr.get_child_left()
+    }
+
+    pub fn get_child_right(&self) -> &Node {
+        self.expr.get_child_right()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -42,6 +75,58 @@ pub enum Expr {
     Prefix { target: Box<Node>, modifier: Modifier },
 
     Toggle { target: Box<Node> },
+}
+
+impl Expr {
+    pub fn get_titles(&self) -> &BTreeSet<String> {
+        match self {
+            Expr::Page { titles } => titles,
+            _ => panic!("not a `Page` node"),
+        }
+    }
+
+    pub fn get_child(&self) -> &Node {
+        match self {
+            Expr::Link { target, .. } => target,
+            Expr::BackLink { target, .. } => target,
+            Expr::Embed { target, .. } => target,
+            Expr::InCategory { target, .. } => target,
+            Expr::Prefix { target, .. } => target,
+            Expr::Toggle { target } => target,
+            _ => panic!("node does not have a target"),
+        }
+    }
+
+    pub fn get_modifier(&self) -> &Modifier {
+        match self {
+            Expr::Link { modifier, .. } => modifier,
+            Expr::BackLink { modifier, .. } => modifier,
+            Expr::Embed { modifier, .. } => modifier,
+            Expr::InCategory { modifier, .. } => modifier,
+            Expr::Prefix { modifier, .. } => modifier,
+            _ => panic!("node does not have modifier"),
+        }
+    }
+
+    pub fn get_child_left(&self) -> &Node {
+        match self {
+            Expr::Intersection { set1, .. } => set1,
+            Expr::Union { set1, .. } => set1,
+            Expr::Difference { set1, .. } => set1,
+            Expr::Xor { set1, .. } => set1,
+            _ => panic!("node does not have a left child"),
+        }
+    }
+
+    pub fn get_child_right(&self) -> &Node {
+        match self {
+            Expr::Intersection { set2, .. } => set2,
+            Expr::Union { set2, .. } => set2,
+            Expr::Difference { set2, .. } => set2,
+            Expr::Xor { set2, .. } => set2,
+            _ => panic!("node does not have a right child"),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
