@@ -1,23 +1,24 @@
 //! Set operations.
 use core::{pin::Pin, task::{Context, Poll}};
 use crate::SolverError;
-use std::{collections::BTreeSet, error::Error};
+use std::collections::BTreeSet;
 use super::{TreeSolverError, DynamicFalliablePageInfoPairStream};
 
 use futures::{stream::TryStream, Stream, channel::mpsc::UnboundedSender};
 use interface::types::ast::{Node, Span, NumberOrInf};
 use pin_project::pin_project;
-use provider::{PageInfo, Pair, DataProvider, core::{PageInfoProvider, LinksProvider, BackLinksProvider, EmbedsProvider, CategoryMembersProvider, PrefixProvider}};
+use provider::{PageInfo, Pair, DataProvider};
 
 macro_rules! set_operation {
     ($vis:vis, $name:ident, $op:path, $from_node:ident) => {
         #[pin_project]
         #[must_use = "streams do nothing unless you poll them"]
         #[derive(Debug)]
-        $vis struct $name<F1, F2, E>
+        $vis struct $name<F1, F2, P>
         where
-            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<E>>>,
-            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<E>>>,
+            P: DataProvider,
+            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
+            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
         {
             #[pin] st1: F1,
             #[pin] st2: F2,
@@ -27,16 +28,16 @@ macro_rules! set_operation {
             set_2: BTreeSet<Pair<PageInfo>>,
             output_set: Option<BTreeSet<Pair<PageInfo>>>,
             span: Span,
-            warning_sender: UnboundedSender<SolverError<TreeSolverError<E>>>,
+            warning_sender: UnboundedSender<SolverError<TreeSolverError<P>>>,
         }
 
-        impl<F1, F2, E> $name<F1, F2, E>
+        impl<F1, F2, P> $name<F1, F2, P>
         where
-            E: Error,
-            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<E>>>,
-            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<E>>>,
+            P: DataProvider,
+            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
+            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
         {
-            pub fn new(stream1: F1, stream2: F2, span: Span, warning_sender: UnboundedSender<SolverError<TreeSolverError<E>>>) -> Self {
+            pub fn new(stream1: F1, stream2: F2, span: Span, warning_sender: UnboundedSender<SolverError<TreeSolverError<P>>>) -> Self {
                 Self {
                     st1: stream1,
                     st2: stream2,
@@ -51,13 +52,13 @@ macro_rules! set_operation {
             }
         }
 
-        impl<F1, F2, E> Stream for $name<F1, F2, E>
+        impl<F1, F2, P> Stream for $name<F1, F2, P>
         where
-            E: Error,
-            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<E>>>,
-            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<E>>>,
+            P: DataProvider,
+            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
+            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
         {
-            type Item = Result<Pair<PageInfo>, SolverError<TreeSolverError<E>>>;
+            type Item = Result<Pair<PageInfo>, SolverError<TreeSolverError<P>>>;
         
             fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
                 let mut this = self.project();
@@ -110,24 +111,25 @@ macro_rules! set_operation {
             }
         }
 
-        unsafe impl<F1, F2, E> Send for $name<F1, F2, E>
+        unsafe impl<F1, F2, P> Send for $name<F1, F2, P>
         where
-            E: Error + Send,
-            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<E>>> + Send,
-            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<E>>> + Send,
+            P: DataProvider,
+            <P as DataProvider>::Error: Send,
+            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>> + Send,
+            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>> + Send,
         {}
 
         /// construct a stream from given node.
-        $vis fn $from_node<'p, P>(provider: P, node: &Node, default_limit: NumberOrInf<usize>, warning_sender: UnboundedSender<SolverError<TreeSolverError<<P as DataProvider>::Error>>>) -> $name<DynamicFalliablePageInfoPairStream<'p, <P as DataProvider>::Error>, DynamicFalliablePageInfoPairStream<'p, <P as DataProvider>::Error>, <P as DataProvider>::Error>
+        $vis fn $from_node<'p, P>(provider: P, node: &Node, default_limit: NumberOrInf<usize>, warning_sender: UnboundedSender<SolverError<TreeSolverError<P>>>) -> $name<DynamicFalliablePageInfoPairStream<'p, P>, DynamicFalliablePageInfoPairStream<'p, P>, P>
         where
             P: DataProvider + Clone + Send + 'p,
             <P as DataProvider>::Error: Send + 'p,
-            <P as PageInfoProvider>::OutputStream: Send + 'p,
-            <P as LinksProvider>::OutputStream: Send + 'p,
-            <P as BackLinksProvider>::OutputStream: Send + 'p,
-            <P as EmbedsProvider>::OutputStream: Send + 'p,
-            <P as CategoryMembersProvider>::OutputStream: Send + 'p,
-            <P as PrefixProvider>::OutputStream: Send + 'p,
+            <P as DataProvider>::PageInfoRawStream: Send + 'p,
+            <P as DataProvider>::LinksStream: Send + 'p,
+            <P as DataProvider>::BacklinksStream: Send + 'p,
+            <P as DataProvider>::EmbedsStream: Send + 'p,
+            <P as DataProvider>::CategoryMembersStream: Send + 'p,
+            <P as DataProvider>::PrefixStream: Send + 'p,
         {
             let stream1 = super::dispatch_node(provider.clone(), node.get_child_left(), default_limit, warning_sender.clone());
             let stream2 = super::dispatch_node(provider.clone(), node.get_child_right(), default_limit, warning_sender.clone());

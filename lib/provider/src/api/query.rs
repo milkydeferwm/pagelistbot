@@ -19,7 +19,9 @@ struct QueryState {
     cache: VecDeque<Pair<PageInfo>>,
 }
 
-pub(super) fn query_complete(api: Client, title_codec: TitleCodec, param: HashMap<String, String>) -> impl TryStream<Ok=Pair<PageInfo>, Error=mwapi::Error, Item = Result<Pair<PageInfo>, mwapi::Error>> + Send {
+pub(super) type QueryStream = impl TryStream<Ok=Pair<PageInfo>, Error=mwapi::Error, Item = Result<Pair<PageInfo>, mwapi::Error>> + Send;
+
+pub(super) fn query_complete(api: Client, title_codec: TitleCodec, param: HashMap<String, String>) -> QueryStream {
     let start_state = QueryState {
         api,
         title_codec,

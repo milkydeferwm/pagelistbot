@@ -1,24 +1,23 @@
+use core::future::{Ready, ready};
 use crate::core::{PageInfo, Pair};
-use futures::stream::BoxStream;
-use futures::{stream, StreamExt};
+use futures::{StreamExt, future::Either, stream::{self, Empty, Flatten, Iter, Once}};
 use interface::types::ast::Modifier;
 use itertools::Itertools;
-use mwapi::{Client, Error};
-use mwtitle::{Title, TitleCodec};
-use std::{collections::HashMap};
+use mwtitle::Title;
+use std::{collections::HashMap, vec::IntoIter};
 
 mod query;
-use query::query_complete;
+use query::{QueryStream, query_complete};
 
 #[derive(Debug, Clone)]
 pub struct APIDataProvider {
-    api: Client,
-    title_codec: TitleCodec,
+    api: mwapi::Client,
+    title_codec: mwtitle::TitleCodec,
     api_highlimit: bool,
 }
 
 impl APIDataProvider {
-    pub fn new(api: Client, title_codec: TitleCodec, api_highlimit: bool) -> Self {
+    pub fn new(api: mwapi::Client, title_codec: mwtitle::TitleCodec, api_highlimit: bool) -> Self {
         APIDataProvider {
             api,
             title_codec,
@@ -27,9 +26,11 @@ impl APIDataProvider {
     }
 }
 
-impl crate::core::PageInfoProvider for APIDataProvider {
-    type Error = Error;
-    type OutputStream = BoxStream<'static, Result<Pair<PageInfo>, Self::Error>>;
+impl crate::core::DataProvider for APIDataProvider {
+    type Error = mwapi::Error;
+
+    // impl for `pageinfo`.
+    type PageInfoStream = Flatten<Iter<IntoIter<QueryStream>>>;
 
     /// Fetch a set of pages' basic information.
     /// This function essentially calls 
@@ -38,7 +39,7 @@ impl crate::core::PageInfoProvider for APIDataProvider {
     /// This function is called by `Page` expression. It is assumed that nobody would **hand-write** thousands of page names in a query.
     /// 
     /// This function is not intended to be called during some intermediate step, because at that time there would already be thousands of pages to be queried.
-    fn get_page_info<T: IntoIterator<Item=Title>>(self, titles: T) -> Self::OutputStream {
+    fn get_page_info<T: IntoIterator<Item=Title>>(self, titles: T) -> Self::PageInfoStream {
         let chunk_size = if self.api_highlimit { 500 } else { 50 };
         let title_chunks: Vec<Vec<Title>> = titles.into_iter()
             .chunks(chunk_size).into_iter()
@@ -53,36 +54,37 @@ impl crate::core::PageInfoProvider for APIDataProvider {
             ]);
             streams.push(query_complete(api, title_codec, params));
         }
-        Box::pin(stream::iter(streams).flatten())
+        stream::iter(streams).flatten()
     }
 
+    // impl for `pageinfo`.
+    type PageInfoRawStream = Either<Self::PageInfoStream, Once<Ready<Result<Pair<PageInfo>, mwapi::Error>>>>;
+
     /// Basically the same as `get_page_info`, but convert from string.
-    fn get_page_info_from_raw<T: IntoIterator<Item=String>>(self, titles_raw: T) -> Self::OutputStream {
+    fn get_page_info_from_raw<T: IntoIterator<Item=String>>(self, titles_raw: T) -> Self::PageInfoRawStream {
         // try convert all
-        let titles: Result<Vec<Title>, Error> = titles_raw.into_iter()
+        let titles: Result<Vec<Title>, mwapi::Error> = titles_raw.into_iter()
             .map(|raw| self.title_codec.new_title(&raw))
             .try_collect()
             .map_err(|e| e.into());
         match titles {
-            Ok(titles) => self.get_page_info(titles),
-            Err(e) => Box::pin(stream::once(async { Err(e) })),
+            Ok(titles) => Either::Left(self.get_page_info(titles)),
+            Err(e) => Either::Right(stream::once(ready(Err(e)))),
         }
     }
-}
 
-impl crate::core::LinksProvider for APIDataProvider {
-    type Error = Error;
-    type OutputStream = BoxStream<'static, Result<Pair<PageInfo>, Self::Error>>;
+    // impl for `links`.
+    type LinksStream = Either<Flatten<Iter<IntoIter<QueryStream>>>, Empty<Result<Pair<PageInfo>, mwapi::Error>>>;
 
     /// Fetch a page's links on that page.
     /// This function essentially calls
     /// ```action=query&prop=info&inprop=associatedpage|subjectid|talkid&generator=links&gplnamespace=<ns>&gpllimit=max&redirects=<resolve>&titles=<titles>```
     /// 
     /// This function is called by `Link` expression. A warning will be thrown if `titles` contains more than one page.
-    fn get_links<T: IntoIterator<Item=Title>>(self, titles: T, modifier: &Modifier) -> Self::OutputStream {
+    fn get_links<T: IntoIterator<Item=Title>>(self, titles: T, modifier: &Modifier) -> Self::LinksStream {
         // shortcut, if all namespaces are filtered out.
         if modifier.namespace.as_ref().is_some_and(|ns| ns.is_empty()) {
-            Box::pin(stream::empty())
+            Either::Right(stream::empty())
         } else {
             // do normal
             let chunk_size = if self.api_highlimit { 500 } else { 50 };
@@ -110,24 +112,22 @@ impl crate::core::LinksProvider for APIDataProvider {
                     query_complete(self.api.clone(), self.title_codec.clone(), params)
                 })
                 .collect::<Vec<_>>();
-            Box::pin(stream::iter(streams).flatten())
+            Either::Left(stream::iter(streams).flatten())
         }
     }
-}
 
-impl crate::core::BackLinksProvider for APIDataProvider {
-    type Error = Error;
-    type OutputStream = BoxStream<'static, Result<Pair<PageInfo>, Self::Error>>;
+    // impl for `backlinks`
+    type BacklinksStream = Either<Flatten<Iter<IntoIter<QueryStream>>>, Empty<Result<Pair<PageInfo>, mwapi::Error>>>;
 
     /// Fetch a page's backlinks to that page.
     /// This function essentially calls
     /// ```action=query&prop=info&inprop=associatedpage|subjectid|talkid&generator=backlinks&gblnamespace=<ns>&gbllimit=max&gbltitle=<title>&gblfilterredir=<filter>&gblredirect=<direct>&redirects=<resolve>```
     /// 
     /// This function is called by `LinkTo` expression. A warning will be thrown if `titles` contains more than one page.
-    fn get_backlinks<T: IntoIterator<Item=Title>>(self, titles: T, modifier: &Modifier) -> Self::OutputStream {
+    fn get_backlinks<T: IntoIterator<Item=Title>>(self, titles: T, modifier: &Modifier) -> Self::BacklinksStream {
         // shortcut, if all namespaces are filtered out.
         if modifier.namespace.as_ref().is_some_and(|ns| ns.is_empty()) {
-            Box::pin(stream::empty())
+            Either::Right(stream::empty())
         } else {
             // do normal
             let param_template = {
@@ -155,24 +155,22 @@ impl crate::core::BackLinksProvider for APIDataProvider {
                     query_complete(self.api.clone(), self.title_codec.clone(), params)
                 })
                 .collect::<Vec<_>>();
-            Box::pin(stream::iter(streams).flatten())
+            Either::Left(stream::iter(streams).flatten())
         }
     }
-}
 
-impl crate::core::EmbedsProvider for APIDataProvider {
-    type Error = Error;
-    type OutputStream = BoxStream<'static, Result<Pair<PageInfo>, Self::Error>>;
+    // impl for `embeds`.
+    type EmbedsStream = Either<Flatten<Iter<IntoIter<QueryStream>>>, Empty<Result<Pair<PageInfo>, mwapi::Error>>>;
 
     /// Fetch a page's embeds.
     /// This function essentially calls
     /// ```action=query&prop=info&inprop=associatedpage|subjectid|talkid&generator=embeddedin&geinamespace=<ns>&geilimit=max&geititle=<title>&geifilterredir=<filter>&redirects=<resolve>```
     /// 
     /// This function is called by `Embed` expression. A warning will be thrown if `titles` contains more than one page.
-    fn get_embeds<T: IntoIterator<Item=Title>>(self, titles: T, modifier: &Modifier) -> Self::OutputStream {
+    fn get_embeds<T: IntoIterator<Item=Title>>(self, titles: T, modifier: &Modifier) -> Self::EmbedsStream {
         // shortcut, if all namespaces are filtered out.
         if modifier.namespace.as_ref().is_some_and(|ns| ns.is_empty()) {
-            Box::pin(stream::empty())
+            Either::Right(stream::empty())
         } else {
             // do normal
             let param_template = {
@@ -197,24 +195,22 @@ impl crate::core::EmbedsProvider for APIDataProvider {
                     query_complete(self.api.clone(), self.title_codec.clone(), params)
                 })
                 .collect::<Vec<_>>();
-            Box::pin(stream::iter(streams).flatten())
+            Either::Left(stream::iter(streams).flatten())
         }
     }
-}
 
-impl crate::core::CategoryMembersProvider for APIDataProvider {
-    type Error = Error;
-    type OutputStream = BoxStream<'static, Result<Pair<PageInfo>, Self::Error>>;
+    // impl for `categorymember`.
+    type CategoryMembersStream = Either<Flatten<Iter<IntoIter<QueryStream>>>, Empty<Result<Pair<PageInfo>, mwapi::Error>>>;
 
     /// Fetch a category's members.
     /// This function essentially calls
     /// ```action=query&prop=info&inprop=associatedpage|subjectid|talkid&generator=categorymembers&gcmtitle=<title>&gcmlimit=max&gcmnamespace=<ns>&gcmtype=<...>&redirects=<resolve>```
     /// 
     /// This function is called by `InCat` expression.
-    fn get_category_members<T: IntoIterator<Item=Title>>(self, titles: T, modifier: &Modifier) -> Self::OutputStream {
+    fn get_category_members<T: IntoIterator<Item=Title>>(self, titles: T, modifier: &Modifier) -> Self::CategoryMembersStream {
         // shortcut, if all namespaces are filtered out.
         if modifier.namespace.as_ref().is_some_and(|ns| ns.is_empty()) {
-            Box::pin(stream::empty())
+            Either::Right(stream::empty())
         } else {
             // do normal
             let param_template = {
@@ -251,14 +247,12 @@ impl crate::core::CategoryMembersProvider for APIDataProvider {
                     query_complete(self.api.clone(), self.title_codec.clone(), params)
                 })
                 .collect::<Vec<_>>();
-            Box::pin(stream::iter(streams).flatten())
+            Either::Left(stream::iter(streams).flatten())
         }
     }
-}
 
-impl crate::core::PrefixProvider for APIDataProvider {
-    type Error = Error;
-    type OutputStream = BoxStream<'static, Result<Pair<PageInfo>, Self::Error>>;
+    // impl for `prefix`.
+    type PrefixStream = Either<Flatten<Iter<IntoIter<QueryStream>>>, Empty<Result<Pair<PageInfo>, mwapi::Error>>>;
 
     /// Fetch a page's subpages.
     /// This function essentially calls
@@ -267,10 +261,10 @@ impl crate::core::PrefixProvider for APIDataProvider {
     /// This function is called by `Prefix` expression.
     /// A warning will be thrown if `titles` contains more than one page.
     /// This function ignores the `resolve` modifier.
-    fn get_prefix<T: IntoIterator<Item=Title>>(self, titles: T, modifier: &Modifier) -> Self::OutputStream {
+    fn get_prefix<T: IntoIterator<Item=Title>>(self, titles: T, modifier: &Modifier) -> Self::PrefixStream {
         // shortcut, if all namespaces are filtered out.
         if modifier.namespace.as_ref().is_some_and(|ns| ns.is_empty()) {
-            Box::pin(stream::empty())
+            Either::Right(stream::empty())
         } else {
             // do normal
             let param_template = {
@@ -298,7 +292,7 @@ impl crate::core::PrefixProvider for APIDataProvider {
                 params.insert("geititle".to_string(), ts.dbkey().to_string());
                 streams.push(query_complete(self.api.clone(), self.title_codec.clone(), params));
             }
-            Box::pin(stream::iter(streams).flatten())
+            Either::Left(stream::iter(streams).flatten())
         }
     }
 }

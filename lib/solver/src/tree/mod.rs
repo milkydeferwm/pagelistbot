@@ -1,10 +1,10 @@
 //! Solver by converting the AST directly to nested futures.
 
-use core::fmt;
+use core::fmt::{self, Debug, Display, Formatter};
 use crate::{Answer, Solver, SolverError};
 use futures::{StreamExt, TryStreamExt, stream::BoxStream, channel::mpsc::{unbounded, UnboundedSender}};
 use interface::types::ast::{Node, Expr, NumberOrInf};
-use provider::{DataProvider, Pair, PageInfo, PageInfoError, core::{PageInfoProvider, LinksProvider, BackLinksProvider, EmbedsProvider, CategoryMembersProvider, PrefixProvider}};
+use provider::{DataProvider, Pair, PageInfo, PageInfoError};
 use std::{error::Error, collections::BTreeSet};
 
 mod setop;
@@ -21,20 +21,20 @@ where
     default_limit: NumberOrInf<usize>,
 }
 
-type DynamicFalliablePageInfoPairStream<'a, E> = BoxStream<'a, Result<Pair<PageInfo>, SolverError<TreeSolverError<E>>>>;
+type DynamicFalliablePageInfoPairStream<'a, P> = BoxStream<'a, Result<Pair<PageInfo>, SolverError<TreeSolverError<P>>>>;
 const PROCESS_LIMIT: usize = 1;
 
 /// dynamic dispatcher for node-to-stream
-fn dispatch_node<'p, P>(provider: P, node: &Node, default_limit: NumberOrInf<usize>, warning_sender: UnboundedSender<SolverError<TreeSolverError<<P as DataProvider>::Error>>>) -> DynamicFalliablePageInfoPairStream<'p, <P as DataProvider>::Error>
+fn dispatch_node<'p, P>(provider: P, node: &Node, default_limit: NumberOrInf<usize>, warning_sender: UnboundedSender<SolverError<TreeSolverError<P>>>) -> DynamicFalliablePageInfoPairStream<'p, P>
 where
     P: DataProvider + Clone + Send + 'p,
     <P as DataProvider>::Error: Send + 'p,
-    <P as PageInfoProvider>::OutputStream: Send,
-    <P as LinksProvider>::OutputStream: Send,
-    <P as BackLinksProvider>::OutputStream: Send,
-    <P as EmbedsProvider>::OutputStream: Send,
-    <P as CategoryMembersProvider>::OutputStream: Send,
-    <P as PrefixProvider>::OutputStream: Send,
+    <P as DataProvider>::PageInfoRawStream: Send,
+    <P as DataProvider>::LinksStream: Send,
+    <P as DataProvider>::BacklinksStream: Send,
+    <P as DataProvider>::EmbedsStream: Send,
+    <P as DataProvider>::CategoryMembersStream: Send,
+    <P as DataProvider>::PrefixStream: Send,
 {
     match node.get_expr() {
         Expr::Page { .. } => Box::pin(pageinfo::page_info_from_node(provider, node, default_limit, warning_sender)),
@@ -65,18 +65,18 @@ where
 
 impl<'s, 'p, P> Solver<'s, P> for TreeSolver<P>
 where
-    P: DataProvider + Clone + Send + 'p,
+    P: DataProvider + Clone + Debug + Send + 'p,
     <P as DataProvider>::Error: Send + 'p,
-    <P as PageInfoProvider>::OutputStream: Send + 'p,
-    <P as LinksProvider>::OutputStream: Send + 'p,
-    <P as BackLinksProvider>::OutputStream: Send + 'p,
-    <P as EmbedsProvider>::OutputStream: Send + 'p,
-    <P as CategoryMembersProvider>::OutputStream: Send + 'p,
-    <P as PrefixProvider>::OutputStream: Send + 'p,
+    <P as DataProvider>::PageInfoRawStream: Send + 'p,
+    <P as DataProvider>::LinksStream: Send + 'p,
+    <P as DataProvider>::BacklinksStream: Send + 'p,
+    <P as DataProvider>::EmbedsStream: Send + 'p,
+    <P as DataProvider>::CategoryMembersStream: Send + 'p,
+    <P as DataProvider>::PrefixStream: Send + 'p,
 {
-    type InnerError = TreeSolverError<<P as DataProvider>::Error>;
+    type InnerError = TreeSolverError<P>;
 
-    async fn solve<'q>(&'s self, ast: &'q Node) -> Result<Answer<TreeSolverError<<P as DataProvider>::Error>>, SolverError<TreeSolverError<<P as DataProvider>::Error>>> {
+    async fn solve<'q>(&'s self, ast: &'q Node) -> Result<Answer<TreeSolverError<P>>, SolverError<TreeSolverError<P>>> {
         let (send, recv) = unbounded::<SolverError<TreeSolverError<_>>>();
         let stream = dispatch_node(self.provider.clone(), ast, self.default_limit, send);
         // collect!
@@ -93,18 +93,21 @@ where
 }
 
 #[derive(Debug)]
-pub enum TreeSolverError<E> {
-    Provider(E),
+pub enum TreeSolverError<P>
+where
+    P: DataProvider,
+{
+    Provider(<P as DataProvider>::Error),
     PageInfo(PageInfoError),
     ResultLimitExceeded(NumberOrInf<usize>),
     ProcessLimitExceeded(usize),
 }
 
-impl<E> fmt::Display for TreeSolverError<E>
+impl<P> Display for TreeSolverError<P>
 where
-    E: fmt::Display,
+    P: DataProvider,
 {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::Provider(e) => write!(f, "data provider error: {e}"),
             Self::PageInfo(e) => write!(f, "cannot extract page information: {e}"),
@@ -114,4 +117,28 @@ where
     }
 }
 
-impl<E> Error for TreeSolverError<E> where E: Error {}
+impl<P> Clone for TreeSolverError<P>
+where
+    P: DataProvider,
+    <P as DataProvider>::Error: Clone,
+{
+    fn clone(&self) -> Self {
+        match self {
+            Self::Provider(e) => Self::Provider(e.clone()),
+            Self::PageInfo(e) => Self::PageInfo(*e),
+            Self::ResultLimitExceeded(lim) => Self::ResultLimitExceeded(*lim),
+            Self::ProcessLimitExceeded(lim) => Self::ProcessLimitExceeded(*lim),
+        }
+    }
+}
+
+impl<P> Error for TreeSolverError<P>
+where
+    P: DataProvider + Debug,
+{}
+
+unsafe impl<P> Send for TreeSolverError<P>
+where
+    P: DataProvider,
+    <P as DataProvider>::Error: Send
+{}

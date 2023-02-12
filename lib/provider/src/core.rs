@@ -88,29 +88,32 @@ pub trait DataProvider<'a>: Send + Sync {
 }
 */
 
-pub trait DataProvider:
-    PageInfoProvider<Error = <Self as DataProvider>::Error>
-    + LinksProvider<Error = <Self as DataProvider>::Error>
-    + BackLinksProvider<Error = <Self as DataProvider>::Error>
-    + EmbedsProvider<Error = <Self as DataProvider>::Error>
-    + CategoryMembersProvider<Error = <Self as DataProvider>::Error>
-    + PrefixProvider<Error = <Self as DataProvider>::Error>
-{
+pub trait DataProvider {
     type Error: Error;
+    type PageInfoStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
+    type PageInfoRawStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
+    type LinksStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
+    type BacklinksStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
+    type EmbedsStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
+    type CategoryMembersStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
+    type PrefixStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
+
+    /// Get a stream of input pages' information. Input is `mwtitle::Title`.
+    fn get_page_info<T: IntoIterator<Item = Title>>(self, titles: T) -> Self::PageInfoStream;
+    /// Get a stream of input pages' information. Input is raw title string.
+    fn get_page_info_from_raw<T: IntoIterator<Item = String>>(self, titles_raw: T) -> Self::PageInfoRawStream;
+    /// Get a stream of input pages' internal links.
+    fn get_links<T: IntoIterator<Item = Title>>(self, titles: T, modifier: &Modifier) -> Self::LinksStream;
+    /// Get a stream of input pages' back links.
+    fn get_backlinks<T: IntoIterator<Item = Title>>(self, titles: T, modifier: &Modifier) -> Self::BacklinksStream;
+    /// Get a stream of pages in which the given pages are embedded.
+    fn get_embeds<T: IntoIterator<Item = Title>>(self, titles: T, modifier: &Modifier) -> Self::EmbedsStream;
+    /// Get a stream of pages inside the given category pages.
+    fn get_category_members<T: IntoIterator<Item = Title>>(self, titles: T, modifier: &Modifier) -> Self::CategoryMembersStream;
+    /// Get a stream of pages containing the given prefix.
+    fn get_prefix<T: IntoIterator<Item = Title>>(self, titles: T, modifier: &Modifier) -> Self::PrefixStream;
 }
 
-impl<T> DataProvider for T
-where
-    T: PageInfoProvider
-     + LinksProvider<Error = <T as PageInfoProvider>::Error>
-     + BackLinksProvider<Error = <T as PageInfoProvider>::Error>
-     + EmbedsProvider<Error = <T as PageInfoProvider>::Error>
-     + CategoryMembersProvider<Error = <T as PageInfoProvider>::Error>
-     + PrefixProvider<Error = <T as PageInfoProvider>::Error>,
-    <T as PageInfoProvider>::Error: Error,
-{
-    type Error = <Self as PageInfoProvider>::Error;
-}
 /*
 unsafe impl<T> Send for T
 where
@@ -124,54 +127,7 @@ where
     <T as DataProvider>::Error: Send,
 {}
 */
-/// trait that would get a page's information
-pub trait PageInfoProvider {
-    type Error: Error;
-    type OutputStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
 
-    fn get_page_info<T: IntoIterator<Item = Title>>(self, titles: T) -> Self::OutputStream;
-    fn get_page_info_from_raw<T: IntoIterator<Item = String>>(self, titles_raw: T) -> Self::OutputStream;
-}
-
-/// trait that would get a stream of page's in-site links.
-pub trait LinksProvider {
-    type Error: Error;
-    type OutputStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
-
-    fn get_links<T: IntoIterator<Item = Title>>(self, titles: T, modifier: &Modifier) -> Self::OutputStream;
-}
-
-/// trait that would get a page's backlinks.
-pub trait BackLinksProvider {
-    type Error: Error;
-    type OutputStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
-
-    fn get_backlinks<T: IntoIterator<Item = Title>>(self, titles: T, modifier: &Modifier) -> Self::OutputStream;
-}
-
-/// trait that would get a list of all pages who transcludes this page.
-pub trait EmbedsProvider {
-    type Error: Error;
-    type OutputStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
-
-    fn get_embeds<T: IntoIterator<Item = Title>>(self, titles: T, modifier: &Modifier) -> Self::OutputStream;
-}
-
-/// trait that would get a category's direct members.
-pub trait CategoryMembersProvider {
-    type Error: Error;
-    type OutputStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
-
-    fn get_category_members<T: IntoIterator<Item = Title>>(self, titles: T, modifier: &Modifier) -> Self::OutputStream;
-}
-
-/// trait that would get a list of all pages who contains the specified prefix. This effectively means getting a page's subpages.
-pub trait PrefixProvider {
-    type Error: Error;
-    type OutputStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
-
-    fn get_prefix<T: IntoIterator<Item = Title>>(self, titles: T, modifier: &Modifier) -> Self::OutputStream;
-}
 /*
 macro_rules! mark_send {
     ($trait:ident) => {

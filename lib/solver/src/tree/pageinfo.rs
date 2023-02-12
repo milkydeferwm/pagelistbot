@@ -6,24 +6,24 @@ use super::TreeSolverError;
 use futures::{Stream, channel::mpsc::UnboundedSender};
 use interface::types::ast::{Node, Span, NumberOrInf};
 use pin_project::pin_project;
-use provider::{PageInfo, Pair, DataProvider, core::{PageInfoProvider, LinksProvider, BackLinksProvider, EmbedsProvider, CategoryMembersProvider, PrefixProvider}};
+use provider::{PageInfo, Pair, DataProvider};
 
 #[pin_project]
 #[must_use = "streams do nothing unless you poll them"]
 pub(super) struct PageInfoStream<P>
 where
-    P: PageInfoProvider,
+    P: DataProvider,
 {
-    #[pin] st: <P as PageInfoProvider>::OutputStream,
+    #[pin] st: <P as DataProvider>::PageInfoRawStream,
     span: Span,
-    warning_sender: UnboundedSender<SolverError<TreeSolverError<<P as PageInfoProvider>::Error>>>,
+    warning_sender: UnboundedSender<SolverError<TreeSolverError<P>>>,
 }
 
 impl<P> PageInfoStream<P>
 where
-    P: PageInfoProvider,
+    P: DataProvider,
 {
-    pub fn new<T: IntoIterator<Item = String>>(provider: P, titles: T, span: Span, warning_sender: UnboundedSender<SolverError<TreeSolverError<<P as PageInfoProvider>::Error>>>) -> Self {
+    pub fn new<T: IntoIterator<Item = String>>(provider: P, titles: T, span: Span, warning_sender: UnboundedSender<SolverError<TreeSolverError<P>>>) -> Self {
         let st = provider.get_page_info_from_raw(titles);
         Self {
             st,
@@ -35,9 +35,9 @@ where
 
 impl<P> Stream for PageInfoStream<P>
 where
-    P: PageInfoProvider,
+    P: DataProvider,
 {
-    type Item = Result<Pair<PageInfo>, SolverError<TreeSolverError<<P as PageInfoProvider>::Error>>>;
+    type Item = Result<Pair<PageInfo>, SolverError<TreeSolverError<P>>>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         let mut this = self.project();
@@ -64,21 +64,21 @@ where
 
 unsafe impl<P> Send for PageInfoStream<P>
 where
-    P: PageInfoProvider,
-    <P as PageInfoProvider>::OutputStream: Send,
-    <P as PageInfoProvider>::Error: Send,
+    P: DataProvider,
+    <P as DataProvider>::PageInfoRawStream: Send,
+    <P as DataProvider>::Error: Send,
 {}
 
-pub(super) fn page_info_from_node<'p, P>(provider: P, node: &Node, _default_limit: NumberOrInf<usize>, warning_sender: UnboundedSender<SolverError<TreeSolverError<<P as DataProvider>::Error>>>) -> PageInfoStream<P>
+pub(super) fn page_info_from_node<'p, P>(provider: P, node: &Node, _default_limit: NumberOrInf<usize>, warning_sender: UnboundedSender<SolverError<TreeSolverError<P>>>) -> PageInfoStream<P>
 where
     P: DataProvider + Clone + Send + 'p,
     <P as DataProvider>::Error: Send + 'p,
-    <P as PageInfoProvider>::OutputStream: Send + 'p,
-    <P as LinksProvider>::OutputStream: Send + 'p,
-    <P as BackLinksProvider>::OutputStream: Send + 'p,
-    <P as EmbedsProvider>::OutputStream: Send + 'p,
-    <P as CategoryMembersProvider>::OutputStream: Send + 'p,
-    <P as PrefixProvider>::OutputStream: Send + 'p,
+    <P as DataProvider>::PageInfoRawStream: Send + 'p,
+    <P as DataProvider>::LinksStream: Send + 'p,
+    <P as DataProvider>::BacklinksStream: Send + 'p,
+    <P as DataProvider>::EmbedsStream: Send + 'p,
+    <P as DataProvider>::CategoryMembersStream: Send + 'p,
+    <P as DataProvider>::PrefixStream: Send + 'p,
 {
     let titles_raw = node.get_titles().to_owned();
     PageInfoStream::new(provider, titles_raw, node.get_span(), warning_sender)

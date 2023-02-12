@@ -1,13 +1,13 @@
 //! Page List Bot task execution methods. Tasks are dispatched by task host. See `host.rs` for task host.
 
 use std::collections::{BTreeSet, BTreeMap};
+use std::fmt::Debug;
 
 use interface::types as itypes;
 use itypes::ast::*;
 use itypes::site::{OutputFormat, OutputFormatSuccess};
 use itypes::status::task::{PageListBotTaskQuerySummary, PageListBotTaskQueryError, PageListBotTaskQueryOutputPageSummary, PageListBotTaskQueryAnswer};
 use provider::DataProvider;
-use provider::core::{PageInfoProvider, LinksProvider, BackLinksProvider, EmbedsProvider, CategoryMembersProvider, PrefixProvider};
 use serde_json::Value;
 use tracing::{event, Level};
 
@@ -20,14 +20,14 @@ pub(crate) type OutputPageSummaryStatus = PageListBotTaskQueryOutputPageSummary;
 #[derive(Clone)]
 pub(crate) struct TaskExec<P>
 where
-    P: DataProvider + Clone + Send,
+    P: DataProvider + Clone + Debug + Send,
     <P as DataProvider>::Error: Send,
-    <P as PageInfoProvider>::OutputStream: Send,
-    <P as LinksProvider>::OutputStream: Send,
-    <P as BackLinksProvider>::OutputStream: Send,
-    <P as EmbedsProvider>::OutputStream: Send,
-    <P as CategoryMembersProvider>::OutputStream: Send,
-    <P as PrefixProvider>::OutputStream: Send,
+    <P as DataProvider>::PageInfoRawStream: Send,
+    <P as DataProvider>::LinksStream: Send,
+    <P as DataProvider>::BacklinksStream: Send,
+    <P as DataProvider>::EmbedsStream: Send,
+    <P as DataProvider>::CategoryMembersStream: Send,
+    <P as DataProvider>::PrefixStream: Send,
 {
     // Task specific
     pub id: Option<u64>,
@@ -59,14 +59,14 @@ where
 
 impl<P> TaskExec<P>
 where
-    P: DataProvider + Clone + Send,
+    P: DataProvider + Clone + Debug + Send,
     <P as DataProvider>::Error: Send,
-    <P as PageInfoProvider>::OutputStream: Send,
-    <P as LinksProvider>::OutputStream: Send,
-    <P as BackLinksProvider>::OutputStream: Send,
-    <P as EmbedsProvider>::OutputStream: Send,
-    <P as CategoryMembersProvider>::OutputStream: Send,
-    <P as PrefixProvider>::OutputStream: Send,
+    <P as DataProvider>::PageInfoRawStream: Send,
+    <P as DataProvider>::LinksStream: Send,
+    <P as DataProvider>::BacklinksStream: Send,
+    <P as DataProvider>::EmbedsStream: Send,
+    <P as DataProvider>::CategoryMembersStream: Send,
+    <P as DataProvider>::PrefixStream: Send,
 {
 
     /// Helper function to retrive an output page's existing contents.
