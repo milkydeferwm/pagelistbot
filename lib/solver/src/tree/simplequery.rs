@@ -6,19 +6,19 @@ use super::{TreeSolverError, DynamicFalliablePageInfoPairStream};
 use futures::{stream::{TryStream, Empty, self}, Stream, channel::mpsc::UnboundedSender, future::Either};
 use interface::types::ast::{Node, Span, NumberOrInf, Modifier};
 use pin_project::pin_project;
-use provider::{Pair, PageInfo, DataProvider, core::{PageInfoProvider, LinksProvider, BackLinksProvider, EmbedsProvider, CategoryMembersProvider, PrefixProvider}};
+use provider::{Pair, PageInfo, DataProvider};
 
 macro_rules! simple_query {
-    ($vis:vis, $name:ident, $trait:ident, $trait_method:ident, $from_node:ident) => {
+    ($vis:vis, $name:ident, $trait_stream:ident, $trait_method:ident, $from_node:ident) => {
         #[pin_project]
         #[must_use = "streams do nothing unless you poll them"]
         $vis struct $name<F, P>
         where
-            F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<<P as $trait>::Error>>>,
-            P: $trait,
+            F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
+            P: DataProvider,
         {
             #[pin] source: F,
-            #[pin] workload: Either<Empty<<<P as $trait>::OutputStream as Stream>::Item>, <P as $trait>::OutputStream>,
+            #[pin] workload: Either<Empty<<<P as DataProvider>::$trait_stream as Stream>::Item>, <P as DataProvider>::$trait_stream>,
             provider: P,
             modifier: Modifier,
             span: Span,
@@ -27,15 +27,15 @@ macro_rules! simple_query {
             has_work: bool,
             processed: usize,
             ready: usize,
-            warning_sender: UnboundedSender<SolverError<TreeSolverError<<P as $trait>::Error>>>,
+            warning_sender: UnboundedSender<SolverError<TreeSolverError<P>>>,
         }
 
         impl<F, P> $name<F, P>
         where
-            F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<<P as $trait>::Error>>>,
-            P: $trait,
+            F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
+            P: DataProvider,
         {
-            pub fn new(stream: F, provider: P, modifier: Modifier, span: Span, result_limit: NumberOrInf<usize>, process_limit: usize, warning_sender: UnboundedSender<SolverError<TreeSolverError<<P as $trait>::Error>>>) -> Self {
+            pub fn new(stream: F, provider: P, modifier: Modifier, span: Span, result_limit: NumberOrInf<usize>, process_limit: usize, warning_sender: UnboundedSender<SolverError<TreeSolverError<P>>>) -> Self {
                 Self {
                     source: stream,
                     workload: Either::Left(stream::empty()),
@@ -54,10 +54,10 @@ macro_rules! simple_query {
 
         impl<F, P> Stream for $name<F, P>
         where
-            F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<<P as $trait>::Error>>>,
-            P: $trait + Clone,
+            F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
+            P: DataProvider + Clone,
         {
-            type Item = Result<Pair<PageInfo>, SolverError<TreeSolverError<<P as $trait>::Error>>>;
+            type Item = Result<Pair<PageInfo>, SolverError<TreeSolverError<P>>>;
 
             fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
                 let mut this = self.project();
@@ -151,22 +151,22 @@ macro_rules! simple_query {
 
         unsafe impl<F, P> Send for $name<F, P>
         where
-            F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<<P as $trait>::Error>>> + Send,
-            P: $trait + Send,
-            <P as $trait>::OutputStream: Send,
-            <P as $trait>::Error: Send,
+            F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>> + Send,
+            P: DataProvider + Send,
+            <P as DataProvider>::$trait_stream: Send,
+            P: Send,
         {}
 
-        $vis fn $from_node<'p, P>(provider: P, node: &Node, default_limit: NumberOrInf<usize>, process_limit: usize, warning_sender: UnboundedSender<SolverError<TreeSolverError<<P as DataProvider>::Error>>>) -> $name<DynamicFalliablePageInfoPairStream<'p, <P as DataProvider>::Error>, P>
+        $vis fn $from_node<'p, P>(provider: P, node: &Node, default_limit: NumberOrInf<usize>, process_limit: usize, warning_sender: UnboundedSender<SolverError<TreeSolverError<P>>>) -> $name<DynamicFalliablePageInfoPairStream<'p, P>, P>
         where
             P: DataProvider + Clone + Send + 'p,
             <P as DataProvider>::Error: Send + 'p,
-            <P as PageInfoProvider>::OutputStream: Send + 'p,
-            <P as LinksProvider>::OutputStream: Send + 'p,
-            <P as BackLinksProvider>::OutputStream: Send + 'p,
-            <P as EmbedsProvider>::OutputStream: Send + 'p,
-            <P as CategoryMembersProvider>::OutputStream: Send + 'p,
-            <P as PrefixProvider>::OutputStream: Send + 'p,
+            <P as DataProvider>::PageInfoRawStream: Send + 'p,
+            <P as DataProvider>::LinksStream: Send + 'p,
+            <P as DataProvider>::BacklinksStream: Send + 'p,
+            <P as DataProvider>::EmbedsStream: Send + 'p,
+            <P as DataProvider>::CategoryMembersStream: Send + 'p,
+            <P as DataProvider>::PrefixStream: Send + 'p,
         {
             let stream = super::dispatch_node(provider.clone(), node.get_child(), default_limit, warning_sender.clone());
             let limit = node.get_modifier().result_limit.unwrap_or(default_limit);
@@ -175,7 +175,7 @@ macro_rules! simple_query {
     }
 }
 
-simple_query!(pub(super), LinksStream, LinksProvider, get_links, links_from_node);
-simple_query!(pub(super), BacklinksStream, BackLinksProvider, get_backlinks, backlinks_from_node);
-simple_query!(pub(super), EmbedsStream, EmbedsProvider, get_embeds, embeds_from_node);
-simple_query!(pub(super), PrefixStream, PrefixProvider, get_prefix, prefix_from_node);
+simple_query!(pub(super), LinksStream, LinksStream, get_links, links_from_node);
+simple_query!(pub(super), BacklinksStream, BacklinksStream, get_backlinks, backlinks_from_node);
+simple_query!(pub(super), EmbedsStream, EmbedsStream, get_embeds, embeds_from_node);
+simple_query!(pub(super), PrefixStream, PrefixStream, get_prefix, prefix_from_node);
