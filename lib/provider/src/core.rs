@@ -99,19 +99,19 @@ pub trait DataProvider {
     type PrefixStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
 
     /// Get a stream of input pages' information. Input is `mwtitle::Title`.
-    fn get_page_info<T: IntoIterator<Item = Title>>(self, titles: T) -> Self::PageInfoStream;
+    fn get_page_info<T: IntoIterator<Item = Title>>(&self, titles: T) -> Self::PageInfoStream;
     /// Get a stream of input pages' information. Input is raw title string.
-    fn get_page_info_from_raw<T: IntoIterator<Item = String>>(self, titles_raw: T) -> Self::PageInfoRawStream;
+    fn get_page_info_from_raw<T: IntoIterator<Item = String>>(&self, titles_raw: T) -> Self::PageInfoRawStream;
     /// Get a stream of input pages' internal links.
-    fn get_links<T: IntoIterator<Item = Title>>(self, titles: T, modifier: &Modifier) -> Self::LinksStream;
+    fn get_links<T: IntoIterator<Item = Title>>(&self, titles: T, modifier: &Modifier) -> Self::LinksStream;
     /// Get a stream of input pages' back links.
-    fn get_backlinks<T: IntoIterator<Item = Title>>(self, titles: T, modifier: &Modifier) -> Self::BacklinksStream;
+    fn get_backlinks<T: IntoIterator<Item = Title>>(&self, titles: T, modifier: &Modifier) -> Self::BacklinksStream;
     /// Get a stream of pages in which the given pages are embedded.
-    fn get_embeds<T: IntoIterator<Item = Title>>(self, titles: T, modifier: &Modifier) -> Self::EmbedsStream;
+    fn get_embeds<T: IntoIterator<Item = Title>>(&self, titles: T, modifier: &Modifier) -> Self::EmbedsStream;
     /// Get a stream of pages inside the given category pages.
-    fn get_category_members<T: IntoIterator<Item = Title>>(self, titles: T, modifier: &Modifier) -> Self::CategoryMembersStream;
+    fn get_category_members<T: IntoIterator<Item = Title>>(&self, titles: T, modifier: &Modifier) -> Self::CategoryMembersStream;
     /// Get a stream of pages containing the given prefix.
-    fn get_prefix<T: IntoIterator<Item = Title>>(self, titles: T, modifier: &Modifier) -> Self::PrefixStream;
+    fn get_prefix<T: IntoIterator<Item = Title>>(&self, titles: T, modifier: &Modifier) -> Self::PrefixStream;
 }
 
 /*
