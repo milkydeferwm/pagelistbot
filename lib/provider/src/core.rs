@@ -74,19 +74,6 @@ impl fmt::Display for PageInfoError {
         }
     }
 }
-/*
-/// common trait for all required methods a data provider should offer.
-pub trait DataProvider<'a>: Send + Sync {
-    type Error;
-
-    fn get_page_info<T: IntoIterator<Item=Title>>(&'a self, titles: T) -> impl Stream<Item = Result<Pair<PageInfo>, Self::Error>> + 'a;
-    fn get_links<T: IntoIterator<Item=Title>>(&'a self, titles: T, modifier: &Modifier) -> impl Stream<Item = Result<Pair<PageInfo>, Self::Error>> + 'a;
-    fn get_backlinks<T: IntoIterator<Item=Title>>(&'a self, titles: T, modifier: &Modifier) -> impl Stream<Item = Result<Pair<PageInfo>, Self::Error>> + 'a;
-    fn get_embeds<T: IntoIterator<Item=Title>>(&'a self, titles: T, modifier: &Modifier) -> impl Stream<Item = Result<Pair<PageInfo>, Self::Error>> + 'a;
-    fn get_category_members<T: IntoIterator<Item=Title>>(&'a self, titles: T, modifier: &Modifier) -> impl Stream<Item = Result<Pair<PageInfo>, Self::Error>> + 'a;
-    fn get_prefix<T: IntoIterator<Item=Title>>(&'a self, titles: T, modifier: &Modifier) -> impl Stream<Item = Result<Pair<PageInfo>, Self::Error>> + 'a;
-}
-*/
 
 pub trait DataProvider {
     type Error: Error;
@@ -113,37 +100,3 @@ pub trait DataProvider {
     /// Get a stream of pages containing the given prefix.
     fn get_prefix<T: IntoIterator<Item = Title>>(&self, titles: T, modifier: &Modifier) -> Self::PrefixStream;
 }
-
-/*
-unsafe impl<T> Send for T
-where
-    T: DataProvider,
-    <T as PageInfoProvider>::OutputStream: Send,
-    <T as LinksProvider>::OutputStream: Send,
-    <T as BackLinksProvider>::OutputStream: Send,
-    <T as EmbedsProvider>::OutputStream: Send,
-    <T as CategoryMembersProvider>::OutputStream: Send,
-    <T as PrefixProvider>::OutputStream: Send,
-    <T as DataProvider>::Error: Send,
-{}
-*/
-
-/*
-macro_rules! mark_send {
-    ($trait:ident) => {
-        unsafe impl<T> Send for T
-        where
-            T: $trait,
-            <T as $trait>::Error: Send,
-            <T as $trait>::OutputStream: Send,
-        {}
-    }
-}
-
-mark_send!(PageInfoProvider);
-mark_send!(LinksProvider);
-mark_send!(BackLinksProvider);
-mark_send!(EmbedsProvider);
-mark_send!(CategoryMembersProvider);
-mark_send!(PrefixProvider);
-*/
