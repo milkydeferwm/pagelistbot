@@ -76,7 +76,7 @@ impl fmt::Display for PageInfoError {
 }
 
 pub trait DataProvider {
-    type Error: Error;
+    type Error;
     type PageInfoStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
     type PageInfoRawStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
     type LinksStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
