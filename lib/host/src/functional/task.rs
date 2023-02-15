@@ -1,7 +1,6 @@
 //! Page List Bot task execution methods. Tasks are dispatched by task host. See `host.rs` for task host.
 
 use std::collections::{BTreeSet, BTreeMap};
-use std::fmt::Debug;
 
 use interface::types as itypes;
 use itypes::ast::*;
@@ -20,14 +19,7 @@ pub(crate) type OutputPageSummaryStatus = PageListBotTaskQueryOutputPageSummary;
 #[derive(Clone)]
 pub(crate) struct TaskExec<P>
 where
-    P: DataProvider + Clone + Debug + Send,
-    <P as DataProvider>::Error: Send,
-    <P as DataProvider>::PageInfoRawStream: Send,
-    <P as DataProvider>::LinksStream: Send,
-    <P as DataProvider>::BacklinksStream: Send,
-    <P as DataProvider>::EmbedsStream: Send,
-    <P as DataProvider>::CategoryMembersStream: Send,
-    <P as DataProvider>::PrefixStream: Send,
+    P: DataProvider,
 {
     // Task specific
     pub id: Option<u64>,
@@ -59,14 +51,8 @@ where
 
 impl<P> TaskExec<P>
 where
-    P: DataProvider + Clone + Debug + Send,
-    <P as DataProvider>::Error: Send,
-    <P as DataProvider>::PageInfoRawStream: Send,
-    <P as DataProvider>::LinksStream: Send,
-    <P as DataProvider>::BacklinksStream: Send,
-    <P as DataProvider>::EmbedsStream: Send,
-    <P as DataProvider>::CategoryMembersStream: Send,
-    <P as DataProvider>::PrefixStream: Send,
+    P: DataProvider,
+    <P as DataProvider>::Error: core::fmt::Display,
 {
 
     /// Helper function to retrive an output page's existing contents.
@@ -174,7 +160,7 @@ where
             })?;
 
         let result = {
-            let solver = solver::tree::TreeSolver::new(self.provider.to_owned(), self.query_limit);
+            let solver = solver::tree::TreeSolver::new(&self.provider, self.query_limit);
             tokio::time::timeout(tokio::time::Duration::from_secs(self.timeout), solver.solve(&ast)).await
         };
 

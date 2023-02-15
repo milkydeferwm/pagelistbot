@@ -131,7 +131,7 @@ impl Host {
 
                             let provider_api = api.clone();
                             let provider_title_codec = title_codec.clone();
-                            let provider = provider::api::APIDataProvider::new(provider_api, provider_title_codec, has_apihighlimits_flag);
+                            let provider = provider::api::APIDataProvider::new(&provider_api, &provider_title_codec, has_apihighlimits_flag);
                             task::TaskExec {
                                 id: Some(id),
                                 query: expr,
