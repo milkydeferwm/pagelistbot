@@ -1,32 +1,31 @@
 //! Toggle operation.
 use core::{pin::Pin, task::{Context, Poll}};
 use crate::SolverError;
-use super::{TreeSolverError, DynamicFalliablePageInfoPairStream};
+use super::{TreeSolverError, TreeSolver};
 
 use futures::{stream::TryStream, Stream, channel::mpsc::UnboundedSender};
-use interface::types::ast::{Node, Span, NumberOrInf};
-use pin_project::pin_project;
+use interface::types::ast::Span;
 use provider::{Pair, PageInfo, DataProvider};
 
-#[pin_project]
+#[pin_project::pin_project]
 #[must_use = "streams do nothing unless you poll them"]
 #[derive(Debug)]
-pub(super) struct ToggleStream<F, P>
+pub(super) struct ToggleStream<'p, F, P>
 where
-    P: DataProvider,
-    F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
+    P: DataProvider + 'p,
+    F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>>,
 {
     #[pin] st: F,
     span: Span,
-    warning_sender: UnboundedSender<SolverError<TreeSolverError<P>>>,
+    warning_sender: UnboundedSender<SolverError<TreeSolver<'p, P>>>,
 }
 
-impl<F, P> ToggleStream<F, P>
+impl<'p, F, P> ToggleStream<'p, F, P>
 where
     P: DataProvider,
-    F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
+    F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>>,
 {
-    pub fn new(stream: F, span: Span, warning_sender: UnboundedSender<SolverError<TreeSolverError<P>>>) -> Self {
+    pub fn new(stream: F, span: Span, warning_sender: UnboundedSender<SolverError<TreeSolver<'p, P>>>) -> Self {
         Self {
             st: stream,
             span,
@@ -35,12 +34,12 @@ where
     }
 }
 
-impl<F, P> Stream for ToggleStream<F, P>
+impl<'p, F, P> Stream for ToggleStream<'p, F, P>
 where
     P: DataProvider,
-    F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
+    F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>>,
 {
-    type Item = Result<Pair<PageInfo>, SolverError<TreeSolverError<P>>>;
+    type Item = Result<Pair<PageInfo>, SolverError<TreeSolver<'p, P>>>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         let mut this = self.project();
@@ -74,14 +73,15 @@ where
     }
 }
 
-unsafe impl<F, P> Send for ToggleStream<F, P>
+unsafe impl<'p, F, P> Send for ToggleStream<'p, F, P>
 where
-    F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>> + Send,
+    F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>> + Send,
     P: DataProvider,
     <P as DataProvider>::Error: Send,
 {}
 
-pub(super) fn toggle_from_node<'p, P>(provider: P, node: &Node, default_limit: NumberOrInf<usize>, warning_sender: UnboundedSender<SolverError<TreeSolverError<P>>>) -> ToggleStream<DynamicFalliablePageInfoPairStream<'p, P>, P>
+/*
+pub(super) fn toggle_from_node<'p, P>(provider: P, node: &Node, default_limit: NumberOrInf<usize>, warning_sender: UnboundedSender<SolverError<TreeSolver<'p, P>>>) -> ToggleStream<DynamicFalliablePageInfoPairStream<'p, P>, P>
 where
     P: DataProvider + Clone + Send + 'p,
     <P as DataProvider>::Error: Send + 'p,
@@ -95,3 +95,4 @@ where
     let stream = super::dispatch_node(provider, node.get_child(), default_limit, warning_sender.clone());
     ToggleStream::new(stream, node.get_span(), warning_sender)
 }
+*/

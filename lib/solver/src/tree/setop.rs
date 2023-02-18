@@ -2,23 +2,22 @@
 use core::{pin::Pin, task::{Context, Poll}};
 use crate::SolverError;
 use std::collections::BTreeSet;
-use super::{TreeSolverError, DynamicFalliablePageInfoPairStream};
+use super::{TreeSolver};
 
 use futures::{stream::TryStream, Stream, channel::mpsc::UnboundedSender};
-use interface::types::ast::{Node, Span, NumberOrInf};
-use pin_project::pin_project;
+use interface::types::ast::Span;
 use provider::{PageInfo, Pair, DataProvider};
 
 macro_rules! set_operation {
     ($vis:vis, $name:ident, $op:path, $from_node:ident) => {
-        #[pin_project]
+        #[pin_project::pin_project]
         #[must_use = "streams do nothing unless you poll them"]
         #[derive(Debug)]
-        $vis struct $name<F1, F2, P>
+        $vis struct $name<'p, F1, F2, P>
         where
-            P: DataProvider,
-            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
-            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
+            P: DataProvider + 'p,
+            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>>,
+            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>>,
         {
             #[pin] st1: F1,
             #[pin] st2: F2,
@@ -28,16 +27,16 @@ macro_rules! set_operation {
             set_2: BTreeSet<Pair<PageInfo>>,
             output_set: Option<BTreeSet<Pair<PageInfo>>>,
             span: Span,
-            warning_sender: UnboundedSender<SolverError<TreeSolverError<P>>>,
+            warning_sender: UnboundedSender<SolverError<TreeSolver<'p, P>>>,
         }
 
-        impl<F1, F2, P> $name<F1, F2, P>
+        impl<'p, F1, F2, P> $name<'p, F1, F2, P>
         where
             P: DataProvider,
-            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
-            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
+            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>>,
+            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>>,
         {
-            pub fn new(stream1: F1, stream2: F2, span: Span, warning_sender: UnboundedSender<SolverError<TreeSolverError<P>>>) -> Self {
+            pub fn new(stream1: F1, stream2: F2, span: Span, warning_sender: UnboundedSender<SolverError<TreeSolver<'p, P>>>) -> Self {
                 Self {
                     st1: stream1,
                     st2: stream2,
@@ -52,13 +51,13 @@ macro_rules! set_operation {
             }
         }
 
-        impl<F1, F2, P> Stream for $name<F1, F2, P>
+        impl<'p, F1, F2, P> Stream for $name<'p, F1, F2, P>
         where
             P: DataProvider,
-            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
-            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
+            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>>,
+            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>>,
         {
-            type Item = Result<Pair<PageInfo>, SolverError<TreeSolverError<P>>>;
+            type Item = Result<Pair<PageInfo>, SolverError<TreeSolver<'p, P>>>;
         
             fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
                 let mut this = self.project();
@@ -111,16 +110,17 @@ macro_rules! set_operation {
             }
         }
 
-        unsafe impl<F1, F2, P> Send for $name<F1, F2, P>
+        unsafe impl<'p, F1, F2, P> Send for $name<'p, F1, F2, P>
         where
             P: DataProvider,
             <P as DataProvider>::Error: Send,
-            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>> + Send,
-            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>> + Send,
+            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>> + Send,
+            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>> + Send,
         {}
 
+/*
         /// construct a stream from given node.
-        $vis fn $from_node<'p, P>(provider: P, node: &Node, default_limit: NumberOrInf<usize>, warning_sender: UnboundedSender<SolverError<TreeSolverError<P>>>) -> $name<DynamicFalliablePageInfoPairStream<'p, P>, DynamicFalliablePageInfoPairStream<'p, P>, P>
+        $vis fn $from_node<'p, P>(provider: P, node: &Node, default_limit: NumberOrInf<usize>, warning_sender: UnboundedSender<SolverError<TreeSolver<'p, P>>>) -> $name<DynamicFalliablePageInfoPairStream<'p, P>, DynamicFalliablePageInfoPairStream<'p, P>, P>
         where
             P: DataProvider + Clone + Send + 'p,
             <P as DataProvider>::Error: Send + 'p,
@@ -135,6 +135,7 @@ macro_rules! set_operation {
             let stream2 = super::dispatch_node(provider.clone(), node.get_child_right(), default_limit, warning_sender.clone());
             $name::new(stream1, stream2, node.get_span(), warning_sender)
         }
+        */
     };
 }
 

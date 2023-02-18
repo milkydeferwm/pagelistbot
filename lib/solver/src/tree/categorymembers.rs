@@ -2,24 +2,23 @@
 use core::{pin::Pin, task::{Context, Poll}};
 use std::collections::BTreeSet;
 use crate::SolverError;
-use super::{TreeSolverError, DynamicFalliablePageInfoPairStream};
+use super::{TreeSolverError, TreeSolver};
 
 use futures::{stream::{TryStream, Empty, self}, Stream, channel::mpsc::UnboundedSender, future::Either};
-use interface::types::ast::{Node, Span, NumberOrInf, Modifier};
+use interface::types::ast::{Span, NumberOrInf, Modifier};
 use mwtitle::Title;
-use pin_project::pin_project;
 use provider::{Pair, PageInfo, DataProvider};
 
-#[pin_project]
+#[pin_project::pin_project]
 #[must_use = "streams do nothing unless you poll them"]
-pub(super) struct CategoryMembersStream<F, P>
+pub(super) struct CategoryMembersStream<'p, F, P>
 where
-    F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
-    P: DataProvider,
+    F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>>,
+    P: DataProvider + 'p,
 {
     #[pin] source: F,
     #[pin] workload: Either<Empty<<<P as DataProvider>::CategoryMembersStream as Stream>::Item>, <P as DataProvider>::CategoryMembersStream>,
-    provider: P,
+    provider: &'p P,
     modifier: Modifier,
     span: Span,
     result_limit: NumberOrInf<usize>,
@@ -31,7 +30,7 @@ where
     produced_pages: BTreeSet<Pair<PageInfo>>,
     category_backlog: BTreeSet<Title>,
     current_depth: usize,
-    warning_sender: UnboundedSender<SolverError<TreeSolverError<P>>>,
+    warning_sender: UnboundedSender<SolverError<TreeSolver<'p, P>>>,
 }
 
 macro_rules! reset {
@@ -66,12 +65,12 @@ macro_rules! prepare_new_workload {
     };
 }
 
-impl<F, P> CategoryMembersStream<F, P>
+impl<'p, F, P> CategoryMembersStream<'p, F, P>
 where
-    F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
+    F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>>,
     P: DataProvider,
 {
-    pub fn new(stream: F, provider: P, modifier: Modifier, span: Span, result_limit: NumberOrInf<usize>, process_limit: usize, warning_sender: UnboundedSender<SolverError<TreeSolverError<P>>>) -> Self {
+    pub fn new(stream: F, provider: &'p P, modifier: Modifier, span: Span, result_limit: NumberOrInf<usize>, process_limit: usize, warning_sender: UnboundedSender<SolverError<TreeSolver<'p, P>>>) -> Self {
         Self {
             source: stream,
             workload: Either::Left(stream::empty()),
@@ -93,12 +92,12 @@ where
     }
 }
 
-impl<F, P> Stream for CategoryMembersStream<F, P>
+impl<'p, F, P> Stream for CategoryMembersStream<'p, F, P>
 where
-    F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>>,
-    P: DataProvider + Clone,
+    F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>>,
+    P: DataProvider,
 {
-    type Item = Result<Pair<PageInfo>, SolverError<TreeSolverError<P>>>;
+    type Item = Result<Pair<PageInfo>, SolverError<TreeSolver<'p, P>>>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         let mut this = self.project();
@@ -232,26 +231,9 @@ where
     }
 }
 
-unsafe impl<F, P> Send for CategoryMembersStream<F, P>
+unsafe impl<'p, F, P> Send for CategoryMembersStream<'p, F, P>
 where
-    F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolverError<P>>> + Send,
+    F: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>> + Send,
     P: DataProvider + Clone + Send,
     <P as DataProvider>::CategoryMembersStream: Send,
-    P: Send,
 {}
-
-pub(super) fn category_members_from_node<'p, P>(provider: P, node: &Node, default_limit: NumberOrInf<usize>, process_limit: usize, warning_sender: UnboundedSender<SolverError<TreeSolverError<P>>>) -> CategoryMembersStream<DynamicFalliablePageInfoPairStream<'p, P>, P>
-where
-    P: DataProvider + Clone + Send + 'p,
-    <P as DataProvider>::Error: Send + 'p,
-    <P as DataProvider>::PageInfoRawStream: Send + 'p,
-    <P as DataProvider>::LinksStream: Send + 'p,
-    <P as DataProvider>::BacklinksStream: Send + 'p,
-    <P as DataProvider>::EmbedsStream: Send + 'p,
-    <P as DataProvider>::CategoryMembersStream: Send + 'p,
-    <P as DataProvider>::PrefixStream: Send + 'p,
-{
-    let stream = super::dispatch_node(provider.clone(), node.get_child(), default_limit, warning_sender.clone());
-    let limit = node.get_modifier().result_limit.unwrap_or(default_limit);
-    CategoryMembersStream::new(stream, provider, node.get_modifier().to_owned(), node.get_span(), limit, process_limit, warning_sender)
-}

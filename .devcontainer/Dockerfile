@@ -9,4 +9,4 @@ FROM mcr.microsoft.com/vscode/devcontainers/rust:0-${VARIANT}
 #     && apt-get -y install --no-install-recommends <your-package-list-here>
 
 # install nightly toolchain
-RUN rustup install nightly && rustup default nightly && rustup component add rust-src clippy --toolchain nightly
+RUN rustup install nightly && rustup default nightly && rustup component add rust-src clippy miri --toolchain nightly

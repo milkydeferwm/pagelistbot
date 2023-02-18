@@ -1,7 +1,5 @@
 use crate::{PageInfo, Pair};
 use futures::{stream::try_unfold, TryStream};
-use mwapi::Client;
-use mwtitle::TitleCodec;
 use std::collections::{HashMap, VecDeque};
 
 #[mwapi_responses::query(
@@ -11,17 +9,17 @@ use std::collections::{HashMap, VecDeque};
 struct Response;
 
 #[derive(Debug, Clone)]
-struct QueryState {
-    api: Client,
-    title_codec: TitleCodec,
+struct QueryState<'p> {
+    api: &'p mwapi::Client,
+    title_codec: &'p mwtitle::TitleCodec,
     param: HashMap<String, String>,
     continue_: Option<HashMap<String, String>>,
     cache: VecDeque<Pair<PageInfo>>,
 }
 
-pub(super) type QueryStream = impl TryStream<Ok=Pair<PageInfo>, Error=mwapi::Error, Item = Result<Pair<PageInfo>, mwapi::Error>> + Send;
+pub(super) type QueryStream<'p> = impl TryStream<Ok=Pair<PageInfo>, Error=mwapi::Error, Item = Result<Pair<PageInfo>, mwapi::Error>> + Send + 'p;
 
-pub(super) fn query_complete(api: Client, title_codec: TitleCodec, param: HashMap<String, String>) -> QueryStream {
+pub(super) fn query_complete<'p>(api: &'p mwapi::Client, title_codec: &'p mwtitle::TitleCodec, param: HashMap<String, String>) -> QueryStream<'p> {
     let start_state = QueryState {
         api,
         title_codec,

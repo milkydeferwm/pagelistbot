@@ -1,8 +1,8 @@
 //! Solver by converting the AST directly to nested futures.
 
-use core::fmt::{self, Debug, Display, Formatter};
+use core::{fmt::{self, Debug, Display, Formatter}, pin::Pin, task::{Context, Poll}};
 use crate::{Answer, Solver, SolverError};
-use futures::{StreamExt, TryStreamExt, stream::BoxStream, channel::mpsc::{unbounded, UnboundedSender}};
+use futures::{StreamExt, TryStreamExt, channel::mpsc::{unbounded, UnboundedSender}, Stream};
 use interface::types::ast::{Node, Expr, NumberOrInf};
 use provider::{DataProvider, Pair, PageInfo, PageInfoError};
 use std::{error::Error, collections::BTreeSet};
@@ -13,72 +13,243 @@ mod pageinfo;
 mod simplequery;
 mod categorymembers;
 
-pub struct TreeSolver<P>
+type PinnedUniversalStream<'p, P> = Pin<Box<UniversalStream<'p, P>>>;
+
+#[pin_project::pin_project(project = UniversalStreamProj)]
+#[non_exhaustive]
+enum UniversalStream<'p, P>
 where
-    P: DataProvider + Clone,
+    P: DataProvider,
 {
-    provider: P,
-    default_limit: NumberOrInf<usize>,
+    /// Stream by pageinfo
+    PageInfo(#[pin] pageinfo::PageInfoStream<'p, P>),
+    // set operations
+    /// Stream by intersection operation
+    Intersection(#[pin] setop::IntersectionStream<'p, PinnedUniversalStream<'p, P>, PinnedUniversalStream<'p, P>, P>),
+    /// Stream by union operation
+    Union(#[pin] setop::UnionStream<'p, PinnedUniversalStream<'p, P>, PinnedUniversalStream<'p, P>, P>),
+    /// Stream by difference operation
+    Difference(#[pin] setop::DifferenceStream<'p, PinnedUniversalStream<'p, P>, PinnedUniversalStream<'p, P>, P>),
+    /// Stream by xor operation
+    Xor(#[pin] setop::XorStream<'p, PinnedUniversalStream<'p, P>, PinnedUniversalStream<'p, P>, P>),
+    // unary operations
+    /// Stream by links operation
+    Links(#[pin]simplequery::LinksStream<'p, PinnedUniversalStream<'p, P>, P>),
+    /// Stream by backlinks operation
+    Backlinks(#[pin] simplequery::BacklinksStream<'p, PinnedUniversalStream<'p, P>, P>),
+    /// Stream by embeds operation
+    Embeds(#[pin] simplequery::EmbedsStream<'p, PinnedUniversalStream<'p, P>, P>),
+    /// Stream by perfix operation
+    Prefix(#[pin] simplequery::PrefixStream<'p, PinnedUniversalStream<'p, P>, P>),
+    /// Stream by incat operation
+    CategoryMembers(#[pin] categorymembers::CategoryMembersStream<'p, PinnedUniversalStream<'p, P>, P>),
+    /// Stream by toggle operation
+    Toggle(#[pin] toggle::ToggleStream<'p, PinnedUniversalStream<'p, P>, P>),
 }
 
-type DynamicFalliablePageInfoPairStream<'a, P> = BoxStream<'a, Result<Pair<PageInfo>, SolverError<TreeSolverError<P>>>>;
-const PROCESS_LIMIT: usize = 1;
-
-/// dynamic dispatcher for node-to-stream
-fn dispatch_node<'p, P>(provider: P, node: &Node, default_limit: NumberOrInf<usize>, warning_sender: UnboundedSender<SolverError<TreeSolverError<P>>>) -> DynamicFalliablePageInfoPairStream<'p, P>
+impl<'p, P> Stream for UniversalStream<'p, P>
 where
-    P: DataProvider + Clone + Send + 'p,
-    <P as DataProvider>::Error: Send + 'p,
-    <P as DataProvider>::PageInfoRawStream: Send,
-    <P as DataProvider>::LinksStream: Send,
-    <P as DataProvider>::BacklinksStream: Send,
-    <P as DataProvider>::EmbedsStream: Send,
-    <P as DataProvider>::CategoryMembersStream: Send,
-    <P as DataProvider>::PrefixStream: Send,
+    P: DataProvider,
 {
-    match node.get_expr() {
-        Expr::Page { .. } => Box::pin(pageinfo::page_info_from_node(provider, node, default_limit, warning_sender)),
-        Expr::Intersection { .. } => Box::pin(setop::intersection_from_node(provider, node, default_limit, warning_sender)),
-        Expr::Union { .. } => Box::pin(setop::union_from_node(provider, node, default_limit, warning_sender)),
-        Expr::Difference { .. } => Box::pin(setop::difference_from_node(provider, node, default_limit, warning_sender)),
-        Expr::Xor { .. } => Box::pin(setop::xor_from_node(provider, node, default_limit, warning_sender)),
-        Expr::Link { .. } => Box::pin(simplequery::links_from_node(provider, node, default_limit, PROCESS_LIMIT, warning_sender)),
-        Expr::BackLink { .. } => Box::pin(simplequery::backlinks_from_node(provider, node, default_limit, PROCESS_LIMIT, warning_sender)),
-        Expr::Embed { .. } => Box::pin(simplequery::embeds_from_node(provider, node, default_limit, PROCESS_LIMIT, warning_sender)),
-        Expr::InCategory { .. } => Box::pin(categorymembers::category_members_from_node(provider, node, default_limit, PROCESS_LIMIT, warning_sender)),
-        Expr::Prefix { .. } => Box::pin(simplequery::prefix_from_node(provider, node, default_limit, PROCESS_LIMIT, warning_sender)),
-        Expr::Toggle { .. } => Box::pin(toggle::toggle_from_node(provider, node, default_limit, warning_sender)),
+    type Item = Result<Pair<PageInfo>, SolverError<TreeSolver<'p, P>>>;
+
+    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        let this = self.project();
+        match this {
+            UniversalStreamProj::PageInfo(s) => s.poll_next(cx),
+            UniversalStreamProj::Intersection(s) => s.poll_next(cx),
+            UniversalStreamProj::Union(s) => s.poll_next(cx),
+            UniversalStreamProj::Difference(s) => s.poll_next(cx),
+            UniversalStreamProj::Xor(s) => s.poll_next(cx),
+            UniversalStreamProj::Links(s) => s.poll_next(cx),
+            UniversalStreamProj::Backlinks(s) => s.poll_next(cx),
+            UniversalStreamProj::Embeds(s) => s.poll_next(cx),
+            UniversalStreamProj::Prefix(s) => s.poll_next(cx),
+            UniversalStreamProj::CategoryMembers(s) => s.poll_next(cx),
+            UniversalStreamProj::Toggle(s) => s.poll_next(cx),
+        }
     }
 }
 
-impl<P> TreeSolver<P>
+pub struct TreeSolver<'p, P>
 where
-    P: DataProvider + Clone,
+    P: DataProvider,
 {
-    pub fn new(provider: P, default_limit: NumberOrInf<usize>) -> Self {
+    provider: &'p P,
+    default_limit: NumberOrInf<usize>,
+}
+
+impl<'p, P> TreeSolver<'p, P>
+where
+    P: DataProvider,
+{
+    pub fn new(provider: &'p P, default_limit: NumberOrInf<usize>) -> Self {
         Self {
             provider,
             default_limit,
         }
     }
+
+    fn future_from_node<'q>(&self, node: &'q Node, warning_sender: UnboundedSender<SolverError<TreeSolver<'p, P>>>) -> UniversalStream<'p, P> {
+        const PROCESS_LIMIT: usize = 1;
+        match node.get_expr() {
+            Expr::Page { titles } => {
+                let st = pageinfo::PageInfoStream::new(self.provider, titles.to_owned(), node.get_span(), warning_sender);
+                UniversalStream::PageInfo(st)
+            },
+            Expr::Intersection { set1, set2 } => {
+                let st1 = {
+                    let warning_sender = warning_sender.clone();
+                    self.future_from_node(set1, warning_sender)
+                };
+                let st2 = {
+                    let warning_sender = warning_sender.clone();
+                    self.future_from_node(set2, warning_sender)
+                };
+                let st = setop::IntersectionStream::new(Box::pin(st1), Box::pin(st2), node.get_span(), warning_sender);
+                UniversalStream::Intersection(st)
+            },
+            Expr::Union { set1, set2 } => {
+                let st1 = {
+                    let warning_sender = warning_sender.clone();
+                    self.future_from_node(set1, warning_sender)
+                };
+                let st2 = {
+                    let warning_sender = warning_sender.clone();
+                    self.future_from_node(set2, warning_sender)
+                };
+                let st = setop::UnionStream::new(Box::pin(st1), Box::pin(st2), node.get_span(), warning_sender);
+                UniversalStream::Union(st)
+            },
+            Expr::Difference { set1, set2 } => {
+                let st1 = {
+                    let warning_sender = warning_sender.clone();
+                    self.future_from_node(set1, warning_sender)
+                };
+                let st2 = {
+                    let warning_sender = warning_sender.clone();
+                    self.future_from_node(set2, warning_sender)
+                };
+                let st = setop::DifferenceStream::new(Box::pin(st1), Box::pin(st2), node.get_span(), warning_sender);
+                UniversalStream::Difference(st)
+            },
+            Expr::Xor { set1, set2 } => {
+                let st1 = {
+                    let warning_sender = warning_sender.clone();
+                    self.future_from_node(set1, warning_sender)
+                };
+                let st2 = {
+                    let warning_sender = warning_sender.clone();
+                    self.future_from_node(set2, warning_sender)
+                };
+                let st = setop::XorStream::new(Box::pin(st1), Box::pin(st2), node.get_span(), warning_sender);
+                UniversalStream::Xor(st)
+            },
+            Expr::Link { target, modifier } => {
+                let st0 = {
+                    let warning_sender = warning_sender.clone();
+                    self.future_from_node(target, warning_sender)
+                };
+                let st = simplequery::LinksStream::new(
+                    Box::pin(st0),
+                    self.provider,
+                    modifier.to_owned(),
+                    node.get_span(),
+                    modifier.result_limit.unwrap_or(self.default_limit),
+                    PROCESS_LIMIT,
+                    warning_sender,
+                );
+                UniversalStream::Links(st)
+            },
+            Expr::BackLink { target, modifier } => {
+                let st0 = {
+                    let warning_sender = warning_sender.clone();
+                    self.future_from_node(target, warning_sender)
+                };
+                let st = simplequery::BacklinksStream::new(
+                    Box::pin(st0),
+                    self.provider,
+                    modifier.to_owned(),
+                    node.get_span(),
+                    modifier.result_limit.unwrap_or(self.default_limit),
+                    PROCESS_LIMIT,
+                    warning_sender,
+                );
+                UniversalStream::Backlinks(st)
+            },
+            Expr::Embed { target, modifier } => {
+                let st0 = {
+                    let warning_sender = warning_sender.clone();
+                    self.future_from_node(target, warning_sender)
+                };
+                let st = simplequery::EmbedsStream::new(
+                    Box::pin(st0),
+                    self.provider,
+                    modifier.to_owned(),
+                    node.get_span(),
+                    modifier.result_limit.unwrap_or(self.default_limit),
+                    PROCESS_LIMIT,
+                    warning_sender,
+                );
+                UniversalStream::Embeds(st)
+            },
+            Expr::InCategory { target, modifier } => {
+                let st0 = {
+                    let warning_sender = warning_sender.clone();
+                    self.future_from_node(target, warning_sender)
+                };
+                let st = categorymembers::CategoryMembersStream::new(
+                    Box::pin(st0),
+                    self.provider,
+                    modifier.to_owned(),
+                    node.get_span(),
+                    modifier.result_limit.unwrap_or(self.default_limit),
+                    PROCESS_LIMIT,
+                    warning_sender,
+                );
+                UniversalStream::CategoryMembers(st)
+            },
+            Expr::Prefix { target, modifier } => {
+                let st0 = {
+                    let warning_sender = warning_sender.clone();
+                    self.future_from_node(target, warning_sender)
+                };
+                let st = simplequery::PrefixStream::new(
+                    Box::pin(st0),
+                    self.provider,
+                    modifier.to_owned(),
+                    node.get_span(),
+                    modifier.result_limit.unwrap_or(self.default_limit),
+                    PROCESS_LIMIT,
+                    warning_sender,
+                );
+                UniversalStream::Prefix(st)
+            },
+            Expr::Toggle { target } => {
+                let st0 = {
+                    let warning_sender = warning_sender.clone();
+                    self.future_from_node(target, warning_sender)
+                };
+                let st = toggle::ToggleStream::new(
+                    Box::pin(st0),
+                    node.get_span(),
+                    warning_sender,
+                );
+                UniversalStream::Toggle(st)
+            },
+        }
+    }
 }
 
-impl<'s, 'p, P> Solver<'s, P> for TreeSolver<P>
+impl<'p, P> Solver for TreeSolver<'p, P>
 where
-    P: DataProvider + Clone + Debug + Send + 'p,
-    <P as DataProvider>::Error: Send + 'p,
-    <P as DataProvider>::PageInfoRawStream: Send + 'p,
-    <P as DataProvider>::LinksStream: Send + 'p,
-    <P as DataProvider>::BacklinksStream: Send + 'p,
-    <P as DataProvider>::EmbedsStream: Send + 'p,
-    <P as DataProvider>::CategoryMembersStream: Send + 'p,
-    <P as DataProvider>::PrefixStream: Send + 'p,
+    P: DataProvider,
 {
     type InnerError = TreeSolverError<P>;
 
-    async fn solve<'q>(&'s self, ast: &'q Node) -> Result<Answer<TreeSolverError<P>>, SolverError<TreeSolverError<P>>> {
-        let (send, recv) = unbounded::<SolverError<TreeSolverError<_>>>();
-        let stream = dispatch_node(self.provider.clone(), ast, self.default_limit, send);
+    async fn solve<'q>(&self, ast: &'q Node) -> Result<Answer<TreeSolver<'p, P>>, SolverError<TreeSolver<'p, P>>> {
+        let (send, recv) = unbounded::<SolverError<TreeSolver<'p, P>>>();
+        let stream = self.future_from_node(ast, send);
         // collect!
         let result_titles = {
             let result_pagepairs = stream.try_collect::<BTreeSet<_>>().await?;
@@ -92,7 +263,6 @@ where
     }
 }
 
-#[derive(Debug)]
 pub enum TreeSolverError<P>
 where
     P: DataProvider,
@@ -103,9 +273,25 @@ where
     ProcessLimitExceeded(usize),
 }
 
+impl<P> Debug for TreeSolverError<P>
+where
+    P: DataProvider,
+    <P as DataProvider>::Error: Debug,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Provider(arg0) => f.debug_tuple("Provider").field(arg0).finish(),
+            Self::PageInfo(arg0) => f.debug_tuple("PageInfo").field(arg0).finish(),
+            Self::ResultLimitExceeded(arg0) => f.debug_tuple("ResultLimitExceeded").field(arg0).finish(),
+            Self::ProcessLimitExceeded(arg0) => f.debug_tuple("ProcessLimitExceeded").field(arg0).finish(),
+        }
+    }
+}
+
 impl<P> Display for TreeSolverError<P>
 where
     P: DataProvider,
+    <P as DataProvider>::Error: Display,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
@@ -134,7 +320,8 @@ where
 
 impl<P> Error for TreeSolverError<P>
 where
-    P: DataProvider + Debug,
+    P: DataProvider,
+    <P as DataProvider>::Error: Error,
 {}
 
 unsafe impl<P> Send for TreeSolverError<P>
