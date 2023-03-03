@@ -39,6 +39,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8da52d66c7071e2e3fa2a1e5c6d088fec47b593032b254f5e980de8ea54454d6"
 
 [[package]]
+name = "ast"
+version = "3.1.0"
+dependencies = [
+ "intorinf",
+ "nom",
+ "nom_locate",
+]
+
+[[package]]
 name = "async-compression"
 version = "0.3.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -876,6 +885,10 @@ dependencies = [
  "serde",
  "serde_with",
 ]
+
+[[package]]
+name = "intorinf"
+version = "3.1.0"
 
 [[package]]
 name = "io-lifetimes"
