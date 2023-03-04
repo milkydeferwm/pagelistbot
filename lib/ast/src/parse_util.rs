@@ -43,6 +43,7 @@ where
 
 /// A combinator that takes a parser `inner` and produces a parser that also consumes 
 /// trailing whitespace, returning the output of `inner`.
+#[allow(dead_code)]
 pub(crate) fn trailing_whitespace<'a, I, O, E, F>(inner: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
     I: InputTakeAtPosition + 'a,
