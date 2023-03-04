@@ -23,7 +23,7 @@ macro_rules! parse_token {
                 )(span).finish().map(|(_, x)| x)
             }
 
-            /// Parse the token from a span. Assume no whitespaces before or after
+            /// Parse the token from a span. Assume no whitespaces before.
             pub(crate) fn parse_internal<E>(program: crate::Span<'a>) -> nom::IResult<crate::Span<'a>, Self, E>
             where
                 E: nom::error::ParseError<crate::Span<'a>>,

@@ -33,7 +33,7 @@ impl<'a> LitString<'a> {
         )(span).finish().map(|(_, x)| x)
     }
 
-    /// Parse a `LitString` from a span. Assume no whitespaces before or after.
+    /// Parse a `LitString` from a span. Assume no whitespaces before.
     pub(crate) fn parse_internal<E>(program: Span<'a>) -> IResult<Span<'a>, Self, E>
     where
         E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
@@ -64,7 +64,7 @@ impl<'a> LitIntOrInf<'a> {
         )(span).finish().map(|(_, x)| x)
     }
 
-    /// Parse a `LitIntOrInf` from a span. Assume no whitespaces before or after.
+    /// Parse a `LitIntOrInf` from a span. Assume no whitespaces before.
     pub(crate) fn parse_internal<E>(program: Span<'a>) -> IResult<Span<'a>, Self, E>
     where
         E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
@@ -95,7 +95,7 @@ impl<'a> LitInt<'a> {
         )(span).finish().map(|(_, x)| x)
     }
 
-    /// Parse a `LitInt` from a span. Assume no whitespaces before or after.
+    /// Parse a `LitInt` from a span. Assume no whitespaces before.
     pub(crate) fn parse_internal<E>(program: Span<'a>) -> IResult<Span<'a>, Self, E>
     where
         E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
