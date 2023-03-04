@@ -38,9 +38,11 @@ impl<'a> LitString<'a> {
     where
         E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
     {
-        let (program, pos_start) = position(program)?;
-        let (residual, val) = parse_string(program)?;
-        let (residual, pos_end) = position(residual)?;
+        let (residual, (pos_start, val, pos_end)) = tuple((
+            position,
+            parse_string,
+            position,
+        ))(program)?;
         let length = pos_end.location_offset() - pos_start.location_offset();
         let lit_string = Self {
             span: program.slice(..length),
@@ -69,9 +71,11 @@ impl<'a> LitIntOrInf<'a> {
     where
         E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
     {
-        let (program, pos_start) = position(program)?;
-        let (residual, val) = parse_i32(program)?;
-        let (residual, pos_end) = position(residual)?;
+        let (residual, (pos_start, val, pos_end)) = tuple((
+            position,
+            parse_i32,
+            position,
+        ))(program)?;
         let length = pos_end.location_offset() - pos_start.location_offset();
         let lit_intorinf = Self {
             span: program.slice(..length),
@@ -100,9 +104,11 @@ impl<'a> LitInt<'a> {
     where
         E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
     {
-        let (program, pos_start) = position(program)?;
-        let (residual, val) = parse_i32(program)?;
-        let (residual, pos_end) = position(residual)?;
+        let (residual, (pos_start, val, pos_end)) = tuple((
+            position,
+            parse_i32,
+            position,
+        ))(program)?;
         let length = pos_end.location_offset() - pos_start.location_offset();
         let lit_int = Self {
             span: program.slice(..length),
