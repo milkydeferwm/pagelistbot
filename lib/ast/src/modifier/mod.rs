@@ -8,6 +8,9 @@ use crate::token::{
     Limit, Resolve, Ns, Depth, NoRedir, OnlyRedir, Direct,
 };
 
+#[cfg(feature = "parse")]
+pub mod parse;
+
 /// Mega container for all modifiers.
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
