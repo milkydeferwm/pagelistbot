@@ -5,6 +5,9 @@ use crate::{Span, expose_span};
 use crate::token::Dot;
 use crate::modifier::Modifier;
 
+#[cfg(feature = "parse")]
+pub mod parse;
+
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Attribute<'a> {
