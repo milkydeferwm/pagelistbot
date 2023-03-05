@@ -249,7 +249,7 @@ mod test {
     #[test]
     fn test_parse_modifier_ns() {
         fn extract_nums(lits: &[LitInt]) -> Vec<i32> {
-            lits.into_iter().map(|x| x.val).collect()
+            lits.iter().map(|x| x.val).collect()
         }
 
         let input_1 = "ns(0)";
