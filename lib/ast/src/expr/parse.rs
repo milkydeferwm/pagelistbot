@@ -368,3 +368,136 @@ impl<'a> ExpressionToggle<'a> {
         Ok((residual, expression_toggle))
     }
 }
+
+#[cfg(test)]
+mod test {
+    use alloc::format;
+    use crate::Span;
+    use super::{
+        Expression,
+        ExpressionPage, ExpressionLink, ExpressionLinkTo, ExpressionEmbed, ExpressionInCat, ExpressionPrefix, ExpressionToggle,
+    };
+    use nom::error::Error;
+
+    #[test]
+    fn test_parse_expression() {
+        let input_1 = " \"A\" + \"b\" ";
+        let input_2 = "\"A\"-\"B\"";
+        let input_3 = "  \"A\" ^ \"B\"";
+        let input_4 = "\"A\"&\"B\" ";
+        let input_5 = "(\"A\")";
+        let input_6 = "\"A\"+\"B\"-\"C\"";
+        let input_7 = "\"A\"+\"B\"^\"c\"";
+        let input_8 = "\"A\"^\"B\"&\"c\"";
+        let input_9 = "(\"A\" ^ \"B\" + \"C\") & ((\"D\" - \"E\") &\"F\")";
+
+        let exp_1 = Expression::parse::<Error<Span<'_>>>(input_1).unwrap();
+        let exp_2 = Expression::parse::<Error<Span<'_>>>(input_2).unwrap();
+        let exp_3 = Expression::parse::<Error<Span<'_>>>(input_3).unwrap();
+        let exp_4 = Expression::parse::<Error<Span<'_>>>(input_4).unwrap();
+        let exp_5 = Expression::parse::<Error<Span<'_>>>(input_5).unwrap();
+        let exp_6 = Expression::parse::<Error<Span<'_>>>(input_6).unwrap();
+        let exp_7 = Expression::parse::<Error<Span<'_>>>(input_7).unwrap();
+        let exp_8 = Expression::parse::<Error<Span<'_>>>(input_8).unwrap();
+        let exp_9 = Expression::parse::<Error<Span<'_>>>(input_9).unwrap();
+
+        assert!(matches!(exp_1, Expression::Add(_)));
+        assert!(matches!(exp_2, Expression::Sub(_)));
+        assert!(matches!(exp_3, Expression::Xor(_)));
+        assert!(matches!(exp_4, Expression::And(_)));
+        assert!(matches!(exp_5, Expression::Paren(_)));
+        assert!(matches!(exp_6, Expression::Sub(_)));
+        assert!(matches!(exp_7, Expression::Add(_)));
+        assert!(matches!(exp_8, Expression::Xor(_)));
+        assert!(matches!(exp_9, Expression::And(_)));
+    }
+
+    #[test]
+    fn test_parse_expression_page() {
+        let input_1 = "\"Main Page\"";
+        let input_2 = " \"Hello\" , \"World\"";
+        let input_3 = "page ( \"Test\",\"page\" )  ";
+        let input_4 = "  Page(\"Sakura\")  ";
+
+        let exp_1 = ExpressionPage::parse::<Error<Span<'_>>>(input_1).unwrap();
+        let exp_2 = ExpressionPage::parse::<Error<Span<'_>>>(input_2).unwrap();
+        let exp_3 = ExpressionPage::parse::<Error<Span<'_>>>(input_3).unwrap();
+        let exp_4 = ExpressionPage::parse::<Error<Span<'_>>>(input_4).unwrap();
+
+        assert_eq!(exp_1.vals.len(), 1);
+        assert_eq!(exp_2.vals.len(), 2);
+        assert_eq!(exp_3.vals.len(), 2);
+        assert_eq!(exp_4.vals.len(), 1);
+
+        assert_eq!(*exp_1.get_span().fragment(), "\"Main Page\"");
+        assert_eq!(*exp_2.get_span().fragment(), "\"Hello\" , \"World\"");
+        assert_eq!(*exp_3.get_span().fragment(), "page ( \"Test\",\"page\" )");
+        assert_eq!(*exp_4.get_span().fragment(), "Page(\"Sakura\")");
+
+        assert_eq!(exp_1.get_span().location_offset(), 0);
+        assert_eq!(exp_2.get_span().location_offset(), 1);
+        assert_eq!(exp_3.get_span().location_offset(), 0);
+        assert_eq!(exp_4.get_span().location_offset(), 2);
+    }
+
+    macro_rules! unary_operation_make_test {
+        ($test:ident, $target:ident, $lit:literal) => {
+            #[test]
+            fn $test() {
+                let input_1 = format!("{}(\"Example\")", $lit);
+                let input_2 = format!(" {} (\"Example\") . resolve ( )", $lit);
+                let input_3 = format!("{}( \"Example\" ). noredir .onlyredir ", $lit);
+                let input_4 = format!("  {} ( \"Example\" ) . Ns ( 0 , 1, 2 ) . limit ( 100 ) . onlyredir ", $lit);
+
+                let exp_1 = $target::parse::<Error<Span<'_>>>(&input_1).unwrap();
+                let exp_2 = $target::parse::<Error<Span<'_>>>(&input_2).unwrap();
+                let exp_3 = $target::parse::<Error<Span<'_>>>(&input_3).unwrap();
+                let exp_4 = $target::parse::<Error<Span<'_>>>(&input_4).unwrap();
+
+                assert_eq!(exp_1.attributes.len(), 0);
+                assert_eq!(exp_2.attributes.len(), 1);
+                assert_eq!(exp_3.attributes.len(), 2);
+                assert_eq!(exp_4.attributes.len(), 3);
+
+                assert_eq!(*exp_1.get_span().fragment(), format!("{}(\"Example\")", $lit));
+                assert_eq!(*exp_2.get_span().fragment(), format!("{} (\"Example\") . resolve ( )", $lit));
+                assert_eq!(*exp_3.get_span().fragment(), format!("{}( \"Example\" ). noredir .onlyredir", $lit));
+                assert_eq!(*exp_4.get_span().fragment(), format!("{} ( \"Example\" ) . Ns ( 0 , 1, 2 ) . limit ( 100 ) . onlyredir", $lit));
+
+                assert_eq!(exp_1.get_span().location_offset(), 0);
+                assert_eq!(exp_2.get_span().location_offset(), 1);
+                assert_eq!(exp_3.get_span().location_offset(), 0);
+                assert_eq!(exp_4.get_span().location_offset(), 2);
+            }
+        }
+    }
+
+    unary_operation_make_test!(test_parse_expression_link, ExpressionLink, "link");
+    unary_operation_make_test!(test_parse_expression_linkto, ExpressionLinkTo, "linkto");
+    unary_operation_make_test!(test_parse_expression_embed, ExpressionEmbed, "embed");
+    unary_operation_make_test!(test_parse_expression_incat, ExpressionInCat, "incat");
+    unary_operation_make_test!(test_parse_expression_prefix, ExpressionPrefix, "prefix");
+
+    #[test]
+    fn test_parse_expression_toggle() {
+        let input_1 = "toggle(\"Main Page\")";
+        let input_2 = " toggle ( \"Hello\" , \"World\" )";
+        let input_3 = "toggle ( \"Test\",\"page\" )  ";
+        let input_4 = "  toggle(linkto(\"Sakura\"))  ";
+
+        let exp_1 = ExpressionToggle::parse::<Error<Span<'_>>>(input_1).unwrap();
+        let exp_2 = ExpressionToggle::parse::<Error<Span<'_>>>(input_2).unwrap();
+        let exp_3 = ExpressionToggle::parse::<Error<Span<'_>>>(input_3).unwrap();
+        let exp_4 = ExpressionToggle::parse::<Error<Span<'_>>>(input_4).unwrap();
+
+        assert_eq!(*exp_1.get_span().fragment(), "toggle(\"Main Page\")");
+        assert_eq!(*exp_2.get_span().fragment(), "toggle ( \"Hello\" , \"World\" )");
+        assert_eq!(*exp_3.get_span().fragment(), "toggle ( \"Test\",\"page\" )");
+        assert_eq!(*exp_4.get_span().fragment(), "toggle(linkto(\"Sakura\"))");
+
+        assert_eq!(exp_1.get_span().location_offset(), 0);
+        assert_eq!(exp_2.get_span().location_offset(), 1);
+        assert_eq!(exp_3.get_span().location_offset(), 0);
+        assert_eq!(exp_4.get_span().location_offset(), 2);
+    }
+}
