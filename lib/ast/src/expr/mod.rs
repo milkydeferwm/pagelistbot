@@ -12,6 +12,8 @@ use crate::token::{
     Page, Link, LinkTo, Embed, InCat, Prefix, Toggle,
 };
 
+#[cfg(feature = "parse")]
+pub mod parse;
 
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
