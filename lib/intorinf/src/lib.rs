@@ -2,7 +2,10 @@
 
 #![no_std]
 
-use core::cmp::Ordering;
+use core::{
+    cmp::Ordering,
+    fmt::{self, Display, Formatter},
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum IntOrInf {
@@ -53,6 +56,15 @@ impl Ord for IntOrInf {
             (Self::Int(_), Self::Inf) => Ordering::Less,
             (Self::Inf, Self::Int(_)) => Ordering::Greater,
             (Self::Inf, Self::Inf) => Ordering::Equal,
+        }
+    }
+}
+
+impl Display for IntOrInf {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match *self {
+            Self::Int(i) => i.fmt(f),
+            Self::Inf => write!(f, "inf"),
         }
     }
 }
