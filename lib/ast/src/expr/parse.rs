@@ -2,7 +2,7 @@
 
 #![cfg(feature = "parse")]
 
-use alloc::boxed::Box;
+use alloc::sync::Arc;
 use core::num::ParseIntError;
 use crate::{
     Span,
@@ -74,15 +74,15 @@ impl<'a> Expression<'a> {
                 match lv1op {
                     Level1Operator::Add(add) => Self::Add(ExpressionAdd {
                         span: program.slice(..length),
-                        expr1: Box::new(expr1),
+                        expr1: Arc::new(expr1),
                         add,
-                        expr2: Box::new(expr2),
+                        expr2: Arc::new(expr2),
                     }),
                     Level1Operator::Sub(sub) => Self::Sub(ExpressionSub {
                         span: program.slice(..length),
-                        expr1: Box::new(expr1),
+                        expr1: Arc::new(expr1),
                         sub,
-                        expr2: Box::new(expr2),
+                        expr2: Arc::new(expr2),
                     }),
                 }
             }
@@ -111,9 +111,9 @@ impl<'a> Expression<'a> {
                 let length = pos_end.location_offset() - pos_start.location_offset();
                 Self::Xor(ExpressionXor {
                     span: program.slice(..length),
-                    expr1: Box::new(expr1),
+                    expr1: Arc::new(expr1),
                     xor: caret,
-                    expr2: Box::new(expr2),
+                    expr2: Arc::new(expr2),
                 })
             }
         );
@@ -141,9 +141,9 @@ impl<'a> Expression<'a> {
                 let length = pos_end.location_offset() - pos_start.location_offset();
                 Self::And(ExpressionAnd {
                     span: program.slice(..length),
-                    expr1: Box::new(expr1),
+                    expr1: Arc::new(expr1),
                     and,
-                    expr2: Box::new(expr2),
+                    expr2: Arc::new(expr2),
                 })
             }
         );
@@ -197,7 +197,7 @@ impl<'a> ExpressionParen<'a> {
         let expression_paren = Self {
             span: program.slice(..length),
             lparen,
-            expr: Box::new(expr),
+            expr: Arc::new(expr),
             rparen,
         };
         Ok((residual, expression_paren))
@@ -316,7 +316,7 @@ macro_rules! unary_operation_make_parser {
                     span: program.slice(..length),
                     $token_field,
                     lparen,
-                    expr: Box::new(expr),
+                    expr: Arc::new(expr),
                     rparen,
                     attributes,
                 };
@@ -362,7 +362,7 @@ impl<'a> ExpressionToggle<'a> {
             span: program.slice(..length),
             toggle,
             lparen,
-            expr: Box::new(expr),
+            expr: Arc::new(expr),
             rparen,
         };
         Ok((residual, expression_toggle))

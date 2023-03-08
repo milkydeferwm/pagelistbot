@@ -1,7 +1,7 @@
 //! Expressions.
 
 use alloc::{
-    boxed::Box,
+    sync::Arc,
     vec::Vec,
 };
 use crate::{Span, expose_span};
@@ -57,9 +57,9 @@ impl<'a> Expression<'a> {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ExpressionAnd<'a> {
     span: Span<'a>,
-    pub expr1: Box<Expression<'a>>,
+    pub expr1: Arc<Expression<'a>>,
     pub and: And<'a>,
-    pub expr2: Box<Expression<'a>>,
+    pub expr2: Arc<Expression<'a>>,
 }
 
 /// Set operation add
@@ -67,9 +67,9 @@ pub struct ExpressionAnd<'a> {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ExpressionAdd<'a> {
     span: Span<'a>,
-    pub expr1: Box<Expression<'a>>,
+    pub expr1: Arc<Expression<'a>>,
     pub add: Add<'a>,
-    pub expr2: Box<Expression<'a>>,
+    pub expr2: Arc<Expression<'a>>,
 }
 
 /// Set operation sub
@@ -77,9 +77,9 @@ pub struct ExpressionAdd<'a> {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ExpressionSub<'a> {
     span: Span<'a>,
-    pub expr1: Box<Expression<'a>>,
+    pub expr1: Arc<Expression<'a>>,
     pub sub: Sub<'a>,
-    pub expr2: Box<Expression<'a>>,
+    pub expr2: Arc<Expression<'a>>,
 }
 
 /// Set operation xor
@@ -87,16 +87,16 @@ pub struct ExpressionSub<'a> {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ExpressionXor<'a> {
     span: Span<'a>,
-    pub expr1: Box<Expression<'a>>,
+    pub expr1: Arc<Expression<'a>>,
     pub xor: Caret<'a>,
-    pub expr2: Box<Expression<'a>>,
+    pub expr2: Arc<Expression<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ExpressionParen<'a> {
     span: Span<'a>,
     pub lparen: LeftParen<'a>,
-    pub expr: Box<Expression<'a>>,
+    pub expr: Arc<Expression<'a>>,
     pub rparen: RightParen<'a>,
 }
 
@@ -120,7 +120,7 @@ pub struct ExpressionLink<'a> {
     span: Span<'a>,
     pub link: Link<'a>,
     pub lparen: LeftParen<'a>,
-    pub expr: Box<Expression<'a>>,
+    pub expr: Arc<Expression<'a>>,
     pub rparen: RightParen<'a>,
     pub attributes: Vec<Attribute<'a>>,
 }
@@ -132,7 +132,7 @@ pub struct ExpressionLinkTo<'a> {
     span: Span<'a>,
     pub linkto: LinkTo<'a>,
     pub lparen: LeftParen<'a>,
-    pub expr: Box<Expression<'a>>,
+    pub expr: Arc<Expression<'a>>,
     pub rparen: RightParen<'a>,
     pub attributes: Vec<Attribute<'a>>,
 }
@@ -144,7 +144,7 @@ pub struct ExpressionEmbed<'a> {
     span: Span<'a>,
     pub embed: Embed<'a>,
     pub lparen: LeftParen<'a>,
-    pub expr: Box<Expression<'a>>,
+    pub expr: Arc<Expression<'a>>,
     pub rparen: RightParen<'a>,
     pub attributes: Vec<Attribute<'a>>,
 }
@@ -156,7 +156,7 @@ pub struct ExpressionInCat<'a> {
     span: Span<'a>,
     pub incat: InCat<'a>,
     pub lparen: LeftParen<'a>,
-    pub expr: Box<Expression<'a>>,
+    pub expr: Arc<Expression<'a>>,
     pub rparen: RightParen<'a>,
     pub attributes: Vec<Attribute<'a>>,
 }
@@ -168,7 +168,7 @@ pub struct ExpressionPrefix<'a> {
     span: Span<'a>,
     pub prefix: Prefix<'a>,
     pub lparen: LeftParen<'a>,
-    pub expr: Box<Expression<'a>>,
+    pub expr: Arc<Expression<'a>>,
     pub rparen: RightParen<'a>,
     pub attributes: Vec<Attribute<'a>>,
 }
@@ -180,7 +180,7 @@ pub struct ExpressionToggle<'a> {
     span: Span<'a>,
     pub toggle: Toggle<'a>,
     pub lparen: LeftParen<'a>,
-    pub expr: Box<Expression<'a>>,
+    pub expr: Arc<Expression<'a>>,
     pub rparen: RightParen<'a>,
 }
 
