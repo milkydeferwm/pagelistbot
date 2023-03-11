@@ -10,4 +10,7 @@ pub mod core;
 pub mod api;
 
 // re-exports of core traits and types
-pub use crate::core::{DataProvider, PageInfo, PageInfoError, Pair};
+pub use crate::core::{
+    DataProvider, PageInfo, PageInfoError, Pair,
+    LinksConfig, BackLinksConfig, EmbedsConfig, CategoryMembersConfig, PrefixConfig,
+};

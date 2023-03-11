@@ -1,9 +1,8 @@
 use core::{cmp::Ordering, fmt};
-use std::error::Error;
+use std::{collections::HashSet, error::Error};
 
 use futures::TryStream;
 use mwtitle::Title;
-use interface::types::ast::Modifier;
 
 /// a struct holding the queried wiki page information.
 #[derive(Debug, Clone)]
@@ -90,13 +89,52 @@ pub trait DataProvider {
     /// Get a stream of input pages' information. Input is raw title string.
     fn get_page_info_from_raw<T: IntoIterator<Item = String>>(&self, titles_raw: T) -> Self::PageInfoRawStream;
     /// Get a stream of input pages' internal links.
-    fn get_links<T: IntoIterator<Item = Title>>(&self, titles: T, modifier: &Modifier) -> Self::LinksStream;
+    fn get_links<T: IntoIterator<Item = Title>>(&self, titles: T, config: &LinksConfig) -> Self::LinksStream;
     /// Get a stream of input pages' back links.
-    fn get_backlinks<T: IntoIterator<Item = Title>>(&self, titles: T, modifier: &Modifier) -> Self::BacklinksStream;
+    fn get_backlinks<T: IntoIterator<Item = Title>>(&self, titles: T, config: &BackLinksConfig) -> Self::BacklinksStream;
     /// Get a stream of pages in which the given pages are embedded.
-    fn get_embeds<T: IntoIterator<Item = Title>>(&self, titles: T, modifier: &Modifier) -> Self::EmbedsStream;
+    fn get_embeds<T: IntoIterator<Item = Title>>(&self, titles: T, config: &EmbedsConfig) -> Self::EmbedsStream;
     /// Get a stream of pages inside the given category pages.
-    fn get_category_members<T: IntoIterator<Item = Title>>(&self, titles: T, modifier: &Modifier) -> Self::CategoryMembersStream;
+    fn get_category_members<T: IntoIterator<Item = Title>>(&self, titles: T, config: &CategoryMembersConfig) -> Self::CategoryMembersStream;
     /// Get a stream of pages containing the given prefix.
-    fn get_prefix<T: IntoIterator<Item = Title>>(&self, titles: T, modifier: &Modifier) -> Self::PrefixStream;
+    fn get_prefix<T: IntoIterator<Item = Title>>(&self, titles: T, config: &PrefixConfig) -> Self::PrefixStream;
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FilterRedirect {
+    NoRedirect,
+    OnlyRedirect,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct LinksConfig {
+    pub namespace: Option<HashSet<i32>>,
+    pub resolve_redirects: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct BackLinksConfig {
+    pub direct: bool,
+    pub filter_redirects: Option<FilterRedirect>,
+    pub namespace: Option<HashSet<i32>>,
+    pub resolve_redirects: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct EmbedsConfig {
+    pub filter_redirects: Option<FilterRedirect>,
+    pub namespace: Option<HashSet<i32>>,
+    pub resolve_redirects: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct CategoryMembersConfig {
+    pub namespace: Option<HashSet<i32>>,
+    pub resolve_redirects: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct PrefixConfig {
+    pub filter_redirects: Option<FilterRedirect>,
+    pub namespace: Option<HashSet<i32>>,
 }

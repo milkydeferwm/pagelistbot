@@ -1,7 +1,9 @@
 use core::future::{Ready, ready};
-use crate::core::{PageInfo, Pair};
+use crate::core::{
+    DataProvider, PageInfo, Pair,
+    FilterRedirect, LinksConfig, BackLinksConfig, EmbedsConfig, CategoryMembersConfig, PrefixConfig,
+};
 use futures::{StreamExt, future::Either, stream::{self, Empty, Flatten, Iter, Once}};
-use interface::types::ast::Modifier;
 use itertools::Itertools;
 use mwtitle::Title;
 use std::{collections::HashMap, vec::IntoIter};
@@ -26,7 +28,7 @@ impl<'p> APIDataProvider<'p> {
     }
 }
 
-impl<'p> crate::core::DataProvider for APIDataProvider<'p> {
+impl<'p> DataProvider for APIDataProvider<'p> {
     type Error = mwapi::Error;
 
     // impl for `pageinfo`.
@@ -81,9 +83,9 @@ impl<'p> crate::core::DataProvider for APIDataProvider<'p> {
     /// ```action=query&prop=info&inprop=associatedpage|subjectid|talkid&generator=links&gplnamespace=<ns>&gpllimit=max&redirects=<resolve>&titles=<titles>```
     /// 
     /// This function is called by `Link` expression. A warning will be thrown if `titles` contains more than one page.
-    fn get_links<T: IntoIterator<Item=Title>>(&self, titles: T, modifier: &Modifier) -> Self::LinksStream {
+    fn get_links<T: IntoIterator<Item=Title>>(&self, titles: T, config: &LinksConfig) -> Self::LinksStream {
         // shortcut, if all namespaces are filtered out.
-        if modifier.namespace.as_ref().is_some_and(|ns| ns.is_empty()) {
+        if config.namespace.as_ref().is_some_and(|ns| ns.is_empty()) {
             Either::Right(stream::empty())
         } else {
             // do normal
@@ -97,10 +99,10 @@ impl<'p> crate::core::DataProvider for APIDataProvider<'p> {
                     ("generator".to_string(), "links".to_string()),
                     ("gpllimit".to_string(), "max".to_string()),
                 ]);
-                if modifier.resolve_redirects {
+                if config.resolve_redirects {
                     tmp.insert("redirects".to_string(), "1".to_string());
                 }
-                if let Some(ns) = modifier.namespace.as_ref() {
+                if let Some(ns) = config.namespace.as_ref() {
                     tmp.insert("gplnamespace".to_string(), ns.iter().map(|n| n.to_string()).collect::<Vec<String>>().join("|"));
                 }
                 tmp
@@ -124,9 +126,9 @@ impl<'p> crate::core::DataProvider for APIDataProvider<'p> {
     /// ```action=query&prop=info&inprop=associatedpage|subjectid|talkid&generator=backlinks&gblnamespace=<ns>&gbllimit=max&gbltitle=<title>&gblfilterredir=<filter>&gblredirect=<direct>&redirects=<resolve>```
     /// 
     /// This function is called by `LinkTo` expression. A warning will be thrown if `titles` contains more than one page.
-    fn get_backlinks<T: IntoIterator<Item=Title>>(&self, titles: T, modifier: &Modifier) -> Self::BacklinksStream {
+    fn get_backlinks<T: IntoIterator<Item=Title>>(&self, titles: T, config: &BackLinksConfig) -> Self::BacklinksStream {
         // shortcut, if all namespaces are filtered out.
-        if modifier.namespace.as_ref().is_some_and(|ns| ns.is_empty()) {
+        if config.namespace.as_ref().is_some_and(|ns| ns.is_empty()) {
             Either::Right(stream::empty())
         } else {
             // do normal
@@ -134,15 +136,23 @@ impl<'p> crate::core::DataProvider for APIDataProvider<'p> {
                 let mut tmp = HashMap::<String, String>::from_iter([
                     ("generator".to_string(), "backlinks".to_string()),
                     ("gbllimit".to_string(), "max".to_string()),
-                    ("gblfilterredir".to_string(), modifier.filter_redirects.to_string()),
                 ]);
-                if modifier.backlink_trace_redirects {
+                if let Some(filter_redirects) = config.filter_redirects {
+                    tmp.insert(
+                        "gblfilterredir".to_string(),
+                        match filter_redirects {
+                            FilterRedirect::NoRedirect => "nonredirects".to_string(),
+                            FilterRedirect::OnlyRedirect => "redirects".to_string(),
+                        }
+                    );
+                }
+                if !config.direct {
                     tmp.insert("gblredirect".to_string(), "1".to_string());
                 }
-                if modifier.resolve_redirects {
+                if config.resolve_redirects {
                     tmp.insert("redirects".to_string(), "1".to_string());
                 }
-                if let Some(ns) = &modifier.namespace {
+                if let Some(ns) = &config.namespace {
                     tmp.insert("gblnamespace".to_string(), ns.iter().map(|n| n.to_string()).collect::<Vec<String>>().join("|"));
                 }
                 tmp
@@ -167,9 +177,9 @@ impl<'p> crate::core::DataProvider for APIDataProvider<'p> {
     /// ```action=query&prop=info&inprop=associatedpage|subjectid|talkid&generator=embeddedin&geinamespace=<ns>&geilimit=max&geititle=<title>&geifilterredir=<filter>&redirects=<resolve>```
     /// 
     /// This function is called by `Embed` expression. A warning will be thrown if `titles` contains more than one page.
-    fn get_embeds<T: IntoIterator<Item=Title>>(&self, titles: T, modifier: &Modifier) -> Self::EmbedsStream {
+    fn get_embeds<T: IntoIterator<Item=Title>>(&self, titles: T, config: &EmbedsConfig) -> Self::EmbedsStream {
         // shortcut, if all namespaces are filtered out.
-        if modifier.namespace.as_ref().is_some_and(|ns| ns.is_empty()) {
+        if config.namespace.as_ref().is_some_and(|ns| ns.is_empty()) {
             Either::Right(stream::empty())
         } else {
             // do normal
@@ -177,12 +187,20 @@ impl<'p> crate::core::DataProvider for APIDataProvider<'p> {
                 let mut tmp = HashMap::<String, String>::from_iter([
                     ("generator".to_string(), "embeddedin".to_string()),
                     ("geilimit".to_string(), "max".to_string()),
-                    ("geifilterredir".to_string(), modifier.filter_redirects.to_string()),
                 ]);
-                if modifier.resolve_redirects {
+                if let Some(filter_redirects) = config.filter_redirects {
+                    tmp.insert(
+                        "geifilterredir".to_string(),
+                        match filter_redirects {
+                            FilterRedirect::NoRedirect => "nonredirects".to_string(),
+                            FilterRedirect::OnlyRedirect => "redirects".to_string(),
+                        }
+                    );
+                }
+                if config.resolve_redirects {
                     tmp.insert("redirects".to_string(), "1".to_string());
                 }
-                if let Some(ns) = &modifier.namespace {
+                if let Some(ns) = &config.namespace {
                     tmp.insert("geinamespace".to_string(), ns.iter().map(|n| n.to_string()).collect::<Vec<String>>().join("|"));
                 }
                 tmp
@@ -207,9 +225,9 @@ impl<'p> crate::core::DataProvider for APIDataProvider<'p> {
     /// ```action=query&prop=info&inprop=associatedpage|subjectid|talkid&generator=categorymembers&gcmtitle=<title>&gcmlimit=max&gcmnamespace=<ns>&gcmtype=<...>&redirects=<resolve>```
     /// 
     /// This function is called by `InCat` expression.
-    fn get_category_members<T: IntoIterator<Item=Title>>(&self, titles: T, modifier: &Modifier) -> Self::CategoryMembersStream {
+    fn get_category_members<T: IntoIterator<Item=Title>>(&self, titles: T, config: &CategoryMembersConfig) -> Self::CategoryMembersStream {
         // shortcut, if all namespaces are filtered out.
-        if modifier.namespace.as_ref().is_some_and(|ns| ns.is_empty()) {
+        if config.namespace.as_ref().is_some_and(|ns| ns.is_empty()) {
             Either::Right(stream::empty())
         } else {
             // do normal
@@ -218,10 +236,10 @@ impl<'p> crate::core::DataProvider for APIDataProvider<'p> {
                     ("generator".to_string(), "categorymembers".to_string()),
                     ("gcmlimit".to_string(), "max".to_string()),
                 ]);
-                if modifier.resolve_redirects {
+                if config.resolve_redirects {
                     tmp.insert("redirects".to_string(), "1".to_string());
                 }
-                if let Some(ns) = modifier.namespace.as_ref() {
+                if let Some(ns) = config.namespace.as_ref() {
                     tmp.insert("gcmnamespace".to_string(), ns.iter().map(|n| n.to_string()).collect::<Vec<String>>().join("|"));
 
                     let mut ns = ns.to_owned();
@@ -261,9 +279,9 @@ impl<'p> crate::core::DataProvider for APIDataProvider<'p> {
     /// This function is called by `Prefix` expression.
     /// A warning will be thrown if `titles` contains more than one page.
     /// This function ignores the `resolve` modifier.
-    fn get_prefix<T: IntoIterator<Item=Title>>(&self, titles: T, modifier: &Modifier) -> Self::PrefixStream {
+    fn get_prefix<T: IntoIterator<Item=Title>>(&self, titles: T, config: &PrefixConfig) -> Self::PrefixStream {
         // shortcut, if all namespaces are filtered out.
-        if modifier.namespace.as_ref().is_some_and(|ns| ns.is_empty()) {
+        if config.namespace.as_ref().is_some_and(|ns| ns.is_empty()) {
             Either::Right(stream::empty())
         } else {
             // do normal
@@ -273,9 +291,17 @@ impl<'p> crate::core::DataProvider for APIDataProvider<'p> {
                     ("geilimit".to_string(), "max".to_string()),
                     ("generator".to_string(), "allpages".to_string()),
                     ("gaplimit".to_string(), "max".to_string()),
-                    ("gapfilterredir".to_string(), modifier.filter_redirects.to_string()),
                 ]);
-                if let Some(ns) = &modifier.namespace {
+                if let Some(filter_redirects) = config.filter_redirects {
+                    tmp.insert(
+                        "gapfilterredir".to_string(),
+                        match filter_redirects {
+                            FilterRedirect::NoRedirect => "nonredirects".to_string(),
+                            FilterRedirect::OnlyRedirect => "redirects".to_string(),
+                        }
+                    );
+                }
+                if let Some(ns) = &config.namespace {
                     tmp.insert("gapnamespace".to_string(), ns.iter().map(|n| n.to_string()).collect::<Vec<String>>().join("|"));
                 }
                 tmp
@@ -283,7 +309,7 @@ impl<'p> crate::core::DataProvider for APIDataProvider<'p> {
             let titles = titles.into_iter().collect::<Vec<_>>();
             let mut streams = Vec::new();
             for ts in titles.into_iter() {
-                if modifier.namespace.as_ref().is_some_and(|ns| !ns.contains(&ts.namespace())) {
+                if config.namespace.as_ref().is_some_and(|ns| !ns.contains(&ts.namespace())) {
                     // early continue no query
                     continue;
                 }
