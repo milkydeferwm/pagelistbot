@@ -1513,7 +1513,7 @@ dependencies = [
 
 [[package]]
 name = "provider"
-version = "4.0.0"
+version = "4.1.0"
 dependencies = [
  "futures",
  "interface",
@@ -1920,10 +1920,11 @@ dependencies = [
 
 [[package]]
 name = "solver"
-version = "4.0.0"
+version = "4.1.0"
 dependencies = [
+ "ast",
  "futures",
- "interface",
+ "intorinf",
  "mwtitle",
  "pin-project",
  "provider",
