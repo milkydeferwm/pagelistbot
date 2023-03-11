@@ -5,6 +5,7 @@
 use core::{
     cmp::Ordering,
     fmt::{self, Display, Formatter},
+    ops::{Add, AddAssign},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -68,6 +69,53 @@ impl Display for IntOrInf {
         }
     }
 }
+
+impl Add<Self> for IntOrInf {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self::Output {
+        match (self, other) {
+            (Self::Int(a), Self::Int(b)) => Self::Int(a + b),
+            _ => Self::Inf,
+        }
+    }
+}
+
+impl AddAssign<Self> for IntOrInf {
+    fn add_assign(&mut self, rhs: Self) {
+        match (*self, rhs) {
+            (Self::Int(a), Self::Int(b)) => *self = Self::Int(a + b),
+            _ => *self = Self::Inf,
+        }
+    }
+}
+
+macro_rules! add_impl {
+    ($t: ty) => {
+        impl Add<$t> for IntOrInf {
+            type Output = Self;
+
+            fn add(self, other: $t) -> Self::Output {
+                Add::<IntOrInf>::add(self, other.into())
+            }
+        }
+
+        impl AddAssign<$t> for IntOrInf {
+            fn add_assign(&mut self, rhs: $t) {
+                match *self {
+                    Self::Int(a) => *self = Self::Int(a + rhs as i32),
+                    Self::Inf => {},
+                }
+            }
+        }
+    }
+}
+
+add_impl!(i32);
+add_impl!(i16);
+add_impl!(i8);
+add_impl!(u16);
+add_impl!(u8);
 
 #[cfg(test)]
 mod test {
