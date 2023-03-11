@@ -2,10 +2,10 @@
 use core::{pin::Pin, task::{Context, Poll}};
 use crate::SolverError;
 use std::collections::BTreeSet;
-use super::{TreeSolver};
+use super::TreeSolver;
 
+use ast::Span;
 use futures::{stream::TryStream, Stream, channel::mpsc::UnboundedSender};
-use interface::types::ast::Span;
 use provider::{PageInfo, Pair, DataProvider};
 
 macro_rules! set_operation {
@@ -13,11 +13,11 @@ macro_rules! set_operation {
         #[pin_project::pin_project]
         #[must_use = "streams do nothing unless you poll them"]
         #[derive(Debug)]
-        $vis struct $name<'p, F1, F2, P>
+        $vis struct $name<'e, F1, F2, P>
         where
-            P: DataProvider + 'p,
-            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>>,
-            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>>,
+            P: DataProvider + Clone,
+            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<'e, TreeSolver<P>>>,
+            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<'e, TreeSolver<P>>>,
         {
             #[pin] st1: F1,
             #[pin] st2: F2,
@@ -26,17 +26,17 @@ macro_rules! set_operation {
             set_1: BTreeSet<Pair<PageInfo>>,
             set_2: BTreeSet<Pair<PageInfo>>,
             output_set: Option<BTreeSet<Pair<PageInfo>>>,
-            span: Span,
-            warning_sender: UnboundedSender<SolverError<TreeSolver<'p, P>>>,
+            span: Span<'e>,
+            warning_sender: UnboundedSender<SolverError<'e, TreeSolver<P>>>,
         }
 
-        impl<'p, F1, F2, P> $name<'p, F1, F2, P>
+        impl<'e, F1, F2, P> $name<'e, F1, F2, P>
         where
-            P: DataProvider,
-            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>>,
-            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>>,
+            P: DataProvider + Clone,
+            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<'e, TreeSolver<P>>>,
+            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<'e, TreeSolver<P>>>,
         {
-            pub fn new(stream1: F1, stream2: F2, span: Span, warning_sender: UnboundedSender<SolverError<TreeSolver<'p, P>>>) -> Self {
+            pub fn new(stream1: F1, stream2: F2, span: Span<'e>, warning_sender: UnboundedSender<SolverError<'e, TreeSolver<P>>>) -> Self {
                 Self {
                     st1: stream1,
                     st2: stream2,
@@ -51,13 +51,13 @@ macro_rules! set_operation {
             }
         }
 
-        impl<'p, F1, F2, P> Stream for $name<'p, F1, F2, P>
+        impl<'e, F1, F2, P> Stream for $name<'e, F1, F2, P>
         where
-            P: DataProvider,
-            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>>,
-            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>>,
+            P: DataProvider + Clone,
+            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<'e, TreeSolver<P>>>,
+            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<'e, TreeSolver<P>>>,
         {
-            type Item = Result<Pair<PageInfo>, SolverError<TreeSolver<'p, P>>>;
+            type Item = Result<Pair<PageInfo>, SolverError<'e, TreeSolver<P>>>;
         
             fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
                 let mut this = self.project();
@@ -110,36 +110,17 @@ macro_rules! set_operation {
             }
         }
 
-        unsafe impl<'p, F1, F2, P> Send for $name<'p, F1, F2, P>
+        unsafe impl<'e, F1, F2, P> Send for $name<'e, F1, F2, P>
         where
-            P: DataProvider,
+            P: DataProvider + Clone,
             <P as DataProvider>::Error: Send,
-            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>> + Send,
-            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<TreeSolver<'p, P>>> + Send,
+            F1: TryStream<Ok=Pair<PageInfo>, Error=SolverError<'e, TreeSolver<P>>> + Send,
+            F2: TryStream<Ok=Pair<PageInfo>, Error=SolverError<'e, TreeSolver<P>>> + Send,
         {}
-
-/*
-        /// construct a stream from given node.
-        $vis fn $from_node<'p, P>(provider: P, node: &Node, default_limit: NumberOrInf<usize>, warning_sender: UnboundedSender<SolverError<TreeSolver<'p, P>>>) -> $name<DynamicFalliablePageInfoPairStream<'p, P>, DynamicFalliablePageInfoPairStream<'p, P>, P>
-        where
-            P: DataProvider + Clone + Send + 'p,
-            <P as DataProvider>::Error: Send + 'p,
-            <P as DataProvider>::PageInfoRawStream: Send + 'p,
-            <P as DataProvider>::LinksStream: Send + 'p,
-            <P as DataProvider>::BacklinksStream: Send + 'p,
-            <P as DataProvider>::EmbedsStream: Send + 'p,
-            <P as DataProvider>::CategoryMembersStream: Send + 'p,
-            <P as DataProvider>::PrefixStream: Send + 'p,
-        {
-            let stream1 = super::dispatch_node(provider.clone(), node.get_child_left(), default_limit, warning_sender.clone());
-            let stream2 = super::dispatch_node(provider.clone(), node.get_child_right(), default_limit, warning_sender.clone());
-            $name::new(stream1, stream2, node.get_span(), warning_sender)
-        }
-        */
     };
 }
 
-set_operation!(pub(super), UnionStream, BTreeSet::union, union_from_node);
-set_operation!(pub(super), IntersectionStream, BTreeSet::intersection, intersection_from_node);
-set_operation!(pub(super), DifferenceStream, BTreeSet::difference, difference_from_node);
-set_operation!(pub(super), XorStream, BTreeSet::symmetric_difference, xor_from_node);
+set_operation!(pub(crate), UnionStream, BTreeSet::union, union_from_node);
+set_operation!(pub(crate), IntersectionStream, BTreeSet::intersection, intersection_from_node);
+set_operation!(pub(crate), DifferenceStream, BTreeSet::difference, difference_from_node);
+set_operation!(pub(crate), XorStream, BTreeSet::symmetric_difference, xor_from_node);

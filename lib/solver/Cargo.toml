@@ -1,12 +1,13 @@
 [package]
 name = "solver"
-version = "4.0.0"
+version = "4.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-interface = { path = "../interface" }
+ast = { path = "../ast" }
+intorinf = { path = "../intorinf" }
 provider = { path = "../provider", optional = true }
 
 futures = { version = "0.3", optional = true }
