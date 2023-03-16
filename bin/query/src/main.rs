@@ -10,7 +10,7 @@ use api::APIDataProvider;
 use ast::Expression;
 use clap::Parser;
 use intorinf::IntOrInf;
-use mwapi::Client;
+use mwapi::{Assert, ErrorFormat, Client};
 use mwtitle::{SiteInfoResponse, TitleCodec};
 use nom::error::VerboseError;
 use serde::Deserialize;
@@ -88,9 +88,17 @@ async fn main() -> ExitCode {
     };
     // attempt to connect to website.
     let (api, title_codec, api_highlimit) = {
-        let mut builder = Client::builder(&arg.site);
+        let mut builder = Client::builder(&arg.site)
+            .set_errorformat(ErrorFormat::default());
         if !arg.user.is_empty() { // login with credential
-            builder = builder.set_botpassword(&arg.user, &arg.password);
+            builder = builder
+                .set_botpassword(&arg.user, &arg.password)
+                .set_assert(Assert::User)
+                .set_user_agent(&format!("Page List Bot v{} / User:{} / {}", env!("CARGO_PKG_VERSION"), &arg.user, env!("CARGO_PKG_REPOSITORY")));
+        } else {
+            builder = builder
+                .set_assert(Assert::Anonymous)
+                .set_user_agent(&format!("Page List Bot v{} / Anonymous user / {}", env!("CARGO_PKG_VERSION"), env!("CARGO_PKG_REPOSITORY")));
         }
         let api = match builder.build().await {
             Ok(api) => api,
