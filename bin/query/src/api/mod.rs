@@ -1,25 +1,28 @@
 use core::future::{Ready, ready};
-use crate::core::{
+use futures::{StreamExt, future::Either, stream::{self, Empty, Flatten, Iter, Once}};
+use itertools::Itertools;
+use mwapi::Client;
+use mwtitle::{Title, TitleCodec};
+use provider::{
     DataProvider, PageInfo, Pair,
     FilterRedirect, LinksConfig, BackLinksConfig, EmbedsConfig, CategoryMembersConfig, PrefixConfig,
 };
-use futures::{StreamExt, future::Either, stream::{self, Empty, Flatten, Iter, Once}};
-use itertools::Itertools;
-use mwtitle::Title;
 use std::{collections::HashMap, vec::IntoIter};
 
+mod error;
 mod query;
+use error::APIDataProviderError;
 use query::{QueryStream, query_complete};
 
 #[derive(Debug, Clone, Copy)]
 pub struct APIDataProvider<'p> {
-    api: &'p mwapi::Client,
-    title_codec: &'p mwtitle::TitleCodec,
+    api: &'p Client,
+    title_codec: &'p TitleCodec,
     api_highlimit: bool,
 }
 
 impl<'p> APIDataProvider<'p> {
-    pub fn new(api: &'p mwapi::Client, title_codec: &'p mwtitle::TitleCodec, api_highlimit: bool) -> Self {
+    pub fn new(api: &'p Client, title_codec: &'p TitleCodec, api_highlimit: bool) -> Self {
         APIDataProvider {
             api,
             title_codec,
@@ -29,7 +32,7 @@ impl<'p> APIDataProvider<'p> {
 }
 
 impl<'p> DataProvider for APIDataProvider<'p> {
-    type Error = mwapi::Error;
+    type Error = APIDataProviderError;
 
     // impl for `pageinfo`.
     type PageInfoStream = Flatten<Iter<IntoIter<QueryStream<'p>>>>;
@@ -60,12 +63,12 @@ impl<'p> DataProvider for APIDataProvider<'p> {
     }
 
     // impl for `pageinfo`.
-    type PageInfoRawStream = Either<Self::PageInfoStream, Once<Ready<Result<Pair<PageInfo>, mwapi::Error>>>>;
+    type PageInfoRawStream = Either<Self::PageInfoStream, Once<Ready<Result<Pair<PageInfo>, Self::Error>>>>;
 
     /// Basically the same as `get_page_info`, but convert from string.
     fn get_page_info_from_raw<T: IntoIterator<Item=String>>(&self, titles_raw: T) -> Self::PageInfoRawStream {
         // try convert all
-        let titles: Result<Vec<Title>, mwapi::Error> = titles_raw.into_iter()
+        let titles: Result<Vec<Title>, Self::Error> = titles_raw.into_iter()
             .map(|raw| self.title_codec.new_title(&raw))
             .try_collect()
             .map_err(|e| e.into());
@@ -76,7 +79,7 @@ impl<'p> DataProvider for APIDataProvider<'p> {
     }
 
     // impl for `links`.
-    type LinksStream = Either<Flatten<Iter<IntoIter<QueryStream<'p>>>>, Empty<Result<Pair<PageInfo>, mwapi::Error>>>;
+    type LinksStream = Either<Flatten<Iter<IntoIter<QueryStream<'p>>>>, Empty<Result<Pair<PageInfo>, Self::Error>>>;
 
     /// Fetch a page's links on that page.
     /// This function essentially calls
@@ -119,7 +122,7 @@ impl<'p> DataProvider for APIDataProvider<'p> {
     }
 
     // impl for `backlinks`
-    type BacklinksStream = Either<Flatten<Iter<IntoIter<QueryStream<'p>>>>, Empty<Result<Pair<PageInfo>, mwapi::Error>>>;
+    type BacklinksStream = Either<Flatten<Iter<IntoIter<QueryStream<'p>>>>, Empty<Result<Pair<PageInfo>, Self::Error>>>;
 
     /// Fetch a page's backlinks to that page.
     /// This function essentially calls
@@ -170,7 +173,7 @@ impl<'p> DataProvider for APIDataProvider<'p> {
     }
 
     // impl for `embeds`.
-    type EmbedsStream = Either<Flatten<Iter<IntoIter<QueryStream<'p>>>>, Empty<Result<Pair<PageInfo>, mwapi::Error>>>;
+    type EmbedsStream = Either<Flatten<Iter<IntoIter<QueryStream<'p>>>>, Empty<Result<Pair<PageInfo>, Self::Error>>>;
 
     /// Fetch a page's embeds.
     /// This function essentially calls
@@ -218,7 +221,7 @@ impl<'p> DataProvider for APIDataProvider<'p> {
     }
 
     // impl for `categorymember`.
-    type CategoryMembersStream = Either<Flatten<Iter<IntoIter<QueryStream<'p>>>>, Empty<Result<Pair<PageInfo>, mwapi::Error>>>;
+    type CategoryMembersStream = Either<Flatten<Iter<IntoIter<QueryStream<'p>>>>, Empty<Result<Pair<PageInfo>, Self::Error>>>;
 
     /// Fetch a category's members.
     /// This function essentially calls
@@ -270,7 +273,7 @@ impl<'p> DataProvider for APIDataProvider<'p> {
     }
 
     // impl for `prefix`.
-    type PrefixStream = Either<Flatten<Iter<IntoIter<QueryStream<'p>>>>, Empty<Result<Pair<PageInfo>, mwapi::Error>>>;
+    type PrefixStream = Either<Flatten<Iter<IntoIter<QueryStream<'p>>>>, Empty<Result<Pair<PageInfo>, Self::Error>>>;
 
     /// Fetch a page's subpages.
     /// This function essentially calls

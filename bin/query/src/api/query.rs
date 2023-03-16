@@ -1,8 +1,12 @@
-use crate::{PageInfo, Pair};
-use futures::{stream::try_unfold, TryStream};
+use futures::{stream::try_unfold, Stream};
+use mwapi::Client;
+use mwapi_responses::prelude::*;
+use mwtitle::TitleCodec;
+use provider::{PageInfo, Pair};
 use std::collections::{HashMap, VecDeque};
+use super::APIDataProviderError;
 
-#[mwapi_responses::query(
+#[query(
     prop = "info",
     inprop = "associatedpage|subjectid|talkid",
 )]
@@ -10,16 +14,16 @@ struct Response;
 
 #[derive(Debug, Clone)]
 struct QueryState<'p> {
-    api: &'p mwapi::Client,
-    title_codec: &'p mwtitle::TitleCodec,
+    api: &'p Client,
+    title_codec: &'p TitleCodec,
     param: HashMap<String, String>,
     continue_: Option<HashMap<String, String>>,
     cache: VecDeque<Pair<PageInfo>>,
 }
 
-pub(super) type QueryStream<'p> = impl TryStream<Ok=Pair<PageInfo>, Error=mwapi::Error, Item = Result<Pair<PageInfo>, mwapi::Error>> + Send + 'p;
+pub(super) type QueryStream<'p> = impl Stream<Item = Result<Pair<PageInfo>, APIDataProviderError>> + Send + 'p;
 
-pub(super) fn query_complete<'p>(api: &'p mwapi::Client, title_codec: &'p mwtitle::TitleCodec, param: HashMap<String, String>) -> QueryStream<'p> {
+pub(super) fn query_complete<'p>(api: &'p Client, title_codec: &'p TitleCodec, param: HashMap<String, String>) -> QueryStream<'p> {
     let start_state = QueryState {
         api,
         title_codec,
