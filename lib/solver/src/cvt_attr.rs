@@ -5,7 +5,7 @@ use core::fmt;
 use crate::core::{Solver, SolverError};
 use intorinf::IntOrInf;
 use provider::{
-    core::FilterRedirect,
+    FilterRedirect,
     LinksConfig, BackLinksConfig, EmbedsConfig, CategoryMembersConfig, PrefixConfig,
 };
 use std::{collections::{HashSet, HashMap}, error::Error};

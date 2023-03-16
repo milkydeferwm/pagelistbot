@@ -1,88 +1,19 @@
-use core::{cmp::Ordering, fmt};
-use std::{collections::HashSet, error::Error};
-
-use futures::TryStream;
+use crate::{
+    config::{LinksConfig, BackLinksConfig, EmbedsConfig, CategoryMembersConfig, PrefixConfig},
+    pageinfo::{Pair, PageInfo},
+};
+use futures::Stream;
 use mwtitle::Title;
-
-/// a struct holding the queried wiki page information.
-#[derive(Debug, Clone)]
-pub struct PageInfo {
-    title: Option<Title>,
-    exists: Option<bool>,
-    redirect: Option<bool>,
-}
-
-impl PageInfo {
-    /// creates a new `PageInfo` instance.
-    pub fn new(title: Option<Title>, exists: Option<bool>, redirect: Option<bool>) -> Self {
-        Self { title, exists, redirect }
-    }
-    /// get a reference to the title, returns an error if such value is not known aka not stored.
-    pub fn get_title(&self) -> Result<&Title, PageInfoError> {
-        self.title.as_ref().ok_or(PageInfoError::UnknownValue)
-    }
-
-    /// get a bool indicating whether this page exists on the wiki, returns an error if such value is not known aka not stored.
-    pub fn get_exists(&self) -> Result<bool, PageInfoError> {
-        self.exists.ok_or(PageInfoError::UnknownValue)
-    }
-
-    /// get a bool indicating whether this page is a redirect page, returns an error if such value is not known aka not stored.
-    pub fn get_isredir(&self) -> Result<bool, PageInfoError> {
-        self.redirect.ok_or(PageInfoError::UnknownValue)
-    }
-}
-
-impl From<PageInfo> for Title {
-    fn from(f: PageInfo) -> Self {
-        f.title.unwrap()
-    }
-}
-
-impl PartialOrd for PageInfo {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.title.partial_cmp(&other.title)
-    }
-}
-
-impl Ord for PageInfo {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.title.cmp(&other.title)
-    }
-}
-
-impl Eq for PageInfo {}
-impl PartialEq for PageInfo {
-    fn eq(&self, other: &Self) -> bool {
-        self.title == other.title
-    }
-}
-
-pub type Pair<T> = (T, T);
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum PageInfoError {
-    UnknownValue,
-}
-
-impl Error for PageInfoError {}
-impl fmt::Display for PageInfoError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::UnknownValue => write!(f, "unknown value"),
-        }
-    }
-}
 
 pub trait DataProvider {
     type Error;
-    type PageInfoStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
-    type PageInfoRawStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
-    type LinksStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
-    type BacklinksStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
-    type EmbedsStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
-    type CategoryMembersStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
-    type PrefixStream: TryStream<Ok = Pair<PageInfo>, Error = Self::Error, Item = Result<Pair<PageInfo>, Self::Error>>;
+    type PageInfoStream: Stream<Item = Result<Pair<PageInfo>, Self::Error>>;
+    type PageInfoRawStream: Stream<Item = Result<Pair<PageInfo>, Self::Error>>;
+    type LinksStream: Stream<Item = Result<Pair<PageInfo>, Self::Error>>;
+    type BacklinksStream: Stream<Item = Result<Pair<PageInfo>, Self::Error>>;
+    type EmbedsStream: Stream<Item = Result<Pair<PageInfo>, Self::Error>>;
+    type CategoryMembersStream: Stream<Item = Result<Pair<PageInfo>, Self::Error>>;
+    type PrefixStream: Stream<Item = Result<Pair<PageInfo>, Self::Error>>;
 
     /// Get a stream of input pages' information. Input is `mwtitle::Title`.
     fn get_page_info<T: IntoIterator<Item = Title>>(&self, titles: T) -> Self::PageInfoStream;
@@ -100,41 +31,4 @@ pub trait DataProvider {
     fn get_prefix<T: IntoIterator<Item = Title>>(&self, titles: T, config: &PrefixConfig) -> Self::PrefixStream;
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum FilterRedirect {
-    NoRedirect,
-    OnlyRedirect,
-}
 
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
-pub struct LinksConfig {
-    pub namespace: Option<HashSet<i32>>,
-    pub resolve_redirects: bool,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
-pub struct BackLinksConfig {
-    pub direct: bool,
-    pub filter_redirects: Option<FilterRedirect>,
-    pub namespace: Option<HashSet<i32>>,
-    pub resolve_redirects: bool,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
-pub struct EmbedsConfig {
-    pub filter_redirects: Option<FilterRedirect>,
-    pub namespace: Option<HashSet<i32>>,
-    pub resolve_redirects: bool,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
-pub struct CategoryMembersConfig {
-    pub namespace: Option<HashSet<i32>>,
-    pub resolve_redirects: bool,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
-pub struct PrefixConfig {
-    pub filter_redirects: Option<FilterRedirect>,
-    pub namespace: Option<HashSet<i32>>,
-}
