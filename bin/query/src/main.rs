@@ -1,6 +1,5 @@
 //! Page list bot query execution core.
 
-#![allow(incomplete_features)]
 #![feature(is_some_and)]
 #![feature(type_alias_impl_trait)]
 
