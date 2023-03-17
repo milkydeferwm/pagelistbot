@@ -11,7 +11,7 @@ ast = { path = "../../lib/ast", features = [ "parse" ] }
 clap = { version = "4.1.8", features = [ "cargo", "derive" ] }
 futures = "0.3"
 intorinf = { path = "../../lib/intorinf" }
-itertools = { version = "0.10", optional = true }
+itertools = "0.10"
 mwapi = "0.4.3"
 mwapi_responses = "0.3.2"
 mwtitle = "0.2.2"
