@@ -2,7 +2,7 @@ use futures::{stream::try_unfold, Stream};
 use mwapi::Client;
 use mwapi_responses::prelude::*;
 use mwtitle::TitleCodec;
-use provider::{PageInfo, Pair};
+use provider::PageInfo;
 use std::collections::{HashMap, VecDeque};
 use super::APIDataProviderError;
 
@@ -18,12 +18,16 @@ struct QueryState<'p> {
     title_codec: &'p TitleCodec,
     param: HashMap<String, String>,
     continue_: Option<HashMap<String, String>>,
-    cache: VecDeque<Pair<PageInfo>>,
+    cache: VecDeque<PageInfo>,
 }
 
-pub(super) type QueryStream<'p> = impl Stream<Item = Result<Pair<PageInfo>, APIDataProviderError>> + Send + 'p;
+pub(super) type QueryStream<'p> = impl Stream<Item=Result<PageInfo, APIDataProviderError>> + Send + 'p;
 
-pub(super) fn query_complete<'p>(api: &'p Client, title_codec: &'p TitleCodec, param: HashMap<String, String>) -> QueryStream<'p> {
+pub(super) fn query_complete<'p>(
+    api: &'p Client,
+    title_codec: &'p TitleCodec,
+    param: HashMap<String, String>
+) -> QueryStream<'p> {
     let start_state = QueryState {
         api,
         title_codec,
@@ -31,7 +35,7 @@ pub(super) fn query_complete<'p>(api: &'p Client, title_codec: &'p TitleCodec, p
         continue_: None,
         cache: VecDeque::new(),
     };
-    try_unfold(start_state, |state: QueryState| async move {
+    let st = try_unfold(start_state, |state: QueryState| async move {
         let QueryState { api, title_codec, param, mut continue_, mut cache } = state;
         // considering miser mode, we loop until
         // 1. we have cached results
@@ -85,14 +89,12 @@ pub(super) fn query_complete<'p>(api: &'p Client, title_codec: &'p TitleCodec, p
                 // If one of `subjectid` (of a talk page) or `talkid` (of a subject page) exists, then the associated page exists.
                 let associated_exists = Some(page.subjectid.is_some() || page.talkid.is_some());
                 // Unfortunately we cannot determine whether the associated page is a redirect or not.
-    
-                let pair = (
-                    PageInfo::new(thispage_title, thispage_exists, thispage_redirect),
-                    PageInfo::new(associated_title, associated_exists, None)
-                );
-               cache.push_back(pair);
+
+                let page_info = PageInfo::new(thispage_title, thispage_exists, thispage_redirect, associated_title, associated_exists, None);
+                cache.push_back(page_info);
             }
             // upon next loop should return from cache or continue next query (if miser mode) or end.
         }
-    })
+    });
+    Box::pin(st)
 }
