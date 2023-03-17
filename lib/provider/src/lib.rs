@@ -11,5 +11,5 @@ pub use crate::config::{
 };
 pub use crate::core::DataProvider;
 pub use crate::pageinfo::{
-    PageInfo, PageInfoError, Pair,
+    PageInfo, PageInfoError,
 };
