@@ -38,5 +38,4 @@ pub struct CategoryMembersConfig {
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct PrefixConfig {
     pub filter_redirects: Option<FilterRedirect>,
-    pub namespace: Option<HashSet<i32>>,
 }
