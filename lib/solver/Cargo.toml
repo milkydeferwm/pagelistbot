@@ -1,13 +1,14 @@
 [package]
 name = "solver"
-version = "4.0.0"
+version = "4.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-interface = { path = "../interface" }
-provider = { path = "../provider", optional = true }
+ast = { path = "../ast" }
+intorinf = { path = "../intorinf" }
+provider = { path = "../provider" }
 
 futures = { version = "0.3", optional = true }
 mwtitle = { version = "0.2", default-features = false }
@@ -15,4 +16,4 @@ pin-project = { version = "1.0", optional = true }
 
 [features]
 "full" = [ "tree-future" ]
-"tree-future" = [ "futures", "pin-project", "provider" ]
+"tree-future" = [ "futures", "pin-project" ]
