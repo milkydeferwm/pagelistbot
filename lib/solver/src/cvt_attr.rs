@@ -299,15 +299,6 @@ where
                         limit = Some(item.val.val);
                     }
                 },
-                Modifier::Ns(item) => {
-                    if let Some(span) = resolved_at.get("ns") {
-                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(*span)));
-                    } else {
-                        resolved_at.insert("ns", item.get_span());
-                        let namespace = item.vals.iter().map(|lit| lit.val).collect::<HashSet<_>>();
-                        config.namespace = Some(namespace);
-                    }
-                },
                 Modifier::NoRedir(item) => {
                     if let Some(span) = resolved_at.get("noredir") {
                         return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(*span)));
