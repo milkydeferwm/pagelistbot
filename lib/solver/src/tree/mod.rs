@@ -43,7 +43,7 @@ where
         // collect!
         let result_titles = {
             let result_pagepairs = stream.try_collect::<BTreeSet<_>>().await?;
-            result_pagepairs.into_iter().map(|(this, _)| this.get_title().unwrap().to_owned()).collect::<BTreeSet<_>>()
+            result_pagepairs.into_iter().map(|this| this.get_title().unwrap().to_owned()).collect::<BTreeSet<_>>()
         };
         let warnings = recv.collect::<Vec<_>>().await;
         Ok(Answer {

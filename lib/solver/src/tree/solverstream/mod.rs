@@ -6,13 +6,15 @@ use ast::Expression;
 use futures::{Stream, channel::mpsc::UnboundedSender};
 use intorinf::IntOrInf;
 use super::{TreeSolverError, TreeSolver};
-use provider::{DataProvider, Pair, PageInfo};
+use provider::{DataProvider, PageInfo};
 
 mod categorymembers;
 mod setop;
 mod pageinfo;
 mod simplequery;
 mod toggle;
+mod unique;
+mod counted;
 
 type PinnedUniversalStream<'e, P> = Pin<Box<UniversalStream<'e, P>>>;
 
@@ -52,7 +54,7 @@ impl<'e, P> Stream for UniversalStream<'e, P>
 where
     P: DataProvider + Clone,
 {
-    type Item = Result<Pair<PageInfo>, SolverError<'e, TreeSolver<P>>>;
+    type Item = Result<PageInfo, SolverError<'e, TreeSolver<P>>>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         let this = self.project();
@@ -83,11 +85,8 @@ where
                     let warning_sender = warning_sender.clone();
                     Self::from_expr(&inner.expr1, provider.clone(), default_limit, warning_sender)?
                 };
-                let st2 = {
-                    let warning_sender = warning_sender.clone();
-                    Self::from_expr(&inner.expr2, provider, default_limit, warning_sender)?
-                };
-                let st = setop::UnionStream::new(Box::pin(st1), Box::pin(st2), expr.get_span(), warning_sender);
+                let st2 = Self::from_expr(&inner.expr2, provider, default_limit, warning_sender)?;
+                let st = setop::UnionStream::new(Box::pin(st1), Box::pin(st2));
                 Ok(Self::Union(st))
             },
             Expression::And(inner) => {
@@ -95,11 +94,8 @@ where
                     let warning_sender = warning_sender.clone();
                     Self::from_expr(&inner.expr1, provider.clone(), default_limit, warning_sender)?
                 };
-                let st2 = {
-                    let warning_sender = warning_sender.clone();
-                    Self::from_expr(&inner.expr2, provider, default_limit, warning_sender)?
-                };
-                let st = setop::IntersectionStream::new(Box::pin(st1), Box::pin(st2), expr.get_span(), warning_sender);
+                let st2 = Self::from_expr(&inner.expr2, provider, default_limit, warning_sender)?;
+                let st = setop::IntersectionStream::new(Box::pin(st1), Box::pin(st2));
                 Ok(Self::Intersection(st))
             },
             Expression::Sub(inner) => {
@@ -107,11 +103,8 @@ where
                     let warning_sender = warning_sender.clone();
                     Self::from_expr(&inner.expr1, provider.clone(), default_limit, warning_sender)?
                 };
-                let st2 = {
-                    let warning_sender = warning_sender.clone();
-                    Self::from_expr(&inner.expr2, provider, default_limit, warning_sender)?
-                };
-                let st = setop::DifferenceStream::new(Box::pin(st1), Box::pin(st2), expr.get_span(), warning_sender);
+                let st2 = Self::from_expr(&inner.expr2, provider, default_limit, warning_sender)?;
+                let st = setop::DifferenceStream::new(Box::pin(st1), Box::pin(st2));
                 Ok(Self::Difference(st))
             },
             Expression::Xor(inner) => {
@@ -119,17 +112,14 @@ where
                     let warning_sender = warning_sender.clone();
                     Self::from_expr(&inner.expr1, provider.clone(), default_limit, warning_sender)?
                 };
-                let st2 = {
-                    let warning_sender = warning_sender.clone();
-                    Self::from_expr(&inner.expr2, provider, default_limit, warning_sender)?
-                };
-                let st = setop::XorStream::new(Box::pin(st1), Box::pin(st2), expr.get_span(), warning_sender);
+                let st2 = Self::from_expr(&inner.expr2, provider, default_limit, warning_sender)?;
+                let st = setop::XorStream::new(Box::pin(st1), Box::pin(st2));
                 Ok(Self::Xor(st))
             },
             Expression::Paren(inner) => Self::from_expr(&inner.expr, provider, default_limit, warning_sender),
             Expression::Page(inner) => {
                 let pages = inner.vals.iter().map(|lit| lit.val.to_owned()).collect::<Vec<_>>();
-                let st = pageinfo::PageInfoStream::new(provider, pages, expr.get_span(), warning_sender);
+                let st = pageinfo::make_pageinfo_stream(pages, provider, expr.get_span());
                 Ok(Self::PageInfo(st))
             },
             Expression::Link(inner) => {
@@ -138,7 +128,7 @@ where
                     let warning_sender = warning_sender.clone();
                     Self::from_expr(&inner.expr, provider.clone(), default_limit, warning_sender)?
                 };
-                let st = simplequery::LinksStream::new(
+                let st = simplequery::make_links_stream(
                     Box::pin(st0),
                     provider,
                     config,
@@ -154,7 +144,7 @@ where
                     let warning_sender = warning_sender.clone();
                     Self::from_expr(&inner.expr, provider.clone(), default_limit, warning_sender)?
                 };
-                let st = simplequery::BacklinksStream::new(
+                let st = simplequery::make_backlinks_stream(
                     Box::pin(st0),
                     provider,
                     config,
@@ -170,7 +160,7 @@ where
                     let warning_sender = warning_sender.clone();
                     Self::from_expr(&inner.expr, provider.clone(), default_limit, warning_sender)?
                 };
-                let st = simplequery::EmbedsStream::new(
+                let st = simplequery::make_embeds_stream(
                     Box::pin(st0),
                     provider,
                     config,
@@ -186,7 +176,7 @@ where
                     let warning_sender = warning_sender.clone();
                     Self::from_expr(&inner.expr, provider.clone(), default_limit, warning_sender)?
                 };
-                let st = categorymembers::CategoryMembersStream::new(
+                let st = categorymembers::make_categorymembers_stream(
                     Box::pin(st0),
                     provider,
                     config,
@@ -203,7 +193,7 @@ where
                     let warning_sender = warning_sender.clone();
                     Self::from_expr(&inner.expr, provider.clone(), default_limit, warning_sender)?
                 };
-                let st = simplequery::PrefixStream::new(
+                let st = simplequery::make_prefix_stream(
                     Box::pin(st0),
                     provider,
                     config,
@@ -218,7 +208,7 @@ where
                     let warning_sender = warning_sender.clone();
                     Self::from_expr(&inner.expr, provider, default_limit, warning_sender)?
                 };
-                let st = toggle::ToggleStream::new(Box::pin(st0), expr.get_span(), warning_sender);
+                let st = toggle::make_toggle_stream(Box::pin(st0));
                 Ok(Self::Toggle(st))
             },
             _ => unimplemented!(),
