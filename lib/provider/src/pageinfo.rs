@@ -2,12 +2,10 @@
 
 use core::{
     cmp::Ordering,
-    fmt,
+    fmt, mem,
 };
 use mwtitle::Title;
 use std::error::Error;
-
-pub type Pair<T> = (T, T);
 
 /// a struct holding the queried wiki page information.
 #[derive(Debug, Clone)]
@@ -15,13 +13,26 @@ pub struct PageInfo {
     title: Option<Title>,
     exists: Option<bool>,
     redirect: Option<bool>,
+    assoc_title: Option<Title>,
+    assoc_exists: Option<bool>,
+    assoc_redirect: Option<bool>,
 }
 
 impl PageInfo {
     /// creates a new `PageInfo` instance.
-    pub fn new(title: Option<Title>, exists: Option<bool>, redirect: Option<bool>) -> Self {
-        Self { title, exists, redirect }
+    pub fn new(
+        title: Option<Title>, exists: Option<bool>, redirect: Option<bool>,
+        assoc_title: Option<Title>, assoc_exists: Option<bool>, assoc_redirect: Option<bool>
+    ) -> Self {
+        Self { title, exists, redirect, assoc_title, assoc_exists, assoc_redirect }
     }
+
+    pub fn new_swap(&self) -> Self {
+        let mut new = self.clone();
+        new.swap();
+        new
+    }
+
     /// get a reference to the title, returns an error if such value is not known aka not stored.
     pub fn get_title(&self) -> Result<&Title, PageInfoError> {
         self.title.as_ref().ok_or(PageInfoError::UnknownValue)
@@ -35,6 +46,13 @@ impl PageInfo {
     /// get a bool indicating whether this page is a redirect page, returns an error if such value is not known aka not stored.
     pub fn get_isredir(&self) -> Result<bool, PageInfoError> {
         self.redirect.ok_or(PageInfoError::UnknownValue)
+    }
+
+    /// Swap the subject page's information and the associated page's information.
+    pub fn swap(&mut self) {
+        mem::swap(&mut self.title, &mut self.assoc_title);
+        mem::swap(&mut self.exists, &mut self.assoc_exists);
+        mem::swap(&mut self.redirect, &mut self.assoc_redirect);
     }
 }
 
