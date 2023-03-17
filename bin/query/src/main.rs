@@ -148,6 +148,7 @@ async fn main() -> ExitCode {
     let query_result = match timeout(Duration::from_secs(arg.timeout), solver.solve(&expr)).await {
         Ok(res) => res,
         Err(_) => {
+            eprintln!("Timeout after {} seconds", arg.timeout);
             return ExitCode::from(FAILURE_TIMEOUT);
         },
     };
