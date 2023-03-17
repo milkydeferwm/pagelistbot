@@ -2,6 +2,7 @@
 
 #![feature(is_some_and)]
 #![feature(type_alias_impl_trait)]
+#![feature(unix_sigpipe)]
 
 mod api;
 use api::APIDataProvider;
@@ -75,6 +76,7 @@ const FAILURE_QUERY: u8 = 102;
 const FAILURE_TIMEOUT: u8 = 103;
 
 #[tokio::main]
+#[unix_sigpipe = "sig_dfl"]
 async fn main() -> ExitCode {
     let arg = Arg::parse();
     // parse the expression first. only continue if parse successful.
