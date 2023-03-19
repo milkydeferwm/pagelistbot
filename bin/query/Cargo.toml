@@ -1,5 +1,5 @@
 [package]
-name = "pagelistbot-query-executor"
+name = "pagelistbot-query"
 version = "4.1.0"
 edition = "2021"
 repository = "https://github.com/milkydeferwm/pagelistbot"
