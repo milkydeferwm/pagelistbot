@@ -8,10 +8,9 @@ use provider::{
     FilterRedirect, LinksConfig, BackLinksConfig, EmbedsConfig, CategoryMembersConfig, PrefixConfig,
 };
 use std::{collections::HashMap, vec::IntoIter};
+use thiserror::Error as ThisError;
 
-mod error;
 mod query;
-use error::APIDataProviderError;
 use query::{QueryStream, query_complete};
 
 #[derive(Debug, Clone, Copy)]
@@ -245,4 +244,12 @@ impl<'p> DataProvider for APIDataProvider<'p> {
         };
         query_complete(self.api, self.title_codec, param)
     }
+}
+
+#[derive(Debug, Clone, ThisError)]
+pub enum APIDataProviderError {
+    #[error(transparent)]
+    Api(#[from] mwapi::Error),
+    #[error(transparent)]
+    TitleCodec(#[from] mwtitle::Error),
 }
