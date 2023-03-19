@@ -7,10 +7,10 @@ use futures::{
     stream::{iter, Flatten, Iter},
 };
 use mwtitle::Title;
-use std::vec::IntoIter;
+use std::{error::Error, vec::IntoIter};
 
 pub trait DataProvider {
-    type Error;
+    type Error: Error + 'static;
     type PageInfoStream: Stream<Item = Result<PageInfo, Self::Error>>;
     type PageInfoRawStream: Stream<Item = Result<PageInfo, Self::Error>>;
     type LinksStream: Stream<Item = Result<PageInfo, Self::Error>>;
