@@ -39,13 +39,12 @@ where
 
 /// Trait for all solver implementations.
 pub trait Solver: Sized {
-    type Error;
+    type Error: Error + 'static;
 
     async fn solve<'e>(&self, ast: &Expression<'e>) -> Result<Answer<'e, Self>, SolverError<'e, Self>>;
 }
 
 /// Common error type for all solver implementations.
-#[non_exhaustive]
 pub struct SolverError<'e, S>
 where
     S: Solver,
@@ -76,17 +75,18 @@ where
 impl<'e, S> Debug for SolverError<'e, S>
 where
     S: Solver,
-    <S as Solver>::Error: Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.debug_struct("SolverError").field("span", &self.span).field("inner", &self.inner).finish()
+        f.debug_struct("SolverError")
+            .field("span", &self.span)
+            .field("inner", &self.inner)
+            .finish()
     }
 }
 
 impl<'e, S> Display for SolverError<'e, S>
 where
     S: Solver,
-    <S as Solver>::Error: Display,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "[{}:{}]: {}", self.span.location_line(), self.span.get_utf8_column(), self.inner)
@@ -95,8 +95,7 @@ where
 
 impl<'e, S> Error for SolverError<'e, S>
 where
-    S: Solver + Debug,
-    <S as Solver>::Error: Error,
+    S: Solver,
 {}
 
 unsafe impl<'e, S> Send for SolverError<'e, S>
@@ -124,6 +123,7 @@ where
     }
 }
 
+#[non_exhaustive]
 pub enum SolverErrorInner<'e, S>
 where
     S: Solver,
@@ -137,7 +137,6 @@ where
 impl<'e, S> Debug for SolverErrorInner<'e, S>
 where
     S: Solver,
-    <S as Solver>::Error: Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
@@ -150,20 +149,18 @@ where
 impl<'e, S> Display for SolverErrorInner<'e, S>
 where
     S: Solver,
-    <S as Solver>::Error: Display,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Attribute(content) => Display::fmt(&content, f),//write!(f, "[{}:{}]: {:}", attr.get_span().location_line(), attr.get_span().get_utf8_column(), content),
-            Self::Solver(content) => content.fmt(f), //write!(f, "[{}:{}]: {:}", expr.get_span().location_line(), expr.get_span().get_utf8_column(), content),
+            Self::Attribute(content) => Display::fmt(&content, f),
+            Self::Solver(content) => Display::fmt(&content, f),
         }
     }
 }
 
 impl<'e, S> Error for SolverErrorInner<'e, S>
 where
-    S: Solver + Debug,
-    <S as Solver>::Error: Error,
+    S: Solver,
 {}
 
 unsafe impl<'e, S> Send for SolverErrorInner<'e, S>

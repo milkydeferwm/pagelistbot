@@ -1,12 +1,12 @@
 //! Solver by converting the AST directly to nested futures.
 
 use ast::Expression;
-use core::fmt::{self, Debug, Display, Formatter};
 use crate::{Answer, Solver, SolverError};
 use futures::{StreamExt, TryStreamExt, channel::mpsc::unbounded};
 use intorinf::IntOrInf;
 use provider::{DataProvider, PageInfoError};
 use std::{error::Error, collections::BTreeSet};
+use thiserror::Error as ThisError;
 
 mod solverstream;
 use solverstream::UniversalStream;
@@ -35,7 +35,7 @@ impl<'p, P> Solver for TreeSolver<P>
 where
     P: DataProvider + Clone,
 {
-    type Error = TreeSolverError<P>;
+    type Error = TreeSolverError<<P as DataProvider>::Error>;
 
     async fn solve<'e>(&self, ast: &Expression<'e>) -> Result<Answer<'e, TreeSolver<P>>, SolverError<'e, TreeSolver<P>>> {
         let (send, recv) = unbounded::<SolverError<'e, TreeSolver<P>>>();
@@ -53,47 +53,22 @@ where
     }
 }
 
-pub enum TreeSolverError<P>
+#[derive(Debug, ThisError)]
+pub enum TreeSolverError<E>
 where
-    P: DataProvider,
+    E: Error + 'static,
 {
-    Provider(<P as DataProvider>::Error),
-    PageInfo(PageInfoError),
+    #[error("data provider error: {0}")]
+    Provider(#[source] E),
+    #[error("cannot extract page information: {0}")]
+    PageInfo(#[from] PageInfoError),
+    #[error("result output limit `{0}` exceeded, result may be incomplete")]
     ResultLimitExceeded(IntOrInf),
 }
 
-impl<P> Debug for TreeSolverError<P>
+impl<E> Clone for TreeSolverError<E>
 where
-    P: DataProvider,
-    <P as DataProvider>::Error: Debug,
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Provider(arg0) => f.debug_tuple("Provider").field(arg0).finish(),
-            Self::PageInfo(arg0) => f.debug_tuple("PageInfo").field(arg0).finish(),
-            Self::ResultLimitExceeded(arg0) => f.debug_tuple("ResultLimitExceeded").field(arg0).finish(),
-        }
-    }
-}
-
-impl<P> Display for TreeSolverError<P>
-where
-    P: DataProvider,
-    <P as DataProvider>::Error: Display,
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Provider(e) => write!(f, "data provider error: {e}"),
-            Self::PageInfo(e) => write!(f, "cannot extract page information: {e}"),
-            Self::ResultLimitExceeded(lim) => write!(f, "result output limit `{lim}` exceeded, output is truncated"),
-        }
-    }
-}
-
-impl<P> Clone for TreeSolverError<P>
-where
-    P: DataProvider,
-    <P as DataProvider>::Error: Clone,
+    E: Error + Clone + 'static,
 {
     fn clone(&self) -> Self {
         match self {
@@ -104,14 +79,7 @@ where
     }
 }
 
-impl<P> Error for TreeSolverError<P>
+unsafe impl<E> Send for TreeSolverError<E>
 where
-    P: DataProvider,
-    <P as DataProvider>::Error: Error,
-{}
-
-unsafe impl<P> Send for TreeSolverError<P>
-where
-    P: DataProvider,
-    <P as DataProvider>::Error: Send,
+    E: Error + Send + 'static,
 {}
