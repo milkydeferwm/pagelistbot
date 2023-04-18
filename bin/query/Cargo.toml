@@ -12,7 +12,7 @@ clap = { version = "4.1.8", features = [ "cargo", "derive" ] }
 futures = "0.3"
 intorinf = { path = "../../lib/intorinf" }
 itertools = "0.10"
-mwapi = "0.4.3"
+mwapi = "0.5.0"
 mwapi_responses = "0.3.2"
 mwtitle = "0.2.2"
 nom = "7.1.3"
