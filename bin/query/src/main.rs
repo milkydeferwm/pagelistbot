@@ -155,12 +155,12 @@ async fn main() -> ExitCode {
     };
     match query_result {
         Err(e) => {
-            eprintln!("{e}");
+            eprintln!("{}", e.inner);
             ExitCode::from(FAILURE_QUERY)
         },
         Ok(ans) => {
             for warn in ans.warnings {
-                eprintln!("{warn}");
+                eprintln!("{}", warn.inner);
             }
             for item in ans.titles {
                 println!("{}", title_codec.to_pretty(&item));
