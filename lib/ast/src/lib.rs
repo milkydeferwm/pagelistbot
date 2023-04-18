@@ -56,6 +56,7 @@ mod macros {
     pub(crate) use expose_span;
 }
 
+#[cfg(feature = "parse")]
 #[inline(always)]
 fn make_range<T>(start: T, end: T) -> Range<T> {
     Range { start, end }
