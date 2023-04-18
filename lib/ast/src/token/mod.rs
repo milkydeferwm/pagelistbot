@@ -5,9 +5,9 @@ pub mod parse;
 
 macro_rules! define_token {
     ($name:ident) => {
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-        pub struct $name<'a> {
-            span: crate::Span<'a>,
+        #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+        pub struct $name {
+            span: crate::Span,
         }
         crate::expose_span!($name);
     };

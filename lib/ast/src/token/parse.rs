@@ -10,26 +10,29 @@ use super::{
 
 macro_rules! parse_token {
     ($token:ident, $lit:literal) => {
-        impl<'a> $token<'a> {
+        impl $token {
             /// Parse the token from a raw piece of source text. Leading and trailing whitespaces are automatically removed.
-            pub fn parse<E>(program: &'a str) -> Result<Self, E>
+            pub fn parse<'a, E>(program: &'a str) -> Result<Self, E>
             where
-                E: nom::error::ParseError<crate::Span<'a>>,
+                E: nom::error::ParseError<crate::LocatedStr<'a>>,
             {
                 use nom::Finish;
-                let span = crate::Span::new(program);
+                let span = crate::LocatedStr::new(program);
                 nom::combinator::all_consuming(
                     crate::parse_util::whitespace(Self::parse_internal::<E>)
                 )(span).finish().map(|(_, x)| x)
             }
 
             /// Parse the token from a span. Assume no whitespaces before.
-            pub(crate) fn parse_internal<E>(program: crate::Span<'a>) -> nom::IResult<crate::Span<'a>, Self, E>
+            pub(crate) fn parse_internal<'a, E>(program: crate::LocatedStr<'a>) -> nom::IResult<crate::LocatedStr<'a>, Self, E>
             where
-                E: nom::error::ParseError<crate::Span<'a>>,
+                E: nom::error::ParseError<crate::LocatedStr<'a>>,
             {
-                let (residual, span) = nom::bytes::complete::tag_no_case($lit)(program)?;
-                let token = Self { span };
+                let (residual, (span, pos_end)) = nom::sequence::tuple((
+                    nom::bytes::complete::tag_no_case($lit),
+                    nom_locate::position,
+                ))(program)?;
+                let token = Self { span: crate::make_range(span.location_offset(), pos_end.location_offset()) };
                 Ok((residual, token))
             }
         }
@@ -65,8 +68,8 @@ mod test {
         ($test:ident, $token:ident, $lit:literal) => {
             #[test]
             fn $test() {
-                use alloc::format;
-                use crate::Span;
+                use alloc::{borrow::ToOwned, format};
+                use crate::LocatedStr;
                 use super::$token;
                 use nom::error::Error;
 
@@ -79,20 +82,20 @@ mod test {
                 let input_3 = format!("{lower} ");
                 let input_4 = format!(" {gt} ");
 
-                let tok_1 = $token::parse::<Error<Span<'_>>>(&input_1).unwrap();
-                let tok_2 = $token::parse::<Error<Span<'_>>>(&input_2).unwrap();
-                let tok_3 = $token::parse::<Error<Span<'_>>>(&input_3).unwrap();
-                let tok_4 = $token::parse::<Error<Span<'_>>>(&input_4).unwrap();
+                let tok_1 = $token::parse::<Error<LocatedStr<'_>>>(&input_1).unwrap();
+                let tok_2 = $token::parse::<Error<LocatedStr<'_>>>(&input_2).unwrap();
+                let tok_3 = $token::parse::<Error<LocatedStr<'_>>>(&input_3).unwrap();
+                let tok_4 = $token::parse::<Error<LocatedStr<'_>>>(&input_4).unwrap();
 
-                assert_eq!(*tok_1.get_span().fragment(), gt);
-                assert_eq!(*tok_2.get_span().fragment(), &upper);
-                assert_eq!(*tok_3.get_span().fragment(), &lower);
-                assert_eq!(*tok_4.get_span().fragment(), gt);
+                assert_eq!(&input_1[tok_1.get_span().to_owned()], gt);
+                assert_eq!(&input_2[tok_2.get_span().to_owned()], &upper);
+                assert_eq!(&input_3[tok_3.get_span().to_owned()], &lower);
+                assert_eq!(&input_4[tok_4.get_span().to_owned()], gt);
 
-                assert_eq!(tok_1.get_span().location_offset(), 0);
-                assert_eq!(tok_2.get_span().location_offset(), 2);
-                assert_eq!(tok_3.get_span().location_offset(), 0);
-                assert_eq!(tok_4.get_span().location_offset(), 1);
+                assert_eq!(tok_1.get_span().start, 0);
+                assert_eq!(tok_2.get_span().start, 2);
+                assert_eq!(tok_3.get_span().start, 0);
+                assert_eq!(tok_4.get_span().start, 1);
             }
         }
     }

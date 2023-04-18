@@ -7,8 +7,10 @@ edition = "2021"
 
 [dependencies]
 intorinf = { path = "../intorinf" }
-nom_locate = "4"
 nom = { version = "7", optional = true, default-features = false, features = [ "alloc" ] }
+nom_locate = { version = "4", optional = true }
+serde = { version = "1", features = [ "derive" ], optional = true }
 
 [features]
-parse = [ "nom" ]
+parse = [ "nom", "nom_locate" ]
+use_serde = [ "serde" ]

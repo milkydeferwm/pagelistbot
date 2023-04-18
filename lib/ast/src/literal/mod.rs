@@ -7,20 +7,20 @@ use crate::{IntOrInf, Span, expose_span};
 pub mod parse;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct LitString<'a> {
-    span: Span<'a>,
+pub struct LitString {
+    span: Span,
     pub val: String,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct LitIntOrInf<'a> {
-    span: Span<'a>,
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct LitIntOrInf {
+    span: Span,
     pub val: IntOrInf,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct LitInt<'a> {
-    span: Span<'a>,
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct LitInt {
+    span: Span,
     pub val: i32,
 }
 

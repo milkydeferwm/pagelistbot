@@ -14,18 +14,18 @@ pub mod parse;
 /// Mega container for all modifiers.
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum Modifier<'a> {
-    Limit(ModifierLimit<'a>),
-    Resolve(ModifierResolve<'a>),
-    Ns(ModifierNs<'a>),
-    Depth(ModifierDepth<'a>),
-    NoRedir(ModifierNoRedir<'a>),
-    OnlyRedir(ModifierOnlyRedir<'a>),
-    Direct(ModifierDirect<'a>),
+pub enum Modifier {
+    Limit(ModifierLimit),
+    Resolve(ModifierResolve),
+    Ns(ModifierNs),
+    Depth(ModifierDepth),
+    NoRedir(ModifierNoRedir),
+    OnlyRedir(ModifierOnlyRedir),
+    Direct(ModifierDirect),
 }
 
-impl<'a> Modifier<'a> {
-    pub fn get_span(&self) -> Span<'a> {
+impl Modifier {
+    pub fn get_span(&self) -> &Span {
         match self {
             Self::Limit(x) => x.get_span(),
             Self::Resolve(x) => x.get_span(),
@@ -40,76 +40,76 @@ impl<'a> Modifier<'a> {
 
 /// Modifier expression that limit the query count.
 /// `limit(xx)`
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ModifierLimit<'a> {
-    span: Span<'a>,
-    pub limit: Limit<'a>,
-    pub lparen: LeftParen<'a>,
-    pub val: LitIntOrInf<'a>,
-    pub rparen: RightParen<'a>,
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ModifierLimit {
+    span: Span,
+    pub limit: Limit,
+    pub lparen: LeftParen,
+    pub val: LitIntOrInf,
+    pub rparen: RightParen,
 }
 
 /// Modifier expression that defines whether to resolve redirects.
 /// `resolve` or `resolve()`
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ModifierResolve<'a> {
-    span: Span<'a>,
-    pub resolve: Resolve<'a>,
-    pub lparen: Option<LeftParen<'a>>,
-    pub rparen: Option<RightParen<'a>>,
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ModifierResolve {
+    span: Span,
+    pub resolve: Resolve,
+    pub lparen: Option<LeftParen>,
+    pub rparen: Option<RightParen>,
 }
 
 /// Modifier expression that contrains the results inside certain namespaces.
 /// `ns(xx,xx)`
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ModifierNs<'a> {
-    span: Span<'a>,
-    pub ns: Ns<'a>,
-    pub lparen: LeftParen<'a>,
-    pub vals: Vec<LitInt<'a>>,
-    pub commas: Vec<Comma<'a>>,
-    pub rparen: RightParen<'a>,
+pub struct ModifierNs {
+    span: Span,
+    pub ns: Ns,
+    pub lparen: LeftParen,
+    pub vals: Vec<LitInt>,
+    pub commas: Vec<Comma>,
+    pub rparen: RightParen,
 }
 
 /// Modifier expression that tells incat operation how many layers to search.
 /// `depth(xx)`
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ModifierDepth<'a> {
-    span: Span<'a>,
-    pub depth: Depth<'a>,
-    pub lparen: LeftParen<'a>,
-    pub val: LitIntOrInf<'a>,
-    pub rparen: RightParen<'a>,
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ModifierDepth {
+    span: Span,
+    pub depth: Depth,
+    pub lparen: LeftParen,
+    pub val: LitIntOrInf,
+    pub rparen: RightParen,
 }
 
 /// Modifier expression that tells backlinks operation to filter out redirects.
 /// `noredir` or `noredir()`
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ModifierNoRedir<'a> {
-    span: Span<'a>,
-    pub noredir: NoRedir<'a>,
-    pub lparen: Option<LeftParen<'a>>,
-    pub rparen: Option<RightParen<'a>>,
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ModifierNoRedir {
+    span: Span,
+    pub noredir: NoRedir,
+    pub lparen: Option<LeftParen>,
+    pub rparen: Option<RightParen>,
 }
 
 /// Modifier expression that tells backlinks operation to show only redirects.
 /// `onlyredir` or `onlyredir()`
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ModifierOnlyRedir<'a> {
-    span: Span<'a>,
-    pub onlyredir: OnlyRedir<'a>,
-    pub lparen: Option<LeftParen<'a>>,
-    pub rparen: Option<RightParen<'a>>,
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ModifierOnlyRedir {
+    span: Span,
+    pub onlyredir: OnlyRedir,
+    pub lparen: Option<LeftParen>,
+    pub rparen: Option<RightParen>,
 }
 
 /// Modifier expression that tells backlinks operation only to show direct backlinks.
 /// `direct` or `direct()`
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ModifierDirect<'a> {
-    span: Span<'a>,
-    pub direct: Direct<'a>,
-    pub lparen: Option<LeftParen<'a>>,
-    pub rparen: Option<RightParen<'a>>,
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ModifierDirect {
+    span: Span,
+    pub direct: Direct,
+    pub lparen: Option<LeftParen>,
+    pub rparen: Option<RightParen>,
 }
 
 expose_span!(ModifierLimit);

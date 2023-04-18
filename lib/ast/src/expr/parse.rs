@@ -5,7 +5,8 @@
 use alloc::sync::Arc;
 use core::num::ParseIntError;
 use crate::{
-    Span,
+    LocatedStr,
+    make_range,
     attribute::Attribute,
     literal::LitString,
     parse_util::{whitespace, leading_whitespace, alternating1},
@@ -23,7 +24,7 @@ use super::{
 
 use nom::{
     IResult,
-    Finish, Slice,
+    Finish,
     branch::alt,
     combinator::{all_consuming, map},
     error::{ParseError, FromExternalError},
@@ -32,18 +33,18 @@ use nom::{
 };
 use nom_locate::position;
 
-enum Level1Operator<'a> {
-    Add(Add<'a>),
-    Sub(Sub<'a>),
+enum Level1Operator {
+    Add(Add),
+    Sub(Sub),
 }
 
-impl<'a> Expression<'a> {
+impl Expression {
     /// Parse the expression from a raw piece of source text. Leading and trailing whitespaces are automatically removed.
-    pub fn parse<E>(program: &'a str) -> Result<Self, E>
+    pub fn parse<'a, E>(program: &'a str) -> Result<Self, E>
     where
-        E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
+        E: ParseError<LocatedStr<'a>> + FromExternalError<LocatedStr<'a>, ParseIntError>,
     {
-        let span = Span::new(program);
+        let span = LocatedStr::new(program);
         all_consuming(
             whitespace(Self::parse_internal_level_1::<E>)
         )(span).finish().map(|(_, x)| x)
@@ -51,9 +52,9 @@ impl<'a> Expression<'a> {
 
     /// Parse a level-1 expression. Level 1 has the lowest priority, and sits at the top of the AST.
     /// `ExpressionAdd` and `ExpressionSub` sit at this level.
-    fn parse_internal_level_1<E>(program: Span<'a>) -> IResult<Span<'a>, Self, E>
+    fn parse_internal_level_1<'a, E>(program: LocatedStr<'a>) -> IResult<LocatedStr<'a>, Self, E>
     where
-        E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
+        E: ParseError<LocatedStr<'a>> + FromExternalError<LocatedStr<'a>, ParseIntError>,
     {
         let (residual, (pos_start, expr, exprs)) = tuple((
             position,
@@ -70,16 +71,15 @@ impl<'a> Expression<'a> {
         let expression = exprs.into_iter().fold(
             expr,
             |expr1, (lv1op, expr2, pos_end)| {
-                let length = pos_end.location_offset() - pos_start.location_offset();
                 match lv1op {
                     Level1Operator::Add(add) => Self::Add(ExpressionAdd {
-                        span: program.slice(..length),
+                        span: make_range(pos_start.location_offset(), pos_end.location_offset()),
                         expr1: Arc::new(expr1),
                         add,
                         expr2: Arc::new(expr2),
                     }),
                     Level1Operator::Sub(sub) => Self::Sub(ExpressionSub {
-                        span: program.slice(..length),
+                        span: make_range(pos_start.location_offset(), pos_end.location_offset()),
                         expr1: Arc::new(expr1),
                         sub,
                         expr2: Arc::new(expr2),
@@ -92,9 +92,9 @@ impl<'a> Expression<'a> {
 
     /// Parse a level-2 expression. Level 2 has the second-lowest priority.
     /// `ExpressionXor` sits at this level.
-    fn parse_internal_level_2<E>(program: Span<'a>) -> IResult<Span<'a>, Self, E>
+    fn parse_internal_level_2<'a, E>(program: LocatedStr<'a>) -> IResult<LocatedStr<'a>, Self, E>
     where
-        E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
+        E: ParseError<LocatedStr<'a>> + FromExternalError<LocatedStr<'a>, ParseIntError>,
     {
         let (residual, (pos_start, expr, exprs)) = tuple((
             position,
@@ -108,9 +108,8 @@ impl<'a> Expression<'a> {
         let expression = exprs.into_iter().fold(
             expr,
             |expr1, (caret, expr2, pos_end)| {
-                let length = pos_end.location_offset() - pos_start.location_offset();
                 Self::Xor(ExpressionXor {
-                    span: program.slice(..length),
+                    span: make_range(pos_start.location_offset(), pos_end.location_offset()),
                     expr1: Arc::new(expr1),
                     xor: caret,
                     expr2: Arc::new(expr2),
@@ -122,9 +121,9 @@ impl<'a> Expression<'a> {
 
     /// Parse a level-3 expression. Level 3 has the second-highest priority.
     /// `ExpressionAnd` sits at this level.
-    fn parse_internal_level_3<E>(program: Span<'a>) -> IResult<Span<'a>, Self, E>
+    fn parse_internal_level_3<'a, E>(program: LocatedStr<'a>) -> IResult<LocatedStr<'a>, Self, E>
     where
-        E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
+        E: ParseError<LocatedStr<'a>> + FromExternalError<LocatedStr<'a>, ParseIntError>,
     {
         let (residual, (pos_start, expr, exprs)) = tuple((
             position,
@@ -138,9 +137,8 @@ impl<'a> Expression<'a> {
         let expression = exprs.into_iter().fold(
             expr,
             |expr1, (and, expr2, pos_end)| {
-                let length = pos_end.location_offset() - pos_start.location_offset();
                 Self::And(ExpressionAnd {
-                    span: program.slice(..length),
+                    span: make_range(pos_start.location_offset(), pos_end.location_offset()),
                     expr1: Arc::new(expr1),
                     and,
                     expr2: Arc::new(expr2),
@@ -152,9 +150,9 @@ impl<'a> Expression<'a> {
 
     /// Parse a level-4 expression. Level 4 has the highest priority.
     /// `ExpressionParam` and all other expressions sit at this level.
-    fn parse_internal_level_4<E>(program: Span<'a>) -> IResult<Span<'a>, Self, E>
+    fn parse_internal_level_4<'a, E>(program: LocatedStr<'a>) -> IResult<LocatedStr<'a>, Self, E>
     where
-        E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
+        E: ParseError<LocatedStr<'a>> + FromExternalError<LocatedStr<'a>, ParseIntError>,
     {
         alt((
             map(ExpressionParen::parse_internal, Expression::Paren),
@@ -169,22 +167,22 @@ impl<'a> Expression<'a> {
     }
 }
 
-impl<'a> ExpressionParen<'a> {
+impl ExpressionParen {
     /// Parse the expression from a raw piece of source text. Leading and trailing whitespaces are automatically removed.
-    pub fn parse<E>(program: &'a str) -> Result<Self, E>
+    pub fn parse<'a, E>(program: &'a str) -> Result<Self, E>
     where
-        E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
+        E: ParseError<LocatedStr<'a>> + FromExternalError<LocatedStr<'a>, ParseIntError>,
     {
-        let span = Span::new(program);
+        let span = LocatedStr::new(program);
         all_consuming(
             whitespace(Self::parse_internal::<E>)
         )(span).finish().map(|(_, x)| x)
     }
 
     /// Parse the expression from a span. Assume no whitespaces before.
-    pub(crate) fn parse_internal<E>(program: Span<'a>) -> IResult<Span<'a>, Self, E>
+    pub(crate) fn parse_internal<'a, E>(program: LocatedStr<'a>) -> IResult<LocatedStr<'a>, Self, E>
     where
-        E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
+        E: ParseError<LocatedStr<'a>> + FromExternalError<LocatedStr<'a>, ParseIntError>,
     {
         let (residual, (pos_start, lparen, expr, rparen, pos_end)) = tuple((
             position,
@@ -193,9 +191,8 @@ impl<'a> ExpressionParen<'a> {
             leading_whitespace(RightParen::parse_internal),
             position,
         ))(program)?;
-        let length = pos_end.location_offset() - pos_start.location_offset();
         let expression_paren = Self {
-            span: program.slice(..length),
+            span: make_range(pos_start.location_offset(), pos_end.location_offset()),
             lparen,
             expr: Arc::new(expr),
             rparen,
@@ -204,22 +201,22 @@ impl<'a> ExpressionParen<'a> {
     }
 }
 
-impl<'a> ExpressionPage<'a> {
+impl ExpressionPage {
     /// Parse the expression from a raw piece of source text. Leading and trailing whitespaces are automatically removed.
-    pub fn parse<E>(program: &'a str) -> Result<Self, E>
+    pub fn parse<'a, E>(program: &'a str) -> Result<Self, E>
     where
-        E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
+        E: ParseError<LocatedStr<'a>> + FromExternalError<LocatedStr<'a>, ParseIntError>,
     {
-        let span = Span::new(program);
+        let span = LocatedStr::new(program);
         all_consuming(
             whitespace(Self::parse_internal::<E>)
         )(span).finish().map(|(_, x)| x)
     }
 
     /// Parse the expression from a span. Assume no whitespaces before.
-    pub(crate) fn parse_internal<E>(program: Span<'a>) -> IResult<Span<'a>, Self, E>
+    pub(crate) fn parse_internal<'a, E>(program: LocatedStr<'a>) -> IResult<LocatedStr<'a>, Self, E>
     where
-        E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
+        E: ParseError<LocatedStr<'a>> + FromExternalError<LocatedStr<'a>, ParseIntError>,
     {
         alt((
             Self::parse_internal_style_1,
@@ -228,9 +225,9 @@ impl<'a> ExpressionPage<'a> {
     }
 
     /// Parse the expression with the first style.
-    fn parse_internal_style_1<E>(program: Span<'a>) -> IResult<Span<'a>, Self, E>
+    fn parse_internal_style_1<'a, E>(program: LocatedStr<'a>) -> IResult<LocatedStr<'a>, Self, E>
     where
-        E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
+        E: ParseError<LocatedStr<'a>> + FromExternalError<LocatedStr<'a>, ParseIntError>,
     {
         let (residual, (pos_start, (vals, commas), pos_end)) = tuple((
             position,
@@ -240,9 +237,8 @@ impl<'a> ExpressionPage<'a> {
             ),
             position,
         ))(program)?;
-        let length = pos_end.location_offset() - pos_start.location_offset();
         let expression_page = Self {
-            span: program.slice(..length),
+            span: make_range(pos_start.location_offset(), pos_end.location_offset()),
             page: None,
             lparen: None,
             vals,
@@ -253,9 +249,9 @@ impl<'a> ExpressionPage<'a> {
     }
 
     /// Parse the expression with the second style.
-    fn parse_internal_style_2<E>(program: Span<'a>) -> IResult<Span<'a>, Self, E>
+    fn parse_internal_style_2<'a, E>(program: LocatedStr<'a>) -> IResult<LocatedStr<'a>, Self, E>
     where
-        E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
+        E: ParseError<LocatedStr<'a>> + FromExternalError<LocatedStr<'a>, ParseIntError>,
     {
         let (residual, (pos_start, page, lparen, (vals, commas), rparen, pos_end)) = tuple((
             position,
@@ -268,9 +264,8 @@ impl<'a> ExpressionPage<'a> {
             leading_whitespace(RightParen::parse_internal),
             position,
         ))(program)?;
-        let length = pos_end.location_offset() - pos_start.location_offset();
         let expression_page = Self {
-            span: program.slice(..length),
+            span: make_range(pos_start.location_offset(), pos_end.location_offset()),
             page: Some(page),
             lparen: Some(lparen),
             vals,
@@ -283,22 +278,22 @@ impl<'a> ExpressionPage<'a> {
 
 macro_rules! unary_operation_make_parser {
     ($name:ident, $token_field:ident, $token:ident) => {
-        impl<'a> $name<'a> {
+        impl $name {
             /// Parse the expression from a raw piece of source text. Leading and trailing whitespaces are automatically removed.
-            pub fn parse<E>(program: &'a str) -> Result<Self, E>
+            pub fn parse<'a, E>(program: &'a str) -> Result<Self, E>
             where
-                E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
+                E: ParseError<LocatedStr<'a>> + FromExternalError<LocatedStr<'a>, ParseIntError>,
             {
-                let span = Span::new(program);
+                let span = LocatedStr::new(program);
                 all_consuming(
                     whitespace(Self::parse_internal::<E>)
                 )(span).finish().map(|(_, x)| x)
             }
 
             /// Parse the expression from a span. Assume no whitespaces before.
-            pub(crate) fn parse_internal<E>(program: Span<'a>) -> IResult<Span<'a>, Self, E>
+            pub(crate) fn parse_internal<'a, E>(program: LocatedStr<'a>) -> IResult<LocatedStr<'a>, Self, E>
             where
-                E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
+                E: ParseError<LocatedStr<'a>> + FromExternalError<LocatedStr<'a>, ParseIntError>,
             {
                 let (residual, (pos_start, $token_field, lparen, expr, rparen, attributes, pos_end)) = tuple((
                     position,
@@ -311,9 +306,8 @@ macro_rules! unary_operation_make_parser {
                     ),
                     position,
                 ))(program)?;
-                let length = pos_end.location_offset() - pos_start.location_offset();
                 let expression = Self {
-                    span: program.slice(..length),
+                    span: make_range(pos_start.location_offset(), pos_end.location_offset()),
                     $token_field,
                     lparen,
                     expr: Arc::new(expr),
@@ -332,22 +326,22 @@ unary_operation_make_parser!(ExpressionEmbed, embed, Embed);
 unary_operation_make_parser!(ExpressionInCat, incat, InCat);
 unary_operation_make_parser!(ExpressionPrefix, prefix, Prefix);
 
-impl<'a> ExpressionToggle<'a> {
+impl ExpressionToggle {
     /// Parse the expression from a raw piece of source text. Leading and trailing whitespaces are automatically removed.
-    pub fn parse<E>(program: &'a str) -> Result<Self, E>
+    pub fn parse<'a, E>(program: &'a str) -> Result<Self, E>
     where
-        E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
+        E: ParseError<LocatedStr<'a>> + FromExternalError<LocatedStr<'a>, ParseIntError>,
     {
-        let span = Span::new(program);
+        let span = LocatedStr::new(program);
         all_consuming(
             whitespace(Self::parse_internal::<E>)
         )(span).finish().map(|(_, x)| x)
     }
 
     /// Parse the expression from a span. Assume no whitespaces before.
-    pub(crate) fn parse_internal<E>(program: Span<'a>) -> IResult<Span<'a>, Self, E>
+    pub(crate) fn parse_internal<'a, E>(program: LocatedStr<'a>) -> IResult<LocatedStr<'a>, Self, E>
     where
-        E: ParseError<Span<'a>> + FromExternalError<Span<'a>, ParseIntError>,
+        E: ParseError<LocatedStr<'a>> + FromExternalError<LocatedStr<'a>, ParseIntError>,
     {
         let (residual, (pos_start, toggle, lparen, expr, rparen, pos_end)) = tuple((
             position,
@@ -357,9 +351,8 @@ impl<'a> ExpressionToggle<'a> {
             leading_whitespace(RightParen::parse_internal),
             position,
         ))(program)?;
-        let length = pos_end.location_offset() - pos_start.location_offset();
         let expression_toggle = Self {
-            span: program.slice(..length),
+            span: make_range(pos_start.location_offset(), pos_end.location_offset()),
             toggle,
             lparen,
             expr: Arc::new(expr),
@@ -371,8 +364,8 @@ impl<'a> ExpressionToggle<'a> {
 
 #[cfg(test)]
 mod test {
-    use alloc::format;
-    use crate::Span;
+    use alloc::{format, borrow::ToOwned};
+    use crate::LocatedStr;
     use super::{
         Expression,
         ExpressionPage, ExpressionLink, ExpressionLinkTo, ExpressionEmbed, ExpressionInCat, ExpressionPrefix, ExpressionToggle,
@@ -391,15 +384,15 @@ mod test {
         let input_8 = "\"A\"^\"B\"&\"c\"";
         let input_9 = "(\"A\" ^ \"B\" + \"C\") & ((\"D\" - \"E\") &\"F\")";
 
-        let exp_1 = Expression::parse::<Error<Span<'_>>>(input_1).unwrap();
-        let exp_2 = Expression::parse::<Error<Span<'_>>>(input_2).unwrap();
-        let exp_3 = Expression::parse::<Error<Span<'_>>>(input_3).unwrap();
-        let exp_4 = Expression::parse::<Error<Span<'_>>>(input_4).unwrap();
-        let exp_5 = Expression::parse::<Error<Span<'_>>>(input_5).unwrap();
-        let exp_6 = Expression::parse::<Error<Span<'_>>>(input_6).unwrap();
-        let exp_7 = Expression::parse::<Error<Span<'_>>>(input_7).unwrap();
-        let exp_8 = Expression::parse::<Error<Span<'_>>>(input_8).unwrap();
-        let exp_9 = Expression::parse::<Error<Span<'_>>>(input_9).unwrap();
+        let exp_1 = Expression::parse::<Error<LocatedStr<'_>>>(input_1).unwrap();
+        let exp_2 = Expression::parse::<Error<LocatedStr<'_>>>(input_2).unwrap();
+        let exp_3 = Expression::parse::<Error<LocatedStr<'_>>>(input_3).unwrap();
+        let exp_4 = Expression::parse::<Error<LocatedStr<'_>>>(input_4).unwrap();
+        let exp_5 = Expression::parse::<Error<LocatedStr<'_>>>(input_5).unwrap();
+        let exp_6 = Expression::parse::<Error<LocatedStr<'_>>>(input_6).unwrap();
+        let exp_7 = Expression::parse::<Error<LocatedStr<'_>>>(input_7).unwrap();
+        let exp_8 = Expression::parse::<Error<LocatedStr<'_>>>(input_8).unwrap();
+        let exp_9 = Expression::parse::<Error<LocatedStr<'_>>>(input_9).unwrap();
 
         assert!(matches!(exp_1, Expression::Add(_)));
         assert!(matches!(exp_2, Expression::Sub(_)));
@@ -419,25 +412,25 @@ mod test {
         let input_3 = "page ( \"Test\",\"page\" )  ";
         let input_4 = "  Page(\"Sakura\")  ";
 
-        let exp_1 = ExpressionPage::parse::<Error<Span<'_>>>(input_1).unwrap();
-        let exp_2 = ExpressionPage::parse::<Error<Span<'_>>>(input_2).unwrap();
-        let exp_3 = ExpressionPage::parse::<Error<Span<'_>>>(input_3).unwrap();
-        let exp_4 = ExpressionPage::parse::<Error<Span<'_>>>(input_4).unwrap();
+        let exp_1 = ExpressionPage::parse::<Error<LocatedStr<'_>>>(input_1).unwrap();
+        let exp_2 = ExpressionPage::parse::<Error<LocatedStr<'_>>>(input_2).unwrap();
+        let exp_3 = ExpressionPage::parse::<Error<LocatedStr<'_>>>(input_3).unwrap();
+        let exp_4 = ExpressionPage::parse::<Error<LocatedStr<'_>>>(input_4).unwrap();
 
         assert_eq!(exp_1.vals.len(), 1);
         assert_eq!(exp_2.vals.len(), 2);
         assert_eq!(exp_3.vals.len(), 2);
         assert_eq!(exp_4.vals.len(), 1);
 
-        assert_eq!(*exp_1.get_span().fragment(), "\"Main Page\"");
-        assert_eq!(*exp_2.get_span().fragment(), "\"Hello\" , \"World\"");
-        assert_eq!(*exp_3.get_span().fragment(), "page ( \"Test\",\"page\" )");
-        assert_eq!(*exp_4.get_span().fragment(), "Page(\"Sakura\")");
+        assert_eq!(&input_1[exp_1.get_span().to_owned()], "\"Main Page\"");
+        assert_eq!(&input_2[exp_2.get_span().to_owned()], "\"Hello\" , \"World\"");
+        assert_eq!(&input_3[exp_3.get_span().to_owned()], "page ( \"Test\",\"page\" )");
+        assert_eq!(&input_4[exp_4.get_span().to_owned()], "Page(\"Sakura\")");
 
-        assert_eq!(exp_1.get_span().location_offset(), 0);
-        assert_eq!(exp_2.get_span().location_offset(), 1);
-        assert_eq!(exp_3.get_span().location_offset(), 0);
-        assert_eq!(exp_4.get_span().location_offset(), 2);
+        assert_eq!(exp_1.get_span().start, 0);
+        assert_eq!(exp_2.get_span().start, 1);
+        assert_eq!(exp_3.get_span().start, 0);
+        assert_eq!(exp_4.get_span().start, 2);
     }
 
     macro_rules! unary_operation_make_test {
@@ -449,25 +442,25 @@ mod test {
                 let input_3 = format!("{}( \"Example\" ). noredir .onlyredir ", $lit);
                 let input_4 = format!("  {} ( \"Example\" ) . Ns ( 0 , 1, 2 ) . limit ( 100 ) . onlyredir ", $lit);
 
-                let exp_1 = $target::parse::<Error<Span<'_>>>(&input_1).unwrap();
-                let exp_2 = $target::parse::<Error<Span<'_>>>(&input_2).unwrap();
-                let exp_3 = $target::parse::<Error<Span<'_>>>(&input_3).unwrap();
-                let exp_4 = $target::parse::<Error<Span<'_>>>(&input_4).unwrap();
+                let exp_1 = $target::parse::<Error<LocatedStr<'_>>>(&input_1).unwrap();
+                let exp_2 = $target::parse::<Error<LocatedStr<'_>>>(&input_2).unwrap();
+                let exp_3 = $target::parse::<Error<LocatedStr<'_>>>(&input_3).unwrap();
+                let exp_4 = $target::parse::<Error<LocatedStr<'_>>>(&input_4).unwrap();
 
                 assert_eq!(exp_1.attributes.len(), 0);
                 assert_eq!(exp_2.attributes.len(), 1);
                 assert_eq!(exp_3.attributes.len(), 2);
                 assert_eq!(exp_4.attributes.len(), 3);
 
-                assert_eq!(*exp_1.get_span().fragment(), format!("{}(\"Example\")", $lit));
-                assert_eq!(*exp_2.get_span().fragment(), format!("{} (\"Example\") . resolve ( )", $lit));
-                assert_eq!(*exp_3.get_span().fragment(), format!("{}( \"Example\" ). noredir .onlyredir", $lit));
-                assert_eq!(*exp_4.get_span().fragment(), format!("{} ( \"Example\" ) . Ns ( 0 , 1, 2 ) . limit ( 100 ) . onlyredir", $lit));
+                assert_eq!(&input_1[exp_1.get_span().to_owned()], format!("{}(\"Example\")", $lit));
+                assert_eq!(&input_2[exp_2.get_span().to_owned()], format!("{} (\"Example\") . resolve ( )", $lit));
+                assert_eq!(&input_3[exp_3.get_span().to_owned()], format!("{}( \"Example\" ). noredir .onlyredir", $lit));
+                assert_eq!(&input_4[exp_4.get_span().to_owned()], format!("{} ( \"Example\" ) . Ns ( 0 , 1, 2 ) . limit ( 100 ) . onlyredir", $lit));
 
-                assert_eq!(exp_1.get_span().location_offset(), 0);
-                assert_eq!(exp_2.get_span().location_offset(), 1);
-                assert_eq!(exp_3.get_span().location_offset(), 0);
-                assert_eq!(exp_4.get_span().location_offset(), 2);
+                assert_eq!(exp_1.get_span().start, 0);
+                assert_eq!(exp_2.get_span().start, 1);
+                assert_eq!(exp_3.get_span().start, 0);
+                assert_eq!(exp_4.get_span().start, 2);
             }
         }
     }
@@ -485,19 +478,19 @@ mod test {
         let input_3 = "toggle ( \"Test\",\"page\" )  ";
         let input_4 = "  toggle(linkto(\"Sakura\"))  ";
 
-        let exp_1 = ExpressionToggle::parse::<Error<Span<'_>>>(input_1).unwrap();
-        let exp_2 = ExpressionToggle::parse::<Error<Span<'_>>>(input_2).unwrap();
-        let exp_3 = ExpressionToggle::parse::<Error<Span<'_>>>(input_3).unwrap();
-        let exp_4 = ExpressionToggle::parse::<Error<Span<'_>>>(input_4).unwrap();
+        let exp_1 = ExpressionToggle::parse::<Error<LocatedStr<'_>>>(input_1).unwrap();
+        let exp_2 = ExpressionToggle::parse::<Error<LocatedStr<'_>>>(input_2).unwrap();
+        let exp_3 = ExpressionToggle::parse::<Error<LocatedStr<'_>>>(input_3).unwrap();
+        let exp_4 = ExpressionToggle::parse::<Error<LocatedStr<'_>>>(input_4).unwrap();
 
-        assert_eq!(*exp_1.get_span().fragment(), "toggle(\"Main Page\")");
-        assert_eq!(*exp_2.get_span().fragment(), "toggle ( \"Hello\" , \"World\" )");
-        assert_eq!(*exp_3.get_span().fragment(), "toggle ( \"Test\",\"page\" )");
-        assert_eq!(*exp_4.get_span().fragment(), "toggle(linkto(\"Sakura\"))");
+        assert_eq!(&input_1[exp_1.get_span().to_owned()], "toggle(\"Main Page\")");
+        assert_eq!(&input_2[exp_2.get_span().to_owned()], "toggle ( \"Hello\" , \"World\" )");
+        assert_eq!(&input_3[exp_3.get_span().to_owned()], "toggle ( \"Test\",\"page\" )");
+        assert_eq!(&input_4[exp_4.get_span().to_owned()], "toggle(linkto(\"Sakura\"))");
 
-        assert_eq!(exp_1.get_span().location_offset(), 0);
-        assert_eq!(exp_2.get_span().location_offset(), 1);
-        assert_eq!(exp_3.get_span().location_offset(), 0);
-        assert_eq!(exp_4.get_span().location_offset(), 2);
+        assert_eq!(exp_1.get_span().start, 0);
+        assert_eq!(exp_2.get_span().start, 1);
+        assert_eq!(exp_3.get_span().start, 0);
+        assert_eq!(exp_4.get_span().start, 2);
     }
 }

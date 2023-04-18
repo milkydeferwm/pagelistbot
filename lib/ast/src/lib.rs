@@ -3,7 +3,10 @@
 #![no_std]
 extern crate alloc;
 
-pub type Span<'a> = nom_locate::LocatedSpan<&'a str>;
+use core::ops::Range;
+
+pub(crate) type Span = Range<usize>;
+pub(crate) type LocatedStr<'a> = nom_locate::LocatedSpan<&'a str>;
 
 pub mod attribute;
 pub mod expr;
@@ -41,13 +44,18 @@ mod macros {
     macro_rules! expose_span {
         ($class:ident) => {
             /// Get the span for this item.
-            impl<'a> $class<'a> {
-                pub fn get_span(&self) -> crate::Span<'a> {
-                    self.span
+            impl $class {
+                pub fn get_span(&self) -> &crate::Span {
+                    &self.span
                 }
             }
         }
     }
 
     pub(crate) use expose_span;
+}
+
+#[inline(always)]
+fn make_range<T>(start: T, end: T) -> Range<T> {
+    Range { start, end }
 }
