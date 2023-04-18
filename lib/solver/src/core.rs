@@ -6,15 +6,15 @@ use std::{collections::BTreeSet, error::Error};
 use super::cvt_attr::AttributeError;
 
 /// Universal result interface.
-pub struct Answer<'e, S>
+pub struct Answer<S>
 where
     S: Solver,
 {
     pub titles: BTreeSet<mwtitle::Title>,
-    pub warnings: Vec<SolverError<'e, S>>,
+    pub warnings: Vec<SolverError<S>>,
 }
 
-impl<'e, S> Debug for Answer<'e, S>
+impl<S> Debug for Answer<S>
 where
     S: Solver,
     <S as Solver>::Error: Debug,
@@ -24,7 +24,7 @@ where
     }
 }
 
-impl<'e, S> Clone for Answer<'e, S>
+impl<S> Clone for Answer<S>
 where
     S: Solver,
     <S as Solver>::Error: Clone,
@@ -41,38 +41,32 @@ where
 pub trait Solver: Sized {
     type Error: Error + 'static;
 
-    async fn solve<'e>(&self, ast: &Expression<'e>) -> Result<Answer<'e, Self>, SolverError<'e, Self>>;
+    async fn solve(&self, ast: &Expression) -> Result<Answer<Self>, SolverError<Self>>;
 }
 
 /// Common error type for all solver implementations.
-pub struct SolverError<'e, S>
+pub struct SolverError<S>
 where
     S: Solver,
 {
-    pub span: Span<'e>,
-    pub inner: SolverErrorInner<'e, S>,
+    pub span: Span,
+    pub inner: SolverErrorInner<S>,
 }
 
-impl<'e, S> Clone for SolverError<'e, S>
+impl<S> Clone for SolverError<S>
 where
     S: Solver,
     <S as Solver>::Error: Clone,
 {
     fn clone(&self) -> Self {
         Self {
-            span: self.span,
+            span: self.span.clone(),
             inner: self.inner.clone(),
         }
     }
 }
 
-impl<'e, S> Copy for SolverError<'e, S>
-where
-    S: Solver,
-    <S as Solver>::Error: Copy,
-{}
-
-impl<'e, S> Debug for SolverError<'e, S>
+impl<S> Debug for SolverError<S>
 where
     S: Solver,
 {
@@ -84,7 +78,8 @@ where
     }
 }
 
-impl<'e, S> Display for SolverError<'e, S>
+/*
+impl<S> Display for SolverError<S>
 where
     S: Solver,
 {
@@ -92,30 +87,34 @@ where
         write!(f, "[{}:{}]: {}", self.span.location_line(), self.span.get_utf8_column(), self.inner)
     }
 }
+*/
 
+/*
 impl<'e, S> Error for SolverError<'e, S>
 where
     S: Solver,
 {}
-
-unsafe impl<'e, S> Send for SolverError<'e, S>
+*/
+/*
+unsafe impl<S> Send for SolverError<S>
 where
     S: Solver,
     <S as Solver>::Error: Send,
 {}
+*/
 
-impl<'e, S> SolverError<'e, S>
+impl<S> SolverError<S>
 where
     S: Solver,
 {
-    pub fn from_solver_error(span: Span<'e>, content: <S as Solver>::Error) -> Self {
+    pub fn from_solver_error(span: Span, content: <S as Solver>::Error) -> Self {
         Self {
             span,
             inner: SolverErrorInner::Solver(content),
         }
     }
 
-    pub fn from_attribute_error(span: Span<'e>, content: AttributeError<'e>) -> Self {
+    pub fn from_attribute_error(span: Span, content: AttributeError) -> Self {
         Self {
             span,
             inner: SolverErrorInner::Attribute(content),
@@ -124,17 +123,17 @@ where
 }
 
 #[non_exhaustive]
-pub enum SolverErrorInner<'e, S>
+pub enum SolverErrorInner<S>
 where
     S: Solver,
 {
     /// An error happens when converting AST `Attribute` to configurations.
-    Attribute(AttributeError<'e>),
+    Attribute(AttributeError),
     /// An error happens with solver solving.
     Solver(<S as Solver>::Error),
 }
 
-impl<'e, S> Debug for SolverErrorInner<'e, S>
+impl<S> Debug for SolverErrorInner<S>
 where
     S: Solver,
 {
@@ -146,7 +145,7 @@ where
     }
 }
 
-impl<'e, S> Display for SolverErrorInner<'e, S>
+impl<S> Display for SolverErrorInner<S>
 where
     S: Solver,
 {
@@ -158,32 +157,35 @@ where
     }
 }
 
-impl<'e, S> Error for SolverErrorInner<'e, S>
+impl<S> Error for SolverErrorInner<S>
 where
     S: Solver,
-{}
+{
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            Self::Attribute(content) => Some(content),
+            Self::Solver(content) => Some(content),
+        }
+    }
+}
 
+/*
 unsafe impl<'e, S> Send for SolverErrorInner<'e, S>
 where
     S: Solver,
     <S as Solver>::Error: Send,
 {}
+*/
 
-impl<'e, S> Clone for SolverErrorInner<'e, S>
+impl<S> Clone for SolverErrorInner<S>
 where
     S: Solver,
     <S as Solver>::Error: Clone,
 {
     fn clone(&self) -> Self {
         match self {
-            Self::Attribute(content) => Self::Attribute(*content),
+            Self::Attribute(content) => Self::Attribute(content.clone()),
             Self::Solver(content) => Self::Solver(content.clone()),
         }
     }
 }
-
-impl<'e, S> Copy for SolverErrorInner<'e, S>
-where
-    S: Solver,
-    <S as Solver>::Error: Copy,
-{}

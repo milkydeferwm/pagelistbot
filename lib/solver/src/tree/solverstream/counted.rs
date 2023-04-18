@@ -11,25 +11,25 @@ use super::{TreeSolver, TreeSolverError};
 
 #[pin_project]
 #[must_use = "streams do nothing unless polled"]
-pub struct Counted<'e, St, P>
+pub struct Counted<St, P>
 where
     St: TryStream,
     P: DataProvider + Clone,
 {
     #[pin] stream: St,
-    span: Span<'e>,
+    span: Span,
     count: IntOrInf,
     limit: IntOrInf,
     finish: bool,
-    warning_sender: UnboundedSender<SolverError<'e, TreeSolver<P>>>,
+    warning_sender: UnboundedSender<SolverError<TreeSolver<P>>>,
 }
 
-impl<'e, St, P> Counted<'e, St, P>
+impl<St, P> Counted<St, P>
 where
     St: TryStream,
     P: DataProvider + Clone,
 {
-    pub fn new(stream: St, span: Span<'e>, limit: IntOrInf, warning_sender: UnboundedSender<SolverError<'e, TreeSolver<P>>>) -> Self {
+    pub fn new(stream: St, span: Span, limit: IntOrInf, warning_sender: UnboundedSender<SolverError<TreeSolver<P>>>) -> Self {
         Self {
             stream,
             span,
@@ -41,7 +41,7 @@ where
     }
 }
 
-impl<'e, St, P> fmt::Debug for Counted<'e, St, P>
+impl<St, P> fmt::Debug for Counted<St, P>
 where
     St: TryStream + fmt::Debug,
     St::Ok: fmt::Debug,
@@ -59,7 +59,7 @@ where
     }
 }
 
-impl<'e, St, P> FusedStream for Counted<'e, St, P>
+impl<St, P> FusedStream for Counted<St, P>
 where
     Self: Stream,
     St: TryStream,
@@ -70,7 +70,7 @@ where
     }
 }
 
-impl<'e, St, P> Stream for Counted<'e, St, P>
+impl<St, P> Stream for Counted<St, P>
 where
     St: TryStream,
     P: DataProvider + Clone,
@@ -90,7 +90,7 @@ where
                     } else {
                         *this.finish = true;
                         // send warning
-                        let warning = SolverError::from_solver_error(*this.span, TreeSolverError::ResultLimitExceeded(*this.limit));
+                        let warning = SolverError::from_solver_error(this.span.clone(), TreeSolverError::ResultLimitExceeded(*this.limit));
                         this.warning_sender.unbounded_send(warning).expect("cannot send warning");
                         None
                     }

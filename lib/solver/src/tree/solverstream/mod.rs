@@ -16,45 +16,45 @@ mod toggle;
 mod unique;
 mod counted;
 
-type PinnedUniversalStream<'e, P> = Pin<Box<UniversalStream<'e, P>>>;
+type PinnedUniversalStream<P> = Pin<Box<UniversalStream<P>>>;
 
 #[pin_project::pin_project(project = UniversalStreamProj)]
 #[non_exhaustive]
-pub(crate) enum UniversalStream<'e, P>
+pub(crate) enum UniversalStream<P>
 where
     P: DataProvider + Clone,
 {
     /// Stream by pageinfo
-    PageInfo(#[pin] pageinfo::PageInfoStream<'e, P>),
+    PageInfo(#[pin] pageinfo::PageInfoStream<P>),
     // set operations
     /// Stream by intersection operation
-    Intersection(#[pin] setop::IntersectionStream<'e, PinnedUniversalStream<'e, P>, PinnedUniversalStream<'e, P>, P>),
+    Intersection(#[pin] setop::IntersectionStream<PinnedUniversalStream<P>, PinnedUniversalStream<P>, P>),
     /// Stream by union operation
-    Union(#[pin] setop::UnionStream<'e, PinnedUniversalStream<'e, P>, PinnedUniversalStream<'e, P>, P>),
+    Union(#[pin] setop::UnionStream<PinnedUniversalStream<P>, PinnedUniversalStream<P>, P>),
     /// Stream by difference operation
-    Difference(#[pin] setop::DifferenceStream<'e, PinnedUniversalStream<'e, P>, PinnedUniversalStream<'e, P>, P>),
+    Difference(#[pin] setop::DifferenceStream<PinnedUniversalStream<P>, PinnedUniversalStream<P>, P>),
     /// Stream by xor operation
-    Xor(#[pin] setop::XorStream<'e, PinnedUniversalStream<'e, P>, PinnedUniversalStream<'e, P>, P>),
+    Xor(#[pin] setop::XorStream<PinnedUniversalStream<P>, PinnedUniversalStream<P>, P>),
     // unary operations
     /// Stream by links operation
-    Links(#[pin]simplequery::LinksStream<'e, PinnedUniversalStream<'e, P>, P>),
+    Links(#[pin]simplequery::LinksStream<PinnedUniversalStream<P>, P>),
     /// Stream by backlinks operation
-    Backlinks(#[pin] simplequery::BacklinksStream<'e, PinnedUniversalStream<'e, P>, P>),
+    Backlinks(#[pin] simplequery::BacklinksStream<PinnedUniversalStream<P>, P>),
     /// Stream by embeds operation
-    Embeds(#[pin] simplequery::EmbedsStream<'e, PinnedUniversalStream<'e, P>, P>),
+    Embeds(#[pin] simplequery::EmbedsStream<PinnedUniversalStream<P>, P>),
     /// Stream by perfix operation
-    Prefix(#[pin] simplequery::PrefixStream<'e, PinnedUniversalStream<'e, P>, P>),
+    Prefix(#[pin] simplequery::PrefixStream<PinnedUniversalStream<P>, P>),
     /// Stream by incat operation
-    CategoryMembers(#[pin] categorymembers::CategoryMembersStream<'e, PinnedUniversalStream<'e, P>, P>),
+    CategoryMembers(#[pin] categorymembers::CategoryMembersStream<PinnedUniversalStream<P>, P>),
     /// Stream by toggle operation
-    Toggle(#[pin] toggle::ToggleStream<'e, PinnedUniversalStream<'e, P>, P>),
+    Toggle(#[pin] toggle::ToggleStream<PinnedUniversalStream<P>, P>),
 }
 
-impl<'e, P> Stream for UniversalStream<'e, P>
+impl<P> Stream for UniversalStream<P>
 where
     P: DataProvider + Clone,
 {
-    type Item = Result<PageInfo, SolverError<'e, TreeSolver<P>>>;
+    type Item = Result<PageInfo, SolverError<TreeSolver<P>>>;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         let this = self.project();
@@ -74,11 +74,11 @@ where
     }
 }
 
-impl<'e, P> UniversalStream<'e, P>
+impl<P> UniversalStream<P>
 where
     P: DataProvider + Clone,
 {
-    pub(crate) fn from_expr(expr: &Expression<'e>, provider: P, default_limit: IntOrInf, warning_sender: UnboundedSender<SolverError<'e, TreeSolver<P>>>) -> Result<Self, SolverError<'e, TreeSolver<P>>> {
+    pub(crate) fn from_expr(expr: &Expression, provider: P, default_limit: IntOrInf, warning_sender: UnboundedSender<SolverError<TreeSolver<P>>>) -> Result<Self, SolverError<TreeSolver<P>>> {
         match expr {
             Expression::Add(inner) => {
                 let st1 = {
@@ -119,7 +119,7 @@ where
             Expression::Paren(inner) => Self::from_expr(&inner.expr, provider, default_limit, warning_sender),
             Expression::Page(inner) => {
                 let pages = inner.vals.iter().map(|lit| lit.val.to_owned()).collect::<Vec<_>>();
-                let st = pageinfo::make_pageinfo_stream(pages, provider, expr.get_span());
+                let st = pageinfo::make_pageinfo_stream(pages, provider, expr.get_span().to_owned());
                 Ok(Self::PageInfo(st))
             },
             Expression::Link(inner) => {
@@ -132,7 +132,7 @@ where
                     Box::pin(st0),
                     provider,
                     config,
-                    expr.get_span(),
+                    expr.get_span().to_owned(),
                     limit.unwrap_or(default_limit),
                     warning_sender,
                 );
@@ -148,7 +148,7 @@ where
                     Box::pin(st0),
                     provider,
                     config,
-                    expr.get_span(),
+                    expr.get_span().to_owned(),
                     limit.unwrap_or(default_limit),
                     warning_sender,
                 );
@@ -164,7 +164,7 @@ where
                     Box::pin(st0),
                     provider,
                     config,
-                    expr.get_span(),
+                    expr.get_span().to_owned(),
                     limit.unwrap_or(default_limit),
                     warning_sender,
                 );
@@ -180,7 +180,7 @@ where
                     Box::pin(st0),
                     provider,
                     config,
-                    expr.get_span(),
+                    expr.get_span().to_owned(),
                     limit.unwrap_or(default_limit),
                     depth.unwrap_or(IntOrInf::Int(0)),
                     warning_sender,
@@ -197,7 +197,7 @@ where
                     Box::pin(st0),
                     provider,
                     config,
-                    expr.get_span(),
+                    expr.get_span().to_owned(),
                     limit.unwrap_or(default_limit),
                     warning_sender,
                 );
@@ -205,7 +205,6 @@ where
             },
             Expression::Toggle(inner) => {
                 let st0 = {
-                    let warning_sender = warning_sender.clone();
                     Self::from_expr(&inner.expr, provider, default_limit, warning_sender)?
                 };
                 let st = toggle::make_toggle_stream(Box::pin(st0));

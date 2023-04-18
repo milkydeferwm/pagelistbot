@@ -12,28 +12,33 @@ use provider::{
 
 macro_rules! simple_query {
     ($vis:vis, $name:ident, $config:ident, $trait_method:ident, $type:ident) => {
-        $vis type $type<'e, St, P>
+        $vis type $type<St, P>
         where
             P: DataProvider + Clone,
-            St: Stream<Item=Result<PageInfo, SolverError<'e, TreeSolver<P>>>>,
-        = impl Stream<Item=Result<PageInfo, SolverError<'e, TreeSolver<P>>>>;
+            St: Stream<Item=Result<PageInfo, SolverError<TreeSolver<P>>>>,
+        = impl Stream<Item=Result<PageInfo, SolverError<TreeSolver<P>>>>;
 
-        $vis fn $name<'e, St, P>(
+        $vis fn $name<St, P>(
             stream: St,
             provider: P,
             config: $config,
-            span: Span<'e>,
+            span: Span,
             limit: IntOrInf,
-            warning_sender: UnboundedSender<SolverError<'e, TreeSolver<P>>>,
-        ) -> $type<'e, St, P>
+            warning_sender: UnboundedSender<SolverError<TreeSolver<P>>>,
+        ) -> $type<St, P>
         where
             P: DataProvider + Clone,
-            St: Stream<Item=Result<PageInfo, SolverError<'e, TreeSolver<P>>>>,
+            St: Stream<Item=Result<PageInfo, SolverError<TreeSolver<P>>>>,
         {
-            let stream = stream.map_ok(
-                move |x| provider.$trait_method(x.get_title().unwrap(), &config)
-                    .map_err(move |e| SolverError::from_solver_error(span, TreeSolverError::Provider(e)))
-            ).try_flatten();
+            let span_2 = span.clone();
+            let stream = stream.map_ok(move |x| {
+                let span = span_2.clone();
+                provider.$trait_method(x.get_title().unwrap(), &config)
+                .map_err(move |e| {
+                    let span = span.clone();
+                    SolverError::from_solver_error(span.clone(), TreeSolverError::Provider(e))
+                })
+            }).try_flatten();
             TryUnique::new(Counted::new(stream, span, limit, warning_sender))
         }
     }

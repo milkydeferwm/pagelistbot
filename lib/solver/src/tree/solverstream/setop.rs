@@ -11,21 +11,21 @@ macro_rules! set_operation {
     ($vis:vis, $name:ident, $op:path) => {
         #[pin_project::pin_project]
         #[must_use = "streams do nothing unless you poll them"]
-        $vis struct $name<'e, St1, St2, P>
+        $vis struct $name<St1, St2, P>
         where
             P: DataProvider + Clone,
-            St1: Stream<Item=Result<PageInfo, SolverError<'e, TreeSolver<P>>>>,
-            St2: Stream<Item=Result<PageInfo, SolverError<'e, TreeSolver<P>>>>,
+            St1: Stream<Item=Result<PageInfo, SolverError<TreeSolver<P>>>>,
+            St2: Stream<Item=Result<PageInfo, SolverError<TreeSolver<P>>>>,
         {
             #[pin] sets: TryJoin<TryCollect<St1, BTreeSet<PageInfo>>, TryCollect<St2, BTreeSet<PageInfo>>>,
             output_set: Option<BTreeSet<PageInfo>>,
         }
 
-        impl<'e, St1, St2, P> $name<'e, St1, St2, P>
+        impl<St1, St2, P> $name<St1, St2, P>
         where
             P: DataProvider + Clone,
-            St1: Stream<Item=Result<PageInfo, SolverError<'e, TreeSolver<P>>>>,
-            St2: Stream<Item=Result<PageInfo, SolverError<'e, TreeSolver<P>>>>,
+            St1: Stream<Item=Result<PageInfo, SolverError<TreeSolver<P>>>>,
+            St2: Stream<Item=Result<PageInfo, SolverError<TreeSolver<P>>>>,
         {
             pub fn new(stream1: St1, stream2: St2) -> Self {
                 let sets = try_join(stream1.try_collect(), stream2.try_collect());
@@ -36,12 +36,12 @@ macro_rules! set_operation {
             }
         }
 
-        impl<'e, St1, St2, P> Debug for $name<'e, St1, St2, P>
+        impl<St1, St2, P> Debug for $name<St1, St2, P>
         where
             P: DataProvider + Clone,
             <P as DataProvider>::Error: Debug,
-            St1: Stream<Item=Result<PageInfo, SolverError<'e, TreeSolver<P>>>> + Debug,
-            St2: Stream<Item=Result<PageInfo, SolverError<'e, TreeSolver<P>>>> + Debug,
+            St1: Stream<Item=Result<PageInfo, SolverError<TreeSolver<P>>>> + Debug,
+            St2: Stream<Item=Result<PageInfo, SolverError<TreeSolver<P>>>> + Debug,
         {
             fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
                 f.debug_struct(&stringify!($name))
@@ -51,13 +51,13 @@ macro_rules! set_operation {
             }
         }
 
-        impl<'e, St1, St2, P> Stream for $name<'e, St1, St2, P>
+        impl<St1, St2, P> Stream for $name<St1, St2, P>
         where
             P: DataProvider + Clone,
-            St1: Stream<Item=Result<PageInfo, SolverError<'e, TreeSolver<P>>>>,
-            St2: Stream<Item=Result<PageInfo, SolverError<'e, TreeSolver<P>>>>,
+            St1: Stream<Item=Result<PageInfo, SolverError<TreeSolver<P>>>>,
+            St2: Stream<Item=Result<PageInfo, SolverError<TreeSolver<P>>>>,
         {
-            type Item = Result<PageInfo, SolverError<'e, TreeSolver<P>>>;
+            type Item = Result<PageInfo, SolverError<TreeSolver<P>>>;
         
             fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
                 let mut this = self.project();

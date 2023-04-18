@@ -37,8 +37,8 @@ where
 {
     type Error = TreeSolverError<<P as DataProvider>::Error>;
 
-    async fn solve<'e>(&self, ast: &Expression<'e>) -> Result<Answer<'e, TreeSolver<P>>, SolverError<'e, TreeSolver<P>>> {
-        let (send, recv) = unbounded::<SolverError<'e, TreeSolver<P>>>();
+    async fn solve(&self, ast: &Expression) -> Result<Answer<TreeSolver<P>>, SolverError<TreeSolver<P>>> {
+        let (send, recv) = unbounded::<SolverError<TreeSolver<P>>>();
         let stream = UniversalStream::from_expr(ast, self.provider.clone(), self.default_limit, send)?;
         // collect!
         let result_titles = {

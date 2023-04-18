@@ -10,29 +10,34 @@ use intorinf::IntOrInf;
 use mwtitle::Title;
 use provider::{PageInfo, DataProvider, CategoryMembersConfig};
 
-pub(crate) type CategoryMembersStream<'e, St, P>
+pub(crate) type CategoryMembersStream<St, P>
 where
     P: DataProvider + Clone,
-    St: Stream<Item=Result<PageInfo, SolverError<'e, TreeSolver<P>>>>,
-= impl Stream<Item=Result<PageInfo, SolverError<'e, TreeSolver<P>>>>;
+    St: Stream<Item=Result<PageInfo, SolverError<TreeSolver<P>>>>,
+= impl Stream<Item=Result<PageInfo, SolverError<TreeSolver<P>>>>;
 
-pub(crate) fn make_categorymembers_stream<'e, St, P>(
+pub(crate) fn make_categorymembers_stream<St, P>(
     stream: St,
     provider: P,
     config: CategoryMembersConfig,
-    span: Span<'e>,
+    span: Span,
     limit: IntOrInf,
     max_depth: IntOrInf,
-    warning_sender: UnboundedSender<SolverError<'e, TreeSolver<P>>>,
-) -> CategoryMembersStream<'e, St, P>
+    warning_sender: UnboundedSender<SolverError<TreeSolver<P>>>,
+) -> CategoryMembersStream<St, P>
 where
     P: DataProvider + Clone,
-    St: Stream<Item=Result<PageInfo, SolverError<'e, TreeSolver<P>>>>,
+    St: Stream<Item=Result<PageInfo, SolverError<TreeSolver<P>>>>,
 {
-    let stream = stream.map_ok(
-        move |x| CategoryMembersStreamOne::new(x.get_title().unwrap().to_owned(), provider.clone(), config.clone(), max_depth)
-            .map_err(move |e| SolverError::from_solver_error(span, TreeSolverError::Provider(e)))
-    ).try_flatten();
+    let span_2 = span.clone();
+    let stream = stream.map_ok(move |x| {
+        let span = span_2.clone();
+        CategoryMembersStreamOne::new(x.get_title().unwrap().to_owned(), provider.clone(), config.clone(), max_depth)
+        .map_err(move |e| {
+            let span = span.clone();
+            SolverError::from_solver_error(span, TreeSolverError::Provider(e))
+        })
+    }).try_flatten();
 
     TryUnique::new(Counted::new(stream, span, limit, warning_sender))
 }

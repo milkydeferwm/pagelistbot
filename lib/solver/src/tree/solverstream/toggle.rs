@@ -5,18 +5,18 @@ use super::TreeSolver;
 use futures::{Stream, TryStreamExt};
 use provider::{PageInfo, DataProvider};
 
-pub(super) type ToggleStream<'e, St, P>
+pub(super) type ToggleStream<St, P>
 where
     P: DataProvider + Clone,
-    St: Stream<Item=Result<PageInfo, SolverError<'e, TreeSolver<P>>>>,
-= impl Stream<Item=Result<PageInfo, SolverError<'e, TreeSolver<P>>>>;
+    St: Stream<Item=Result<PageInfo, SolverError<TreeSolver<P>>>>,
+= impl Stream<Item=Result<PageInfo, SolverError<TreeSolver<P>>>>;
 
-pub(super) fn make_toggle_stream<'e, St, P>(
+pub(super) fn make_toggle_stream<St, P>(
     stream: St,
-) -> ToggleStream<'e, St, P>
+) -> ToggleStream<St, P>
 where
     P: DataProvider + Clone,
-    St: Stream<Item=Result<PageInfo, SolverError<'e, TreeSolver<P>>>>,
+    St: Stream<Item=Result<PageInfo, SolverError<TreeSolver<P>>>>,
 {
     stream.try_filter_map(|mut x| async move {
         x.swap();
