@@ -246,7 +246,7 @@ impl<'p> DataProvider for APIDataProvider<'p> {
     }
 }
 
-#[derive(Debug, Clone, ThisError)]
+#[derive(Debug, ThisError)]
 pub enum APIDataProviderError {
     #[error(transparent)]
     Api(#[from] mwapi::Error),
