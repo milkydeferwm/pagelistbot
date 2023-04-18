@@ -9,12 +9,13 @@ use serde::{Serialize, Deserialize};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "use_serde", derive(Serialize, Deserialize))]
 pub struct Span {
-    offset: usize,
-    length: usize,
+    pub offset: usize,
+    pub length: usize,
 }
 
 impl Span {
     /// Construct a `Span` from raw offset and length value
+    #[inline]
     pub fn new(offset: usize, length: usize) -> Self {
         Self {
             offset,
