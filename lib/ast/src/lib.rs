@@ -6,6 +6,7 @@ extern crate alloc;
 use core::ops::Range;
 
 pub type Span = Range<usize>;
+#[cfg(feature = "parse")]
 pub(crate) type LocatedStr<'a> = nom_locate::LocatedSpan<&'a str>;
 
 pub mod attribute;
