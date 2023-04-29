@@ -258,7 +258,6 @@ where
 mod test {
     use crate::{LocatedStr, IntOrInf};
     use super::{LitString, LitIntOrInf, LitInt};
-    use alloc::borrow::ToOwned;
     use nom::error::Error;
 
     #[test]
@@ -279,10 +278,10 @@ mod test {
         assert_eq!(lit_3.val, gt);
         assert_eq!(lit_4.val, gt);
 
-        assert_eq!(&input_1[lit_1.get_span().to_owned()], input_1);
-        assert_eq!(&input_2[lit_2.get_span().to_owned()], input_1);
-        assert_eq!(&input_3[lit_3.get_span().to_owned()], input_1);
-        assert_eq!(&input_4[lit_4.get_span().to_owned()], input_1);
+        assert_eq!(&input_1[lit_1.get_span().to_range()], input_1);
+        assert_eq!(&input_2[lit_2.get_span().to_range()], input_1);
+        assert_eq!(&input_3[lit_3.get_span().to_range()], input_1);
+        assert_eq!(&input_4[lit_4.get_span().to_range()], input_1);
 
         assert_eq!(lit_1.get_span().start, 0);
         assert_eq!(lit_2.get_span().start, 2);
@@ -307,10 +306,10 @@ mod test {
         assert_eq!(lit_3.val, IntOrInf::from(-1));
         assert_eq!(lit_4.val, IntOrInf::from(10000));
 
-        assert_eq!(&input_1[lit_1.get_span().to_owned()], "0");
-        assert_eq!(&input_2[lit_2.get_span().to_owned()], "100");
-        assert_eq!(&input_3[lit_3.get_span().to_owned()], "-1");
-        assert_eq!(&input_4[lit_4.get_span().to_owned()], "+10000");
+        assert_eq!(&input_1[lit_1.get_span().to_range()], "0");
+        assert_eq!(&input_2[lit_2.get_span().to_range()], "100");
+        assert_eq!(&input_3[lit_3.get_span().to_range()], "-1");
+        assert_eq!(&input_4[lit_4.get_span().to_range()], "+10000");
 
         assert_eq!(lit_1.get_span().start, 0);
         assert_eq!(lit_2.get_span().start, 2);
@@ -335,10 +334,10 @@ mod test {
         assert_eq!(lit_3.val, -1);
         assert_eq!(lit_4.val, 10000);
 
-        assert_eq!(&input_1[lit_1.get_span().to_owned()], "+0");
-        assert_eq!(&input_2[lit_2.get_span().to_owned()], "100");
-        assert_eq!(&input_3[lit_3.get_span().to_owned()], "-1");
-        assert_eq!(&input_4[lit_4.get_span().to_owned()], "10000");
+        assert_eq!(&input_1[lit_1.get_span().to_range()], "+0");
+        assert_eq!(&input_2[lit_2.get_span().to_range()], "100");
+        assert_eq!(&input_3[lit_3.get_span().to_range()], "-1");
+        assert_eq!(&input_4[lit_4.get_span().to_range()], "10000");
 
         assert_eq!(lit_1.get_span().start, 0);
         assert_eq!(lit_2.get_span().start, 2);

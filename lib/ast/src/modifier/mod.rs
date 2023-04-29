@@ -25,7 +25,7 @@ pub enum Modifier {
 }
 
 impl Modifier {
-    pub fn get_span(&self) -> &Span {
+    pub fn get_span(&self) -> Span {
         match self {
             Self::Limit(x) => x.get_span(),
             Self::Resolve(x) => x.get_span(),

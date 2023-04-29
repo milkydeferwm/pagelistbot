@@ -15,7 +15,7 @@ pub enum Attribute {
 }
 
 impl Attribute {
-    pub fn get_span(&self) -> &Span {
+    pub fn get_span(&self) -> Span {
         match self {
             Self::Modifier(x) => x.get_span(),
         }

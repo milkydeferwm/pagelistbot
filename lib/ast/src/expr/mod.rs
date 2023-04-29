@@ -34,7 +34,7 @@ pub enum Expression {
 
 impl Expression {
     /// Get the span for this item.
-    pub fn get_span(&self) -> &Span {
+    pub fn get_span(&self) -> Span {
         match self {
             Self::And(expr) => expr.get_span(),
             Self::Add(expr) => expr.get_span(),

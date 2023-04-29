@@ -193,7 +193,7 @@ no_param_modifier_parse!(ModifierDirect, direct, Direct);
 
 #[cfg(test)]
 mod test {
-    use alloc::{format, vec, vec::Vec, borrow::ToOwned};
+    use alloc::{format, vec, vec::Vec};
     use crate::{LocatedStr, IntOrInf, literal::LitInt};
     use super::{
         Modifier,
@@ -227,13 +227,13 @@ mod test {
         assert!(matches!(mod_onlyredir, Modifier::OnlyRedir(_)));
         assert!(matches!(mod_direct, Modifier::Direct(_)));
 
-        assert_eq!(&input_limit[mod_limit.get_span().to_owned()], "limit(-1)");
-        assert_eq!(&input_resolve[mod_resolve.get_span().to_owned()], "Resolve");
-        assert_eq!(&input_ns[mod_ns.get_span().to_owned()], "nS (-1 ,0, 2004 )");
-        assert_eq!(&input_depth[mod_depth.get_span().to_owned()], "dePth( 5)");
-        assert_eq!(&input_noredir[mod_noredir.get_span().to_owned()], "noredir");
-        assert_eq!(&input_onlyredir[mod_onlyredir.get_span().to_owned()], "ONLYREDIR");
-        assert_eq!(&input_direct[mod_direct.get_span().to_owned()], "DiReCt");
+        assert_eq!(&input_limit[mod_limit.get_span().to_range()], "limit(-1)");
+        assert_eq!(&input_resolve[mod_resolve.get_span().to_range()], "Resolve");
+        assert_eq!(&input_ns[mod_ns.get_span().to_range()], "nS (-1 ,0, 2004 )");
+        assert_eq!(&input_depth[mod_depth.get_span().to_range()], "dePth( 5)");
+        assert_eq!(&input_noredir[mod_noredir.get_span().to_range()], "noredir");
+        assert_eq!(&input_onlyredir[mod_onlyredir.get_span().to_range()], "ONLYREDIR");
+        assert_eq!(&input_direct[mod_direct.get_span().to_range()], "DiReCt");
 
         assert_eq!(mod_limit.get_span().start, 0);
         assert_eq!(mod_resolve.get_span().start, 1);
@@ -270,10 +270,10 @@ mod test {
         assert_eq!(mod_3.commas.len(), 2);
         assert_eq!(mod_4.commas.len(), 2);
 
-        assert_eq!(&input_1[mod_1.get_span().to_owned()], "ns(0)");
-        assert_eq!(&input_2[mod_2.get_span().to_owned()], "Ns (0,1,2)");
-        assert_eq!(&input_3[mod_3.get_span().to_owned()], "nS( 0, 1, )");
-        assert_eq!(&input_4[mod_4.get_span().to_owned()], "NS ( 0 , +1 , -1 )");
+        assert_eq!(&input_1[mod_1.get_span().to_range()], "ns(0)");
+        assert_eq!(&input_2[mod_2.get_span().to_range()], "Ns (0,1,2)");
+        assert_eq!(&input_3[mod_3.get_span().to_range()], "nS( 0, 1, )");
+        assert_eq!(&input_4[mod_4.get_span().to_range()], "NS ( 0 , +1 , -1 )");
 
         assert_eq!(mod_1.get_span().start, 0);
         assert_eq!(mod_2.get_span().start, 2);
@@ -300,15 +300,15 @@ mod test {
                 assert_eq!(mod_3.val.val, IntOrInf::Int(100));
                 assert_eq!(mod_4.val.val, IntOrInf::Inf);
 
-                assert_eq!(&input_1[mod_1.val.get_span().to_owned()], "0");
-                assert_eq!(&input_2[mod_2.val.get_span().to_owned()], "-1");
-                assert_eq!(&input_3[mod_3.val.get_span().to_owned()], "+100");
-                assert_eq!(&input_4[mod_4.val.get_span().to_owned()], "-10000");
+                assert_eq!(&input_1[mod_1.val.get_span().to_range()], "0");
+                assert_eq!(&input_2[mod_2.val.get_span().to_range()], "-1");
+                assert_eq!(&input_3[mod_3.val.get_span().to_range()], "+100");
+                assert_eq!(&input_4[mod_4.val.get_span().to_range()], "-10000");
 
-                assert_eq!(&input_1[mod_1.get_span().to_owned()], &format!("{}(0)", $lit));
-                assert_eq!(&input_2[mod_2.get_span().to_owned()], &format!("{} ( -1)", $lit));
-                assert_eq!(&input_3[mod_3.get_span().to_owned()], &format!("{}(+100 )", $lit));
-                assert_eq!(&input_4[mod_4.get_span().to_owned()], &format!("{} ( -10000 )", $lit));
+                assert_eq!(&input_1[mod_1.get_span().to_range()], &format!("{}(0)", $lit));
+                assert_eq!(&input_2[mod_2.get_span().to_range()], &format!("{} ( -1)", $lit));
+                assert_eq!(&input_3[mod_3.get_span().to_range()], &format!("{}(+100 )", $lit));
+                assert_eq!(&input_4[mod_4.get_span().to_range()], &format!("{} ( -10000 )", $lit));
 
                 assert_eq!(mod_1.get_span().start, 0);
                 assert_eq!(mod_2.get_span().start, 2);
@@ -335,10 +335,10 @@ mod test {
                 let mod_3 = $target::parse::<Error<LocatedStr<'_>>>(&input_3).unwrap();
                 let mod_4 = $target::parse::<Error<LocatedStr<'_>>>(&input_4).unwrap();
 
-                assert_eq!(&input_1[mod_1.get_span().to_owned()], $lit);
-                assert_eq!(&input_2[mod_2.get_span().to_owned()], &format!("{}()", $lit));
-                assert_eq!(&input_3[mod_3.get_span().to_owned()], &format!("{}  ( )", $lit));
-                assert_eq!(&input_4[mod_4.get_span().to_owned()], $lit);
+                assert_eq!(&input_1[mod_1.get_span().to_range()], $lit);
+                assert_eq!(&input_2[mod_2.get_span().to_range()], &format!("{}()", $lit));
+                assert_eq!(&input_3[mod_3.get_span().to_range()], &format!("{}  ( )", $lit));
+                assert_eq!(&input_4[mod_4.get_span().to_range()], $lit);
 
                 assert_eq!(mod_1.get_span().start, 0);
                 assert_eq!(mod_2.get_span().start, 2);
@@ -347,10 +347,10 @@ mod test {
 
                 assert_eq!(mod_1.lparen, None);
                 assert_eq!(mod_1.rparen, None);
-                assert_eq!(&input_2[mod_2.lparen.unwrap().get_span().to_owned()], "(");
-                assert_eq!(&input_2[mod_2.rparen.unwrap().get_span().to_owned()], ")");
-                assert_eq!(&input_3[mod_3.lparen.unwrap().get_span().to_owned()], "(");
-                assert_eq!(&input_3[mod_3.rparen.unwrap().get_span().to_owned()], ")");
+                assert_eq!(&input_2[mod_2.lparen.unwrap().get_span().to_range()], "(");
+                assert_eq!(&input_2[mod_2.rparen.unwrap().get_span().to_range()], ")");
+                assert_eq!(&input_3[mod_3.lparen.unwrap().get_span().to_range()], "(");
+                assert_eq!(&input_3[mod_3.rparen.unwrap().get_span().to_range()], ")");
                 assert_eq!(mod_4.lparen, None);
                 assert_eq!(mod_4.rparen, None);
             }

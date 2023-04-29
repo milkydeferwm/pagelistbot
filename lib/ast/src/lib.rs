@@ -3,9 +3,6 @@
 #![no_std]
 extern crate alloc;
 
-use core::ops::Range;
-
-pub type Span = Range<usize>;
 #[cfg(feature = "parse")]
 pub(crate) type LocatedStr<'a> = nom_locate::LocatedSpan<&'a str>;
 
@@ -13,6 +10,7 @@ pub mod attribute;
 pub mod expr;
 pub mod literal;
 pub mod modifier;
+pub mod span;
 pub mod token;
 #[cfg(feature = "parse")]
 mod parse_util;
@@ -38,6 +36,7 @@ pub use token::{
     Page, Link, LinkTo, Embed, InCat, Prefix, Toggle,
     Limit, Resolve, Ns, Depth, NoRedir, OnlyRedir, Direct,
 };
+pub use span::Span;
 
 pub(crate) use macros::expose_span;
 
@@ -46,8 +45,8 @@ mod macros {
         ($class:ident) => {
             /// Get the span for this item.
             impl $class {
-                pub fn get_span(&self) -> &crate::Span {
-                    &self.span
+                pub fn get_span(&self) -> crate::Span {
+                    self.span
                 }
             }
         }
@@ -58,6 +57,6 @@ mod macros {
 
 #[cfg(feature = "parse")]
 #[inline(always)]
-fn make_range<T>(start: T, end: T) -> Range<T> {
-    Range { start, end }
+fn make_range<T>(start: T, end: T) -> Span<T> {
+    Span { start, end }
 }

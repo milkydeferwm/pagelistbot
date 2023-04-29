@@ -364,7 +364,7 @@ impl ExpressionToggle {
 
 #[cfg(test)]
 mod test {
-    use alloc::{format, borrow::ToOwned};
+    use alloc::format;
     use crate::LocatedStr;
     use super::{
         Expression,
@@ -422,10 +422,10 @@ mod test {
         assert_eq!(exp_3.vals.len(), 2);
         assert_eq!(exp_4.vals.len(), 1);
 
-        assert_eq!(&input_1[exp_1.get_span().to_owned()], "\"Main Page\"");
-        assert_eq!(&input_2[exp_2.get_span().to_owned()], "\"Hello\" , \"World\"");
-        assert_eq!(&input_3[exp_3.get_span().to_owned()], "page ( \"Test\",\"page\" )");
-        assert_eq!(&input_4[exp_4.get_span().to_owned()], "Page(\"Sakura\")");
+        assert_eq!(&input_1[exp_1.get_span().to_range()], "\"Main Page\"");
+        assert_eq!(&input_2[exp_2.get_span().to_range()], "\"Hello\" , \"World\"");
+        assert_eq!(&input_3[exp_3.get_span().to_range()], "page ( \"Test\",\"page\" )");
+        assert_eq!(&input_4[exp_4.get_span().to_range()], "Page(\"Sakura\")");
 
         assert_eq!(exp_1.get_span().start, 0);
         assert_eq!(exp_2.get_span().start, 1);
@@ -452,10 +452,10 @@ mod test {
                 assert_eq!(exp_3.attributes.len(), 2);
                 assert_eq!(exp_4.attributes.len(), 3);
 
-                assert_eq!(&input_1[exp_1.get_span().to_owned()], format!("{}(\"Example\")", $lit));
-                assert_eq!(&input_2[exp_2.get_span().to_owned()], format!("{} (\"Example\") . resolve ( )", $lit));
-                assert_eq!(&input_3[exp_3.get_span().to_owned()], format!("{}( \"Example\" ). noredir .onlyredir", $lit));
-                assert_eq!(&input_4[exp_4.get_span().to_owned()], format!("{} ( \"Example\" ) . Ns ( 0 , 1, 2 ) . limit ( 100 ) . onlyredir", $lit));
+                assert_eq!(&input_1[exp_1.get_span().to_range()], format!("{}(\"Example\")", $lit));
+                assert_eq!(&input_2[exp_2.get_span().to_range()], format!("{} (\"Example\") . resolve ( )", $lit));
+                assert_eq!(&input_3[exp_3.get_span().to_range()], format!("{}( \"Example\" ). noredir .onlyredir", $lit));
+                assert_eq!(&input_4[exp_4.get_span().to_range()], format!("{} ( \"Example\" ) . Ns ( 0 , 1, 2 ) . limit ( 100 ) . onlyredir", $lit));
 
                 assert_eq!(exp_1.get_span().start, 0);
                 assert_eq!(exp_2.get_span().start, 1);
@@ -483,10 +483,10 @@ mod test {
         let exp_3 = ExpressionToggle::parse::<Error<LocatedStr<'_>>>(input_3).unwrap();
         let exp_4 = ExpressionToggle::parse::<Error<LocatedStr<'_>>>(input_4).unwrap();
 
-        assert_eq!(&input_1[exp_1.get_span().to_owned()], "toggle(\"Main Page\")");
-        assert_eq!(&input_2[exp_2.get_span().to_owned()], "toggle ( \"Hello\" , \"World\" )");
-        assert_eq!(&input_3[exp_3.get_span().to_owned()], "toggle ( \"Test\",\"page\" )");
-        assert_eq!(&input_4[exp_4.get_span().to_owned()], "toggle(linkto(\"Sakura\"))");
+        assert_eq!(&input_1[exp_1.get_span().to_range()], "toggle(\"Main Page\")");
+        assert_eq!(&input_2[exp_2.get_span().to_range()], "toggle ( \"Hello\" , \"World\" )");
+        assert_eq!(&input_3[exp_3.get_span().to_range()], "toggle ( \"Test\",\"page\" )");
+        assert_eq!(&input_4[exp_4.get_span().to_range()], "toggle(linkto(\"Sakura\"))");
 
         assert_eq!(exp_1.get_span().start, 0);
         assert_eq!(exp_2.get_span().start, 1);

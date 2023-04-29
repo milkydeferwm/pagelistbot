@@ -90,7 +90,6 @@ mod test {
         Attribute,
         AttributeModifier,
     };
-    use alloc::borrow::ToOwned;
     use nom::error::Error;
 
     #[test]
@@ -101,7 +100,7 @@ mod test {
 
         assert!(matches!(attr_1, Attribute::Modifier(_)));
 
-        assert_eq!(&input_1[attr_1.get_span().to_owned()], ".direct");
+        assert_eq!(&input_1[attr_1.get_span().to_range()], ".direct");
 
         assert_eq!(attr_1.get_span().start, 0);
     }
@@ -123,15 +122,15 @@ mod test {
         assert!(matches!(attr_3.modifier, Modifier::Limit(_)));
         assert!(matches!(attr_4.modifier, Modifier::NoRedir(_)));
 
-        assert_eq!(&input_1[attr_1.dot.get_span().to_owned()], ".");
-        assert_eq!(&input_2[attr_2.dot.get_span().to_owned()], ".");
-        assert_eq!(&input_3[attr_3.dot.get_span().to_owned()], ".");
-        assert_eq!(&input_4[attr_4.dot.get_span().to_owned()], ".");
+        assert_eq!(&input_1[attr_1.dot.get_span().to_range()], ".");
+        assert_eq!(&input_2[attr_2.dot.get_span().to_range()], ".");
+        assert_eq!(&input_3[attr_3.dot.get_span().to_range()], ".");
+        assert_eq!(&input_4[attr_4.dot.get_span().to_range()], ".");
 
-        assert_eq!(&input_1[attr_1.get_span().to_owned()], ".direct");
-        assert_eq!(&input_2[attr_2.get_span().to_owned()], ". ns (0,1,)");
-        assert_eq!(&input_3[attr_3.get_span().to_owned()], ".limit( 100 )");
-        assert_eq!(&input_4[attr_4.get_span().to_owned()], ". noredir");
+        assert_eq!(&input_1[attr_1.get_span().to_range()], ".direct");
+        assert_eq!(&input_2[attr_2.get_span().to_range()], ". ns (0,1,)");
+        assert_eq!(&input_3[attr_3.get_span().to_range()], ".limit( 100 )");
+        assert_eq!(&input_4[attr_4.get_span().to_range()], ". noredir");
 
         assert_eq!(attr_1.get_span().start, 0);
         assert_eq!(attr_2.get_span().start, 1);

@@ -68,7 +68,7 @@ mod test {
         ($test:ident, $token:ident, $lit:literal) => {
             #[test]
             fn $test() {
-                use alloc::{borrow::ToOwned, format};
+                use alloc::format;
                 use crate::LocatedStr;
                 use super::$token;
                 use nom::error::Error;
@@ -87,10 +87,10 @@ mod test {
                 let tok_3 = $token::parse::<Error<LocatedStr<'_>>>(&input_3).unwrap();
                 let tok_4 = $token::parse::<Error<LocatedStr<'_>>>(&input_4).unwrap();
 
-                assert_eq!(&input_1[tok_1.get_span().to_owned()], gt);
-                assert_eq!(&input_2[tok_2.get_span().to_owned()], &upper);
-                assert_eq!(&input_3[tok_3.get_span().to_owned()], &lower);
-                assert_eq!(&input_4[tok_4.get_span().to_owned()], gt);
+                assert_eq!(&input_1[tok_1.get_span().to_range()], gt);
+                assert_eq!(&input_2[tok_2.get_span().to_range()], &upper);
+                assert_eq!(&input_3[tok_3.get_span().to_range()], &lower);
+                assert_eq!(&input_4[tok_4.get_span().to_range()], gt);
 
                 assert_eq!(tok_1.get_span().start, 0);
                 assert_eq!(tok_2.get_span().start, 2);
