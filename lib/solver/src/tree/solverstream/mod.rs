@@ -119,7 +119,7 @@ where
             Expression::Paren(inner) => Self::from_expr(&inner.expr, provider, default_limit, warning_sender),
             Expression::Page(inner) => {
                 let pages = inner.vals.iter().map(|lit| lit.val.to_owned()).collect::<Vec<_>>();
-                let st = pageinfo::make_pageinfo_stream(pages, provider, expr.get_span().to_owned());
+                let st = pageinfo::make_pageinfo_stream(pages, provider, expr.get_span());
                 Ok(Self::PageInfo(st))
             },
             Expression::Link(inner) => {
@@ -132,7 +132,7 @@ where
                     Box::pin(st0),
                     provider,
                     config,
-                    expr.get_span().to_owned(),
+                    expr.get_span(),
                     limit.unwrap_or(default_limit),
                     warning_sender,
                 );
@@ -148,7 +148,7 @@ where
                     Box::pin(st0),
                     provider,
                     config,
-                    expr.get_span().to_owned(),
+                    expr.get_span(),
                     limit.unwrap_or(default_limit),
                     warning_sender,
                 );
@@ -164,7 +164,7 @@ where
                     Box::pin(st0),
                     provider,
                     config,
-                    expr.get_span().to_owned(),
+                    expr.get_span(),
                     limit.unwrap_or(default_limit),
                     warning_sender,
                 );
@@ -180,7 +180,7 @@ where
                     Box::pin(st0),
                     provider,
                     config,
-                    expr.get_span().to_owned(),
+                    expr.get_span(),
                     limit.unwrap_or(default_limit),
                     depth.unwrap_or(IntOrInf::Int(0)),
                     warning_sender,
@@ -197,7 +197,7 @@ where
                     Box::pin(st0),
                     provider,
                     config,
-                    expr.get_span().to_owned(),
+                    expr.get_span(),
                     limit.unwrap_or(default_limit),
                     warning_sender,
                 );

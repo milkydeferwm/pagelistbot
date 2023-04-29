@@ -90,7 +90,7 @@ where
                     } else {
                         *this.finish = true;
                         // send warning
-                        let warning = SolverError::from_solver_error(this.span.clone(), TreeSolverError::ResultLimitExceeded(*this.limit));
+                        let warning = SolverError::from_solver_error(*this.span, TreeSolverError::ResultLimitExceeded(*this.limit));
                         this.warning_sender.unbounded_send(warning).expect("cannot send warning");
                         None
                     }

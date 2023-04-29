@@ -21,6 +21,6 @@ where
 {
     TryUnique::new(
         provider.get_page_info_from_raw(titles)
-        .map_err(move |e| SolverError::from_solver_error(span.clone(), TreeSolverError::Provider(e)))
+        .map_err(move |e| SolverError::from_solver_error(span, TreeSolverError::Provider(e)))
     )
 }

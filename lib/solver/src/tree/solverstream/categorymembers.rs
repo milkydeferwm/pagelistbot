@@ -29,12 +29,9 @@ where
     P: DataProvider + Clone,
     St: Stream<Item=Result<PageInfo, SolverError<TreeSolver<P>>>>,
 {
-    let span_2 = span.clone();
     let stream = stream.map_ok(move |x| {
-        let span = span_2.clone();
         CategoryMembersStreamOne::new(x.get_title().unwrap().to_owned(), provider.clone(), config.clone(), max_depth)
         .map_err(move |e| {
-            let span = span.clone();
             SolverError::from_solver_error(span, TreeSolverError::Provider(e))
         })
     }).try_flatten();

@@ -60,7 +60,7 @@ where
 {
     fn clone(&self) -> Self {
         Self {
-            span: self.span.clone(),
+            span: self.span,
             inner: self.inner.clone(),
         }
     }

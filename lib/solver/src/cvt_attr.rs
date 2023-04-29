@@ -48,31 +48,31 @@ where
             match &attr.modifier {
                 Modifier::Limit(item) => {
                     if let Some(span) = resolved_at.get("limit") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else {
-                        resolved_at.insert("limit", item.get_span().to_owned());
+                        resolved_at.insert("limit", item.get_span());
                         limit = Some(item.val.val);
                     }
                 },
                 Modifier::Resolve(item) => {
                     if let Some(span) = resolved_at.get("resolve") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else {
-                        resolved_at.insert("resolve", item.get_span().to_owned());
+                        resolved_at.insert("resolve", item.get_span());
                         config.resolve_redirects = true;
                     }
                 },
                 Modifier::Ns(item) => {
                     if let Some(span) = resolved_at.get("ns") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else {
-                        resolved_at.insert("ns", item.get_span().to_owned());
+                        resolved_at.insert("ns", item.get_span());
                         let namespace = item.vals.iter().map(|lit| lit.val).collect::<HashSet<_>>();
                         config.namespace = Some(namespace);
                     }
                 },
                 _ => {
-                    return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Invalid));
+                    return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Invalid));
                 },
             }
         }
@@ -95,59 +95,59 @@ where
             match &attr.modifier {
                 Modifier::Limit(item) => {
                     if let Some(span) = resolved_at.get("limit") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else {
-                        resolved_at.insert("limit", item.get_span().to_owned());
+                        resolved_at.insert("limit", item.get_span());
                         limit = Some(item.val.val);
                     }
                 },
                 Modifier::Resolve(item) => {
                     if let Some(span) = resolved_at.get("resolve") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else {
-                        resolved_at.insert("resolve", item.get_span().to_owned());
+                        resolved_at.insert("resolve", item.get_span());
                         config.resolve_redirects = true;
                     }
                 },
                 Modifier::Ns(item) => {
                     if let Some(span) = resolved_at.get("ns") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else {
-                        resolved_at.insert("ns", item.get_span().to_owned());
+                        resolved_at.insert("ns", item.get_span());
                         let namespace = item.vals.iter().map(|lit| lit.val).collect::<HashSet<_>>();
                         config.namespace = Some(namespace);
                     }
                 },
                 Modifier::NoRedir(item) => {
                     if let Some(span) = resolved_at.get("noredir") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else if let Some(span) = resolved_at.get("onlyredir") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Conflict(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Conflict(span.to_owned())));
                     } else {
-                        resolved_at.insert("noredir", item.get_span().to_owned());
+                        resolved_at.insert("noredir", item.get_span());
                         config.filter_redirects = Some(FilterRedirect::NoRedirect);
                     }
                 },
                 Modifier::OnlyRedir(item) => {
                     if let Some(span) = resolved_at.get("onlyredir") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else if let Some(span) = resolved_at.get("noredir") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Conflict(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Conflict(span.to_owned())));
                     } else {
-                        resolved_at.insert("onlyredir", item.get_span().to_owned());
+                        resolved_at.insert("onlyredir", item.get_span());
                         config.filter_redirects = Some(FilterRedirect::OnlyRedirect);
                     }
                 },
                 Modifier::Direct(item) => {
                     if let Some(span) = resolved_at.get("direct") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else {
-                        resolved_at.insert("direct", item.get_span().to_owned());
+                        resolved_at.insert("direct", item.get_span());
                         config.direct = true;
                     }
                 },
                 _ => {
-                    return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Invalid));
+                    return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Invalid));
                 },
             }
         }
@@ -170,51 +170,51 @@ where
             match &attr.modifier {
                 Modifier::Limit(item) => {
                     if let Some(span) = resolved_at.get("limit") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else {
-                        resolved_at.insert("limit", item.get_span().to_owned());
+                        resolved_at.insert("limit", item.get_span());
                         limit = Some(item.val.val);
                     }
                 },
                 Modifier::Resolve(item) => {
                     if let Some(span) = resolved_at.get("resolve") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else {
-                        resolved_at.insert("resolve", item.get_span().to_owned());
+                        resolved_at.insert("resolve", item.get_span());
                         config.resolve_redirects = true;
                     }
                 },
                 Modifier::Ns(item) => {
                     if let Some(span) = resolved_at.get("ns") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else {
-                        resolved_at.insert("ns", item.get_span().to_owned());
+                        resolved_at.insert("ns", item.get_span());
                         let namespace = item.vals.iter().map(|lit| lit.val).collect::<HashSet<_>>();
                         config.namespace = Some(namespace);
                     }
                 },
                 Modifier::NoRedir(item) => {
                     if let Some(span) = resolved_at.get("noredir") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else if let Some(span) = resolved_at.get("onlyredir") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Conflict(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Conflict(span.to_owned())));
                     } else {
-                        resolved_at.insert("noredir", item.get_span().to_owned());
+                        resolved_at.insert("noredir", item.get_span());
                         config.filter_redirects = Some(FilterRedirect::NoRedirect);
                     }
                 },
                 Modifier::OnlyRedir(item) => {
                     if let Some(span) = resolved_at.get("onlyredir") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else if let Some(span) = resolved_at.get("noredir") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Conflict(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Conflict(span.to_owned())));
                     } else {
-                        resolved_at.insert("onlyredir", item.get_span().to_owned());
+                        resolved_at.insert("onlyredir", item.get_span());
                         config.filter_redirects = Some(FilterRedirect::OnlyRedirect);
                     }
                 },
                 _ => {
-                    return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Invalid));
+                    return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Invalid));
                 },
             }
         }
@@ -238,39 +238,39 @@ where
             match &attr.modifier {
                 Modifier::Limit(item) => {
                     if let Some(span) = resolved_at.get("limit") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else {
-                        resolved_at.insert("limit", item.get_span().to_owned());
+                        resolved_at.insert("limit", item.get_span());
                         limit = Some(item.val.val);
                     }
                 },
                 Modifier::Resolve(item) => {
                     if let Some(span) = resolved_at.get("resolve") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else {
-                        resolved_at.insert("resolve", item.get_span().to_owned());
+                        resolved_at.insert("resolve", item.get_span());
                         config.resolve_redirects = true;
                     }
                 },
                 Modifier::Ns(item) => {
                     if let Some(span) = resolved_at.get("ns") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else {
-                        resolved_at.insert("ns", item.get_span().to_owned());
+                        resolved_at.insert("ns", item.get_span());
                         let namespace = item.vals.iter().map(|lit| lit.val).collect::<HashSet<_>>();
                         config.namespace = Some(namespace);
                     }
                 },
                 Modifier::Depth(item) => {
                     if let Some(span) = resolved_at.get("depth") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else {
-                        resolved_at.insert("depth", item.get_span().to_owned());
+                        resolved_at.insert("depth", item.get_span());
                         depth = Some(item.val.val);
                     }
                 },
                 _ => {
-                    return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Invalid));
+                    return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Invalid));
                 },
             }
         }
@@ -293,34 +293,34 @@ where
             match &attr.modifier {
                 Modifier::Limit(item) => {
                     if let Some(span) = resolved_at.get("limit") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else {
-                        resolved_at.insert("limit", item.get_span().to_owned());
+                        resolved_at.insert("limit", item.get_span());
                         limit = Some(item.val.val);
                     }
                 },
                 Modifier::NoRedir(item) => {
                     if let Some(span) = resolved_at.get("noredir") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else if let Some(span) = resolved_at.get("onlyredir") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Conflict(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Conflict(span.to_owned())));
                     } else {
-                        resolved_at.insert("noredir", item.get_span().to_owned());
+                        resolved_at.insert("noredir", item.get_span());
                         config.filter_redirects = Some(FilterRedirect::NoRedirect);
                     }
                 },
                 Modifier::OnlyRedir(item) => {
                     if let Some(span) = resolved_at.get("onlyredir") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Duplicate(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Duplicate(span.to_owned())));
                     } else if let Some(span) = resolved_at.get("noredir") {
-                        return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Conflict(span.to_owned())));
+                        return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Conflict(span.to_owned())));
                     } else {
-                        resolved_at.insert("onlyredir", item.get_span().to_owned());
+                        resolved_at.insert("onlyredir", item.get_span());
                         config.filter_redirects = Some(FilterRedirect::OnlyRedirect);
                     }
                 },
                 _ => {
-                    return Err(SolverError::from_attribute_error(attr.get_span().to_owned(), AttributeError::Invalid));
+                    return Err(SolverError::from_attribute_error(attr.get_span(), AttributeError::Invalid));
                 },
             }
         }
