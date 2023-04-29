@@ -1,6 +1,7 @@
 //! Modifier expressions.
 
 use alloc::vec::Vec;
+use core::hash::{Hash, Hasher};
 use crate::{Span, expose_span};
 use crate::literal::{LitIntOrInf, LitInt};
 use crate::token::{
@@ -40,7 +41,7 @@ impl Modifier {
 
 /// Modifier expression that limit the query count.
 /// `limit(xx)`
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ModifierLimit {
     span: Span,
     pub limit: Limit,
@@ -49,9 +50,18 @@ pub struct ModifierLimit {
     pub rparen: RightParen,
 }
 
+impl Hash for ModifierLimit {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.limit.hash(state);
+        self.lparen.hash(state);
+        self.val.hash(state);
+        self.rparen.hash(state);
+    }
+}
+
 /// Modifier expression that defines whether to resolve redirects.
 /// `resolve` or `resolve()`
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ModifierResolve {
     span: Span,
     pub resolve: Resolve,
@@ -59,9 +69,15 @@ pub struct ModifierResolve {
     pub rparen: Option<RightParen>,
 }
 
+impl Hash for ModifierResolve {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.resolve.hash(state);
+    }
+}
+
 /// Modifier expression that contrains the results inside certain namespaces.
 /// `ns(xx,xx)`
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ModifierNs {
     span: Span,
     pub ns: Ns,
@@ -71,9 +87,19 @@ pub struct ModifierNs {
     pub rparen: RightParen,
 }
 
+impl Hash for ModifierNs {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.ns.hash(state);
+        self.lparen.hash(state);
+        self.vals.hash(state);
+        self.commas.hash(state);
+        self.rparen.hash(state);
+    }
+}
+
 /// Modifier expression that tells incat operation how many layers to search.
 /// `depth(xx)`
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ModifierDepth {
     span: Span,
     pub depth: Depth,
@@ -82,9 +108,18 @@ pub struct ModifierDepth {
     pub rparen: RightParen,
 }
 
+impl Hash for ModifierDepth {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.depth.hash(state);
+        self.lparen.hash(state);
+        self.val.hash(state);
+        self.rparen.hash(state);
+    }
+}
+
 /// Modifier expression that tells backlinks operation to filter out redirects.
 /// `noredir` or `noredir()`
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ModifierNoRedir {
     span: Span,
     pub noredir: NoRedir,
@@ -92,9 +127,15 @@ pub struct ModifierNoRedir {
     pub rparen: Option<RightParen>,
 }
 
+impl Hash for ModifierNoRedir {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.noredir.hash(state);
+    }
+}
+
 /// Modifier expression that tells backlinks operation to show only redirects.
 /// `onlyredir` or `onlyredir()`
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ModifierOnlyRedir {
     span: Span,
     pub onlyredir: OnlyRedir,
@@ -102,14 +143,26 @@ pub struct ModifierOnlyRedir {
     pub rparen: Option<RightParen>,
 }
 
+impl Hash for ModifierOnlyRedir {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.onlyredir.hash(state);
+    }
+}
+
 /// Modifier expression that tells backlinks operation only to show direct backlinks.
 /// `direct` or `direct()`
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ModifierDirect {
     span: Span,
     pub direct: Direct,
     pub lparen: Option<LeftParen>,
     pub rparen: Option<RightParen>,
+}
+
+impl Hash for ModifierDirect {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.direct.hash(state);
+    }
 }
 
 expose_span!(ModifierLimit);

@@ -1,6 +1,7 @@
 //! Modifier attributes and filter attributes.
 //! Currently only modifier attributes are implemented.
 
+use core::hash::{Hash, Hasher};
 use crate::{Span, expose_span};
 use crate::token::Dot;
 use crate::modifier::Modifier;
@@ -23,11 +24,18 @@ impl Attribute {
 }
 
 /// Attribute for modifiers.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AttributeModifier {
     span: Span,
     pub dot: Dot,
     pub modifier: Modifier,
+}
+
+impl Hash for AttributeModifier {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.dot.hash(state);
+        self.modifier.hash(state);
+    }
 }
 
 expose_span!(AttributeModifier);
