@@ -1,0 +1,17 @@
+[package]
+name = "pagelistbot-json-exec"
+version = "4.1.0"
+edition = "2021"
+repository = "https://github.com/milkydeferwm/pagelistbot"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "4.1.8", features = [ "cargo", "derive" ] }
+tokio = { version = "1.22", features = [ "macros", "rt", "rt-multi-thread", "signal" ] }
+
+[dev-dependencies]
+
+[[bin]]
+name = "exec_json"
+path = "src/main.rs"
