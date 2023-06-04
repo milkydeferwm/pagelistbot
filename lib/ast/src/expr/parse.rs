@@ -2,7 +2,7 @@
 
 #![cfg(feature = "parse")]
 
-use alloc::sync::Arc;
+use alloc::boxed::Box;
 use core::num::ParseIntError;
 use crate::{
     LocatedStr,
@@ -74,15 +74,15 @@ impl Expression {
                 match lv1op {
                     Level1Operator::Add(add) => Self::Add(ExpressionAdd {
                         span: make_range(pos_start.location_offset(), pos_end.location_offset()),
-                        expr1: Arc::new(expr1),
+                        expr1: Box::new(expr1),
                         add,
-                        expr2: Arc::new(expr2),
+                        expr2: Box::new(expr2),
                     }),
                     Level1Operator::Sub(sub) => Self::Sub(ExpressionSub {
                         span: make_range(pos_start.location_offset(), pos_end.location_offset()),
-                        expr1: Arc::new(expr1),
+                        expr1: Box::new(expr1),
                         sub,
-                        expr2: Arc::new(expr2),
+                        expr2: Box::new(expr2),
                     }),
                 }
             }
@@ -110,9 +110,9 @@ impl Expression {
             |expr1, (caret, expr2, pos_end)| {
                 Self::Xor(ExpressionXor {
                     span: make_range(pos_start.location_offset(), pos_end.location_offset()),
-                    expr1: Arc::new(expr1),
+                    expr1: Box::new(expr1),
                     xor: caret,
-                    expr2: Arc::new(expr2),
+                    expr2: Box::new(expr2),
                 })
             }
         );
@@ -139,9 +139,9 @@ impl Expression {
             |expr1, (and, expr2, pos_end)| {
                 Self::And(ExpressionAnd {
                     span: make_range(pos_start.location_offset(), pos_end.location_offset()),
-                    expr1: Arc::new(expr1),
+                    expr1: Box::new(expr1),
                     and,
-                    expr2: Arc::new(expr2),
+                    expr2: Box::new(expr2),
                 })
             }
         );
@@ -194,7 +194,7 @@ impl ExpressionParen {
         let expression_paren = Self {
             span: make_range(pos_start.location_offset(), pos_end.location_offset()),
             lparen,
-            expr: Arc::new(expr),
+            expr: Box::new(expr),
             rparen,
         };
         Ok((residual, expression_paren))
@@ -310,7 +310,7 @@ macro_rules! unary_operation_make_parser {
                     span: make_range(pos_start.location_offset(), pos_end.location_offset()),
                     $token_field,
                     lparen,
-                    expr: Arc::new(expr),
+                    expr: Box::new(expr),
                     rparen,
                     attributes,
                 };
@@ -355,7 +355,7 @@ impl ExpressionToggle {
             span: make_range(pos_start.location_offset(), pos_end.location_offset()),
             toggle,
             lparen,
-            expr: Arc::new(expr),
+            expr: Box::new(expr),
             rparen,
         };
         Ok((residual, expression_toggle))

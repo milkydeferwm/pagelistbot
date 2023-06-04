@@ -1,7 +1,7 @@
 //! Expressions.
 
 use alloc::{
-    sync::Arc,
+    boxed::Box,
     vec::Vec,
 };
 use core::hash::{Hash, Hasher};
@@ -58,9 +58,9 @@ impl Expression {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExpressionAnd {
     span: Span,
-    pub expr1: Arc<Expression>,
+    pub expr1: Box<Expression>,
     pub and: And,
-    pub expr2: Arc<Expression>,
+    pub expr2: Box<Expression>,
 }
 
 impl Hash for ExpressionAnd {
@@ -76,9 +76,9 @@ impl Hash for ExpressionAnd {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExpressionAdd {
     span: Span,
-    pub expr1: Arc<Expression>,
+    pub expr1: Box<Expression>,
     pub add: Add,
-    pub expr2: Arc<Expression>,
+    pub expr2: Box<Expression>,
 }
 
 impl Hash for ExpressionAdd {
@@ -94,9 +94,9 @@ impl Hash for ExpressionAdd {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExpressionSub {
     span: Span,
-    pub expr1: Arc<Expression>,
+    pub expr1: Box<Expression>,
     pub sub: Sub,
-    pub expr2: Arc<Expression>,
+    pub expr2: Box<Expression>,
 }
 
 impl Hash for ExpressionSub {
@@ -112,9 +112,9 @@ impl Hash for ExpressionSub {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExpressionXor {
     span: Span,
-    pub expr1: Arc<Expression>,
+    pub expr1: Box<Expression>,
     pub xor: Caret,
-    pub expr2: Arc<Expression>,
+    pub expr2: Box<Expression>,
 }
 
 impl Hash for ExpressionXor {
@@ -129,7 +129,7 @@ impl Hash for ExpressionXor {
 pub struct ExpressionParen {
     span: Span,
     pub lparen: LeftParen,
-    pub expr: Arc<Expression>,
+    pub expr: Box<Expression>,
     pub rparen: RightParen,
 }
 
@@ -168,7 +168,7 @@ pub struct ExpressionLink {
     span: Span,
     pub link: Link,
     pub lparen: LeftParen,
-    pub expr: Arc<Expression>,
+    pub expr: Box<Expression>,
     pub rparen: RightParen,
     pub attributes: Vec<Attribute>,
 }
@@ -190,7 +190,7 @@ pub struct ExpressionLinkTo {
     span: Span,
     pub linkto: LinkTo,
     pub lparen: LeftParen,
-    pub expr: Arc<Expression>,
+    pub expr: Box<Expression>,
     pub rparen: RightParen,
     pub attributes: Vec<Attribute>,
 }
@@ -212,7 +212,7 @@ pub struct ExpressionEmbed {
     span: Span,
     pub embed: Embed,
     pub lparen: LeftParen,
-    pub expr: Arc<Expression>,
+    pub expr: Box<Expression>,
     pub rparen: RightParen,
     pub attributes: Vec<Attribute>,
 }
@@ -234,7 +234,7 @@ pub struct ExpressionInCat {
     span: Span,
     pub incat: InCat,
     pub lparen: LeftParen,
-    pub expr: Arc<Expression>,
+    pub expr: Box<Expression>,
     pub rparen: RightParen,
     pub attributes: Vec<Attribute>,
 }
@@ -256,7 +256,7 @@ pub struct ExpressionPrefix {
     span: Span,
     pub prefix: Prefix,
     pub lparen: LeftParen,
-    pub expr: Arc<Expression>,
+    pub expr: Box<Expression>,
     pub rparen: RightParen,
     pub attributes: Vec<Attribute>,
 }
@@ -278,7 +278,7 @@ pub struct ExpressionToggle {
     span: Span,
     pub toggle: Toggle,
     pub lparen: LeftParen,
-    pub expr: Arc<Expression>,
+    pub expr: Box<Expression>,
     pub rparen: RightParen,
 }
 
