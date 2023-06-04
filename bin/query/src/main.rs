@@ -1,25 +1,28 @@
 //! Page list bot query execution core.
 
-#![feature(is_some_and)]
 #![feature(type_alias_impl_trait)]
 #![feature(unix_sigpipe)]
 
 mod api;
 use api::APIDataProvider;
+mod builder;
+use builder::get_provider;
+mod writer;
+use futures::StreamExt;
+use writer::*;
 
 use ast::Expression;
 use clap::Parser;
+use core::time::Duration;
 use intorinf::IntOrInf;
-use mwapi::{Assert, ErrorFormat, Client};
-use mwtitle::{SiteInfoResponse, TitleCodec};
 use nom::error::VerboseError;
-use serde::Deserialize;
-use solver::{Solver, tree::TreeSolver};
+use owo_colors::OwoColorize;
+use solver::*;
 use std::{
-    collections::{HashMap, HashSet},
-    process::ExitCode,
+    io::{stdout, BufWriter, IsTerminal, Write},
+    process::ExitCode, 
 };
-use tokio::time::{Duration, timeout};
+use trio_result::TrioResult;
 
 #[derive(Debug, Parser)]
 pub struct Arg {
@@ -41,131 +44,101 @@ pub struct Arg {
     /// Default maximum query result limit, if it is not overridden by `.limit()` expression modifier.
     #[arg(short, long, default_value_t = 10000)]
     limit: i32,
-}
-
-#[allow(dead_code)]
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
-struct UserInfoResponse {
-    #[serde(default)]
-    pub batchcomplete: bool,
-    #[serde(rename = "continue")]
-    #[serde(default)]
-    pub continue_: HashMap<String, String>,
-    pub query: UserInfoResponseBody,
-}
-
-#[allow(dead_code)]
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
-struct UserInfoResponseBody {
-    pub userinfo: UserInfo,
-}
-
-#[allow(dead_code)]
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
-struct UserInfo {
-    pub id: u32,
-    pub name: String,
-    #[serde(default)]
-    pub anon: bool,
-    pub rights: HashSet<String>,
+    /// Output in JSON format, not in human-readable format.
+    #[arg(long)]
+    json: bool,
 }
 
 const FAILURE_PARSE: u8 = 100;
 const FAILURE_INIT: u8 = 101;
-const FAILURE_QUERY: u8 = 102;
-const FAILURE_TIMEOUT: u8 = 103;
+const FAILURE_SEMANTIC: u8 = 102;
+const FAILURE_QUERY: u8 = 103;
 
 #[tokio::main]
 #[unix_sigpipe = "sig_dfl"]
 async fn main() -> ExitCode {
     let arg = Arg::parse();
+    let stdout = stdout().lock();
+    let color = stdout.is_terminal();
+    let mut writer = BufWriter::new(stdout);
+
     // parse the expression first. only continue if parse successful.
     let expr = match Expression::parse::<VerboseError<_>>(&arg.query) {
         Ok(expr) => expr,
         Err(e) => {
-            eprintln!("{e}");
+            write_err(e, writer.get_mut(), color, arg.json).unwrap();
             return ExitCode::from(FAILURE_PARSE);
         }
     };
-    // attempt to connect to website.
-    let (api, title_codec, api_highlimit) = {
-        let mut builder = Client::builder(&arg.site)
-            .set_errorformat(ErrorFormat::default());
-        if !arg.user.is_empty() { // login with credential
-            builder = builder
-                .set_botpassword(&arg.user, &arg.password)
-                .set_assert(Assert::User)
-                .set_user_agent(&format!("Page List Bot v{} / User:{} / {}", env!("CARGO_PKG_VERSION"), &arg.user, env!("CARGO_PKG_REPOSITORY")));
-        } else {
-            builder = builder
-                .set_assert(Assert::Anonymous)
-                .set_user_agent(&format!("Page List Bot v{} / Anonymous user / {}", env!("CARGO_PKG_VERSION"), env!("CARGO_PKG_REPOSITORY")));
-        }
-        let api = match builder.build().await {
-            Ok(api) => api,
-            Err(e) => {
-                eprintln!("{e}");
-                return ExitCode::from(FAILURE_INIT);
-            },
-        };
-        // api_highlimit check
-        let api_highlimit = match api.post::<_, UserInfoResponse>(HashMap::from_iter([
-            ("action", "query"),
-            ("meta", "userinfo"),
-            ("uiprop", "rights"),
-        ])).await {
-            Ok(ui) => ui.query.userinfo.rights.contains("apihighlimits"),
-            Err(e) => {
-                eprintln!("{e}");
-                return ExitCode::from(FAILURE_INIT);
-            },
-        };
-        // site info fetch
-        let title_codec = {
-            let site_info = match api.post::<_, SiteInfoResponse>(HashMap::from_iter([
-                ("action", "query"),
-                ("meta", "siteinfo"),
-                ("siprop", "general|namespaces|namespacealiases|interwikimap")
-            ])).await {
-                Ok(si) => si.query,
-                Err(e) => {
-                    eprintln!("{e}");
-                    return ExitCode::from(FAILURE_INIT);
-                },
-            };
-            match TitleCodec::from_site_info(site_info) {
-                Ok(tc) => tc,
-                Err(e) => {
-                    eprintln!("{e}");
-                    return ExitCode::from(FAILURE_INIT);
-                },
-            }
-        };
-        (api, title_codec, api_highlimit)
-    };
-    // perform query.
-    let provider = APIDataProvider::new(&api, &title_codec, api_highlimit);
-    let solver = TreeSolver::new(provider, IntOrInf::from(arg.limit));
-    let query_result = match timeout(Duration::from_secs(arg.timeout), solver.solve(&expr)).await {
-        Ok(res) => res,
-        Err(_) => {
-            eprintln!("Timeout after {} seconds", arg.timeout);
-            return ExitCode::from(FAILURE_TIMEOUT);
-        },
-    };
-    match query_result {
+
+    // login, set up data provider.
+    let provider = match get_provider(&arg.site, &arg.user, &arg.password).await {
+        Ok(provider) => provider,
         Err(e) => {
-            eprintln!("{e}");
-            ExitCode::from(FAILURE_QUERY)
-        },
-        Ok(ans) => {
-            for warn in ans.warnings {
-                eprintln!("{warn}");
+            write_err(e, writer.get_mut(), color, arg.json).unwrap();
+            return ExitCode::from(FAILURE_INIT);
+        }
+    };
+
+    // set up stream.
+    let mut stream = match SolverStream::from_expr(&expr, provider.clone(), IntOrInf::from(arg.limit)) {
+        Ok(stream) => stream,
+        Err(e) => {
+            write_err(e, writer.get_mut(), color, arg.json).unwrap();
+            return ExitCode::from(FAILURE_SEMANTIC);
+        }
+    };
+
+    // perform query.
+    let sleep = tokio::time::sleep(Duration::from_secs(arg.timeout));
+    tokio::pin!(sleep);
+
+    let mut item_count = 0;
+    let mut warn_count = 0;
+
+    loop {
+        tokio::select! {
+            biased;
+            _ = &mut sleep => {
+                // time elapsed.
+                warn_count += 1;
+                write_warn(format_args!("timeout after {} seconds", arg.timeout), writer.get_mut(), color, arg.json).unwrap();
+                break;
+            },
+            item = stream.next() => {
+                if let Some(item) = item {
+                    match item {
+                        TrioResult::Ok(item) => {
+                            let t = match item.get_title() {
+                                Ok(t) => t,
+                                Err(e) => {
+                                    write_err(e, writer.get_mut(), color, arg.json).unwrap();
+                                    return ExitCode::from(FAILURE_QUERY);
+                                },
+                            };
+                            item_count += 1;
+                            write_item(provider.title_codec.to_pretty(t), writer.get_mut(), arg.json).unwrap();
+                        },
+                        TrioResult::Warn(w) => {
+                            warn_count += 1;
+                            write_warn(w, writer.get_mut(), color, arg.json).unwrap();
+                        },
+                        TrioResult::Err(e) => {
+                            write_err(e, writer.get_mut(), color, arg.json).unwrap();
+                            return ExitCode::from(FAILURE_QUERY);
+                        },
+                    }
+                } else {
+                    // poll finished.
+                    break;
+                }
             }
-            for item in ans.titles {
-                println!("{}", title_codec.to_pretty(&item));
-            }
-            ExitCode::SUCCESS
         }
     }
+    
+    // write summary
+    if !arg.json && color {
+        writeln!(writer, "{}", format_args!("total: {item_count}, warning: {warn_count}").bold()).unwrap();
+    }
+    ExitCode::SUCCESS
 }

@@ -1,9 +1,10 @@
 //! Expressions.
 
 use alloc::{
-    sync::Arc,
+    boxed::Box,
     vec::Vec,
 };
+use core::hash::{Hash, Hasher};
 use crate::{Span, expose_span};
 use crate::attribute::Attribute;
 use crate::literal::LitString;
@@ -17,24 +18,24 @@ pub mod parse;
 
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum Expression<'a> {
-    And(ExpressionAnd<'a>),
-    Add(ExpressionAdd<'a>),
-    Sub(ExpressionSub<'a>),
-    Xor(ExpressionXor<'a>),
-    Paren(ExpressionParen<'a>),
-    Page(ExpressionPage<'a>),
-    Link(ExpressionLink<'a>),
-    LinkTo(ExpressionLinkTo<'a>),
-    Embed(ExpressionEmbed<'a>),
-    InCat(ExpressionInCat<'a>),
-    Prefix(ExpressionPrefix<'a>),
-    Toggle(ExpressionToggle<'a>),
+pub enum Expression {
+    And(ExpressionAnd),
+    Add(ExpressionAdd),
+    Sub(ExpressionSub),
+    Xor(ExpressionXor),
+    Paren(ExpressionParen),
+    Page(ExpressionPage),
+    Link(ExpressionLink),
+    LinkTo(ExpressionLinkTo),
+    Embed(ExpressionEmbed),
+    InCat(ExpressionInCat),
+    Prefix(ExpressionPrefix),
+    Toggle(ExpressionToggle),
 }
 
-impl<'a> Expression<'a> {
+impl Expression {
     /// Get the span for this item.
-    pub fn get_span(&self) -> Span<'a> {
+    pub fn get_span(&self) -> Span {
         match self {
             Self::And(expr) => expr.get_span(),
             Self::Add(expr) => expr.get_span(),
@@ -54,134 +55,240 @@ impl<'a> Expression<'a> {
 
 /// Set operation and
 /// `<expr> & <expr>
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ExpressionAnd<'a> {
-    span: Span<'a>,
-    pub expr1: Arc<Expression<'a>>,
-    pub and: And<'a>,
-    pub expr2: Arc<Expression<'a>>,
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExpressionAnd {
+    span: Span,
+    pub expr1: Box<Expression>,
+    pub and: And,
+    pub expr2: Box<Expression>,
+}
+
+impl Hash for ExpressionAnd {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.expr1.hash(state);
+        self.and.hash(state);
+        self.expr2.hash(state);
+    }
 }
 
 /// Set operation add
 /// `<expr> + <expr>`
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ExpressionAdd<'a> {
-    span: Span<'a>,
-    pub expr1: Arc<Expression<'a>>,
-    pub add: Add<'a>,
-    pub expr2: Arc<Expression<'a>>,
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExpressionAdd {
+    span: Span,
+    pub expr1: Box<Expression>,
+    pub add: Add,
+    pub expr2: Box<Expression>,
+}
+
+impl Hash for ExpressionAdd {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.expr1.hash(state);
+        self.add.hash(state);
+        self.expr2.hash(state);
+    }
 }
 
 /// Set operation sub
 /// `<expr> - <expr>`
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ExpressionSub<'a> {
-    span: Span<'a>,
-    pub expr1: Arc<Expression<'a>>,
-    pub sub: Sub<'a>,
-    pub expr2: Arc<Expression<'a>>,
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExpressionSub {
+    span: Span,
+    pub expr1: Box<Expression>,
+    pub sub: Sub,
+    pub expr2: Box<Expression>,
+}
+
+impl Hash for ExpressionSub {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.expr1.hash(state);
+        self.sub.hash(state);
+        self.expr2.hash(state);
+    }
 }
 
 /// Set operation xor
 /// `<expr> ^ <expr>`
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ExpressionXor<'a> {
-    span: Span<'a>,
-    pub expr1: Arc<Expression<'a>>,
-    pub xor: Caret<'a>,
-    pub expr2: Arc<Expression<'a>>,
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExpressionXor {
+    span: Span,
+    pub expr1: Box<Expression>,
+    pub xor: Caret,
+    pub expr2: Box<Expression>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ExpressionParen<'a> {
-    span: Span<'a>,
-    pub lparen: LeftParen<'a>,
-    pub expr: Arc<Expression<'a>>,
-    pub rparen: RightParen<'a>,
+impl Hash for ExpressionXor {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.expr1.hash(state);
+        self.xor.hash(state);
+        self.expr2.hash(state);
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExpressionParen {
+    span: Span,
+    pub lparen: LeftParen,
+    pub expr: Box<Expression>,
+    pub rparen: RightParen,
+}
+
+impl Hash for ExpressionParen {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.lparen.hash(state);
+        self.expr.hash(state);
+        self.rparen.hash(state);
+    }
 }
 
 /// Primitive operation page info
 /// `page("...","...")`
 /// `"...","..."`
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ExpressionPage<'a> {
-    span: Span<'a>,
-    pub page: Option<Page<'a>>,
-    pub lparen: Option<LeftParen<'a>>,
-    pub vals: Vec<LitString<'a>>,
-    pub commas: Vec<Comma<'a>>,
-    pub rparen: Option<RightParen<'a>>,
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExpressionPage {
+    span: Span,
+    pub page: Option<Page>,
+    pub lparen: Option<LeftParen>,
+    pub vals: Vec<LitString>,
+    pub commas: Vec<Comma>,
+    pub rparen: Option<RightParen>,
+}
+
+impl Hash for ExpressionPage {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.vals.hash(state);
+        self.commas.hash(state);
+    }
 }
 
 /// Composite operation link
 /// `link(<expr>)<attributes>
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ExpressionLink<'a> {
-    span: Span<'a>,
-    pub link: Link<'a>,
-    pub lparen: LeftParen<'a>,
-    pub expr: Arc<Expression<'a>>,
-    pub rparen: RightParen<'a>,
-    pub attributes: Vec<Attribute<'a>>,
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExpressionLink {
+    span: Span,
+    pub link: Link,
+    pub lparen: LeftParen,
+    pub expr: Box<Expression>,
+    pub rparen: RightParen,
+    pub attributes: Vec<Attribute>,
+}
+
+impl Hash for ExpressionLink {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.link.hash(state);
+        self.lparen.hash(state);
+        self.expr.hash(state);
+        self.rparen.hash(state);
+        self.attributes.hash(state);
+    }
 }
 
 /// Composite operation linkto
 /// `linkto(<expr>)<attributes>
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ExpressionLinkTo<'a> {
-    span: Span<'a>,
-    pub linkto: LinkTo<'a>,
-    pub lparen: LeftParen<'a>,
-    pub expr: Arc<Expression<'a>>,
-    pub rparen: RightParen<'a>,
-    pub attributes: Vec<Attribute<'a>>,
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExpressionLinkTo {
+    span: Span,
+    pub linkto: LinkTo,
+    pub lparen: LeftParen,
+    pub expr: Box<Expression>,
+    pub rparen: RightParen,
+    pub attributes: Vec<Attribute>,
+}
+
+impl Hash for ExpressionLinkTo {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.linkto.hash(state);
+        self.lparen.hash(state);
+        self.expr.hash(state);
+        self.rparen.hash(state);
+        self.attributes.hash(state);
+    }
 }
 
 /// Composite operation embed
 /// `embed(<expr>)<attributes>
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ExpressionEmbed<'a> {
-    span: Span<'a>,
-    pub embed: Embed<'a>,
-    pub lparen: LeftParen<'a>,
-    pub expr: Arc<Expression<'a>>,
-    pub rparen: RightParen<'a>,
-    pub attributes: Vec<Attribute<'a>>,
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExpressionEmbed {
+    span: Span,
+    pub embed: Embed,
+    pub lparen: LeftParen,
+    pub expr: Box<Expression>,
+    pub rparen: RightParen,
+    pub attributes: Vec<Attribute>,
+}
+
+impl Hash for ExpressionEmbed {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.embed.hash(state);
+        self.lparen.hash(state);
+        self.expr.hash(state);
+        self.rparen.hash(state);
+        self.attributes.hash(state);
+    }
 }
 
 /// Composite operation incat
 /// `incat(<expr>)<attributes>
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ExpressionInCat<'a> {
-    span: Span<'a>,
-    pub incat: InCat<'a>,
-    pub lparen: LeftParen<'a>,
-    pub expr: Arc<Expression<'a>>,
-    pub rparen: RightParen<'a>,
-    pub attributes: Vec<Attribute<'a>>,
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExpressionInCat {
+    span: Span,
+    pub incat: InCat,
+    pub lparen: LeftParen,
+    pub expr: Box<Expression>,
+    pub rparen: RightParen,
+    pub attributes: Vec<Attribute>,
+}
+
+impl Hash for ExpressionInCat {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.incat.hash(state);
+        self.lparen.hash(state);
+        self.expr.hash(state);
+        self.rparen.hash(state);
+        self.attributes.hash(state);
+    }
 }
 
 /// Composite operation prefix
 /// `prefix(<expr>)<attributes>
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ExpressionPrefix<'a> {
-    span: Span<'a>,
-    pub prefix: Prefix<'a>,
-    pub lparen: LeftParen<'a>,
-    pub expr: Arc<Expression<'a>>,
-    pub rparen: RightParen<'a>,
-    pub attributes: Vec<Attribute<'a>>,
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExpressionPrefix {
+    span: Span,
+    pub prefix: Prefix,
+    pub lparen: LeftParen,
+    pub expr: Box<Expression>,
+    pub rparen: RightParen,
+    pub attributes: Vec<Attribute>,
+}
+
+impl Hash for ExpressionPrefix {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.prefix.hash(state);
+        self.lparen.hash(state);
+        self.expr.hash(state);
+        self.rparen.hash(state);
+        self.attributes.hash(state);
+    }
 }
 
 /// Composite operation toggle
 /// `toggle(<expr>)
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ExpressionToggle<'a> {
-    span: Span<'a>,
-    pub toggle: Toggle<'a>,
-    pub lparen: LeftParen<'a>,
-    pub expr: Arc<Expression<'a>>,
-    pub rparen: RightParen<'a>,
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExpressionToggle {
+    span: Span,
+    pub toggle: Toggle,
+    pub lparen: LeftParen,
+    pub expr: Box<Expression>,
+    pub rparen: RightParen,
+}
+
+impl Hash for ExpressionToggle {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.toggle.hash(state);
+        self.lparen.hash(state);
+        self.expr.hash(state);
+        self.rparen.hash(state);
+    }
 }
 
 expose_span!(ExpressionAdd);

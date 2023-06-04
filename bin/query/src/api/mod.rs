@@ -1,4 +1,4 @@
-use core::future::{Ready, ready};
+use core::{convert::Infallible, future::{Ready, ready}};
 use futures::{StreamExt, future::Either, stream::{self, Once, Iter, Flatten}};
 use itertools::Itertools;
 use mwapi::Client;
@@ -8,21 +8,21 @@ use provider::{
     FilterRedirect, LinksConfig, BackLinksConfig, EmbedsConfig, CategoryMembersConfig, PrefixConfig,
 };
 use std::{collections::HashMap, vec::IntoIter};
+use thiserror::Error as ThisError;
+use trio_result::TrioResult;
 
-mod error;
 mod query;
-use error::APIDataProviderError;
 use query::{QueryStream, query_complete};
 
-#[derive(Debug, Clone, Copy)]
-pub struct APIDataProvider<'p> {
-    api: &'p Client,
-    title_codec: &'p TitleCodec,
-    api_highlimit: bool,
+#[derive(Debug, Clone)]
+pub struct APIDataProvider {
+    pub api: Client,
+    pub title_codec: TitleCodec,
+    pub api_highlimit: bool,
 }
 
-impl<'p> APIDataProvider<'p> {
-    pub fn new(api: &'p Client, title_codec: &'p TitleCodec, api_highlimit: bool) -> Self {
+impl APIDataProvider {
+    pub fn new(api: Client, title_codec: TitleCodec, api_highlimit: bool) -> Self {
         APIDataProvider {
             api,
             title_codec,
@@ -31,11 +31,12 @@ impl<'p> APIDataProvider<'p> {
     }
 }
 
-impl<'p> DataProvider for APIDataProvider<'p> {
+impl DataProvider for APIDataProvider {
     type Error = APIDataProviderError;
+    type Warn = Infallible;
 
     // impl for `pageinfo`.
-    type PageInfoStream = Flatten<Iter<IntoIter<QueryStream<'p>>>>;
+    type PageInfoStream = Flatten<Iter<IntoIter<QueryStream>>>;
 
     /// Fetch a set of pages' basic information.
     /// This function essentially calls 
@@ -55,13 +56,13 @@ impl<'p> DataProvider for APIDataProvider<'p> {
             let params = HashMap::from_iter([
                 ("titles".to_string(), title_chunk.into_iter().map(|t| self.title_codec.to_pretty(&t)).join("|"))
             ]);
-            streams.push(query_complete(self.api, self.title_codec, params));
+            streams.push(query_complete(self.api.to_owned(), self.title_codec.to_owned(), params));
         }
         stream::iter(streams).flatten()
     }
 
     // impl for `pageinfo`.
-    type PageInfoRawStream = Either<Self::PageInfoStream, Once<Ready<Result<PageInfo, Self::Error>>>>;
+    type PageInfoRawStream = Either<Self::PageInfoStream, Once<Ready<TrioResult<PageInfo, Self::Warn, Self::Error>>>>;
 
     /// Basically the same as `get_page_info`, but convert from string.
     fn get_page_info_from_raw<T: IntoIterator<Item=String>>(&self, titles_raw: T) -> Self::PageInfoRawStream {
@@ -72,12 +73,12 @@ impl<'p> DataProvider for APIDataProvider<'p> {
             .map_err(|e| e.into());
         match titles {
             Ok(titles) => Either::Left(self.get_page_info(titles)),
-            Err(e) => Either::Right(stream::once(ready(Err(e)))),
+            Err(e) => Either::Right(stream::once(ready(TrioResult::Err(e)))),
         }
     }
 
     // impl for `links`.
-    type LinksStream = QueryStream<'p>;
+    type LinksStream = QueryStream;
 
     /// Fetch a page's links on that page.
     /// This function essentially calls
@@ -99,11 +100,11 @@ impl<'p> DataProvider for APIDataProvider<'p> {
             }
             tmp
         };
-        query_complete(self.api, self.title_codec, param)
+        query_complete(self.api.to_owned(), self.title_codec.to_owned(), param)
     }
 
     // impl for `backlinks`
-    type BacklinksStream = QueryStream<'p>;
+    type BacklinksStream = QueryStream;
 
     /// Fetch a page's backlinks to that page.
     /// This function essentially calls
@@ -137,11 +138,11 @@ impl<'p> DataProvider for APIDataProvider<'p> {
             }
             tmp
         };
-        query_complete(self.api, self.title_codec, param)
+        query_complete(self.api.to_owned(), self.title_codec.to_owned(), param)
     }
 
     // impl for `embeds`.
-    type EmbedsStream = QueryStream<'p>;
+    type EmbedsStream = QueryStream;
 
     /// Fetch a page's embeds.
     /// This function essentially calls
@@ -172,11 +173,11 @@ impl<'p> DataProvider for APIDataProvider<'p> {
             }
             tmp
         };
-        query_complete(self.api, self.title_codec, param)
+        query_complete(self.api.to_owned(), self.title_codec.to_owned(), param)
     }
 
     // impl for `categorymember`.
-    type CategoryMembersStream = QueryStream<'p>;
+    type CategoryMembersStream = QueryStream;
 
     /// Fetch a category's members.
     /// This function essentially calls
@@ -211,11 +212,11 @@ impl<'p> DataProvider for APIDataProvider<'p> {
             }
             tmp
         };
-        query_complete(self.api, self.title_codec, param)
+        query_complete(self.api.to_owned(), self.title_codec.to_owned(), param)
     }
 
     // impl for `prefix`.
-    type PrefixStream = QueryStream<'p>;
+    type PrefixStream = QueryStream;
 
     /// Fetch a page's subpages.
     /// This function essentially calls
@@ -243,6 +244,14 @@ impl<'p> DataProvider for APIDataProvider<'p> {
             }
             tmp
         };
-        query_complete(self.api, self.title_codec, param)
+        query_complete(self.api.to_owned(), self.title_codec.to_owned(), param)
     }
+}
+
+#[derive(Debug, ThisError)]
+pub enum APIDataProviderError {
+    #[error(transparent)]
+    Api(#[from] mwapi::Error),
+    #[error(transparent)]
+    TitleCodec(#[from] mwtitle::Error),
 }
