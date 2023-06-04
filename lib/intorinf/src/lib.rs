@@ -117,6 +117,23 @@ add_impl!(i8);
 add_impl!(u16);
 add_impl!(u8);
 
+impl IntOrInf {
+    pub fn is_inf(&self) -> bool {
+        matches!(self, Self::Inf)
+    }
+
+    pub fn is_int(&self) -> bool {
+        matches!(self, Self::Int(_))
+    }
+
+    pub fn unwrap_int(&self) -> i32 {
+        match self {
+            Self::Int(x) => *x,
+            Self::Inf => panic!("trying to unwrap an `Inf` variant"),
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::IntOrInf;
