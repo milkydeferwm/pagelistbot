@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 futures = "0.3"
 mwtitle = { version = "0.2", default-features = false }
+trio-result = { path = "../trioresult" }

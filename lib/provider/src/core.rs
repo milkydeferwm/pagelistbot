@@ -7,17 +7,19 @@ use futures::{
     stream::{iter, Flatten, Iter},
 };
 use mwtitle::Title;
-use std::{error::Error, vec::IntoIter};
+use std::vec::IntoIter;
+use trio_result::TrioResult;
 
 pub trait DataProvider {
-    type Error: Error + 'static;
-    type PageInfoStream: Stream<Item = Result<PageInfo, Self::Error>>;
-    type PageInfoRawStream: Stream<Item = Result<PageInfo, Self::Error>>;
-    type LinksStream: Stream<Item = Result<PageInfo, Self::Error>>;
-    type BacklinksStream: Stream<Item = Result<PageInfo, Self::Error>>;
-    type EmbedsStream: Stream<Item = Result<PageInfo, Self::Error>>;
-    type CategoryMembersStream: Stream<Item = Result<PageInfo, Self::Error>>;
-    type PrefixStream: Stream<Item = Result<PageInfo, Self::Error>>;
+    type Error;
+    type Warn;
+    type PageInfoStream: Stream<Item = TrioResult<PageInfo, Self::Warn, Self::Error>>;
+    type PageInfoRawStream: Stream<Item = TrioResult<PageInfo, Self::Warn, Self::Error>>;
+    type LinksStream: Stream<Item = TrioResult<PageInfo, Self::Warn, Self::Error>>;
+    type BacklinksStream: Stream<Item = TrioResult<PageInfo, Self::Warn, Self::Error>>;
+    type EmbedsStream: Stream<Item = TrioResult<PageInfo, Self::Warn, Self::Error>>;
+    type CategoryMembersStream: Stream<Item = TrioResult<PageInfo, Self::Warn, Self::Error>>;
+    type PrefixStream: Stream<Item = TrioResult<PageInfo, Self::Warn, Self::Error>>;
 
     /// Get a stream of input pages' information. Input is `mwtitle::Title`.
     fn get_page_info<T: IntoIterator<Item = Title>>(&self, titles: T) -> Self::PageInfoStream;
@@ -59,5 +61,3 @@ pub trait DataProvider {
         iter(streams).flatten()
     }
 }
-
-
