@@ -9,12 +9,9 @@ edition = "2021"
 ast = { path = "../ast" }
 intorinf = { path = "../intorinf" }
 provider = { path = "../provider" }
+trio-result = { path = "../trioresult" }
 
-futures = { version = "0.3", optional = true }
+futures = "0.3"
 mwtitle = { version = "0.2", default-features = false }
-pin-project = { version = "1.0", optional = true }
+pin-project = "1.0"
 thiserror = "1.0.40"
-
-[features]
-"full" = [ "tree-future" ]
-"tree-future" = [ "futures", "pin-project" ]
