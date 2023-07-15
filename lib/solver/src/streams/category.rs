@@ -89,7 +89,7 @@ where
             } else if !this.queue.is_empty() {
                 // continue next.
                 let mut config = this.config.to_owned();
-                if *this.curr_depth <= *this.max_depth {
+                if *this.curr_depth < *this.max_depth {
                     if let Some(ns) = &mut config.namespace {
                         ns.insert(14);
                     }
