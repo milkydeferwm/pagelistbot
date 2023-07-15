@@ -24,7 +24,7 @@ struct QueryState {
     cache: VecDeque<PageInfo>,
 }
 
-pub(super) type QueryStream = impl Stream<Item=TrioResult<PageInfo, Infallible, APIDataProviderError>> + Send;
+pub type QueryStream = impl Stream<Item=TrioResult<PageInfo, Infallible, APIDataProviderError>> + Send;
 
 pub(super) fn query_complete(
     api: Client,
