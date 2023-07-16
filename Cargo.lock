@@ -674,7 +674,8 @@ dependencies = [
 [[package]]
 name = "mwapi"
 version = "0.5.0"
-source = "git+https://gitlab.wikimedia.org/repos/mwbot-rs/mwbot.git?branch=no-query-body#dd5306bf9891920b8ec883dc7b597f5fa5de8583"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b5b17007ca0fdbc12f7720b4e9578213da0f80fd678b6f4bd8ff8705b307bcb"
 dependencies = [
  "js-sys",
  "mwapi_responses",
@@ -690,8 +691,9 @@ dependencies = [
 
 [[package]]
 name = "mwapi_responses"
-version = "0.3.3"
-source = "git+https://gitlab.wikimedia.org/repos/mwbot-rs/mwbot.git?branch=no-query-body#dd5306bf9891920b8ec883dc7b597f5fa5de8583"
+version = "0.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a146bdef725eb621b3e876c968fbfbcec07052d5d58be752422b6e7305aa656a"
 dependencies = [
  "mwapi_responses_derive",
  "serde",
@@ -700,8 +702,9 @@ dependencies = [
 
 [[package]]
 name = "mwapi_responses_derive"
-version = "0.3.3"
-source = "git+https://gitlab.wikimedia.org/repos/mwbot-rs/mwbot.git?branch=no-query-body#dd5306bf9891920b8ec883dc7b597f5fa5de8583"
+version = "0.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4859cc2a29d5cd84f493f49b120e7f572ecc5d9fe82bfe5a2c1bd8a7c1737c04"
 dependencies = [
  "proc-macro2",
  "quote",
