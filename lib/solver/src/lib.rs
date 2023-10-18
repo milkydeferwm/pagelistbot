@@ -1,9 +1,5 @@
 //! Page List Bot solver.
 
-#![feature(async_fn_in_trait, type_alias_impl_trait)]
-
-extern crate alloc;
-
 pub mod builder;
 pub mod attr;
 pub mod error;
