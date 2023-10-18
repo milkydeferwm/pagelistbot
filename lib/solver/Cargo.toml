@@ -14,4 +14,4 @@ trio-result = { path = "../trioresult" }
 futures = "0.3"
 mwtitle = { version = "0.2", default-features = false }
 pin-project = ">=1.0"
-thiserror = "1.0.47"
+thiserror = ">=1.0.47"
