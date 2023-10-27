@@ -64,7 +64,7 @@ impl From<PageInfo> for Title {
 
 impl PartialOrd for PageInfo {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.title.partial_cmp(&other.title)
+        Some(self.cmp(other))
     }
 }
 
