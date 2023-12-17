@@ -56,9 +56,11 @@ impl PageInfo {
     }
 }
 
-impl From<PageInfo> for Title {
-    fn from(f: PageInfo) -> Self {
-        f.title.unwrap()
+impl TryFrom<PageInfo> for Title {
+    type Error = PageInfoError;
+
+    fn try_from(f: PageInfo) -> Result<Self, Self::Error> {
+        f.title.ok_or(PageInfoError::UnknownValue)
     }
 }
 

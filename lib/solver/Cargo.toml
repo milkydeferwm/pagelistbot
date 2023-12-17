@@ -11,6 +11,7 @@ intorinf = { path = "../intorinf" }
 provider = { path = "../provider" }
 trio-result = { path = "../trioresult" }
 
+async-stream = ">=0.3"
 futures = "0.3"
 mwtitle = { version = "0.2", default-features = false }
 pin-project = ">=1.0"
