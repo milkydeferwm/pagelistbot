@@ -242,6 +242,9 @@ where
                 if t.namespace() >= 0 {
                     yield TrioResult::Ok(item);
                 }
+            } else {
+                // yield any warnings or errors
+                yield item;
             }
         }
     }
