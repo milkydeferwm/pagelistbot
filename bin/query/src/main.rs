@@ -71,7 +71,7 @@ async fn main() -> ExitCode {
     };
 
     // set up connection to backend.
-    let backend = match HttpClientBuilder::default().build(format!("{}:{}", arg.addr, arg.port)) {
+    let backend = match HttpClientBuilder::default().build(format!("http://{}:{}", arg.addr, arg.port)) {
         Ok(backend) => backend,
         Err(e) => {
             write_err(e, writer.get_mut(), color, arg.json).unwrap();

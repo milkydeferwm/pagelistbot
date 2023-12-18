@@ -4,7 +4,7 @@ use futures::Stream;
 use itertools::Itertools;
 use jsonrpsee::core::ClientError;
 use mwapi_responses::{query, ApiResponse};
-use mwtitle::{Title, TitleCodec};
+use mwtitle::{Title, TitleCodec, SiteInfoResponse};
 use pagelistbot_api_daemon_interface::APIServiceInterfaceClient;
 use provider::{
     DataProvider, PageInfo,
@@ -34,8 +34,8 @@ where
     pub async fn new(connection: B, key: &str) -> Result<Self, APIDataProviderError> {
         let title_codec = {
             let siteinfo = connection.get_site_info(key).await?;
-            let siteinfo = serde_json::from_value(siteinfo)?;
-            TitleCodec::from_site_info(siteinfo)?
+            let siteinfo: SiteInfoResponse = serde_json::from_value(siteinfo)?;
+            TitleCodec::from_site_info(siteinfo.query)?
         };
         let apihighlimits = connection.get_apihighlimits(key).await?;
         Ok(APIDataProvider {
