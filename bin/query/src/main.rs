@@ -1,12 +1,9 @@
 //! Page list bot query execution core.
 
-#![feature(type_alias_impl_trait)]
 #![feature(unix_sigpipe)]
 
 mod api;
 use api::APIDataProvider;
-mod builder;
-use builder::get_provider;
 mod writer;
 use futures::StreamExt;
 use writer::*;
@@ -15,9 +12,9 @@ use ast::Expression;
 use clap::Parser;
 use core::time::Duration;
 use intorinf::IntOrInf;
+use jsonrpsee::http_client::HttpClientBuilder;
 use nom::error::VerboseError;
 use owo_colors::OwoColorize;
-use solver::*;
 use std::{
     io::{stdout, BufWriter, IsTerminal, Write},
     process::ExitCode, 
@@ -26,15 +23,15 @@ use trio_result::TrioResult;
 
 #[derive(Debug, Parser)]
 pub struct Arg {
-    /// The user name used for query. Leave it blank if you want to execute query anonymously
-    #[arg(short, long, default_value_t = String::new())]
-    user: String,
-    /// The password of the corresponding user. Ignored if `user` is blank.
-    #[arg(short, long, default_value_t = String::new())]
-    password: String,
-    /// The API endpoint. This is the URL of `api.php`.
+    /// The address of the remote backend.
+    #[arg(short, long, default_value_t = DEFAULT_BACKEND_ADDR.to_string())]
+    addr: String,
+    /// The port of the remote backend.
+    #[arg(short, long, default_value_t = 8848)]
+    port: u16,
+    /// The key of the remote backend.
     #[arg(short, long)]
-    site: String,
+    key: String,
     /// The query string.
     #[arg(short, long)]
     query: String,
@@ -48,6 +45,8 @@ pub struct Arg {
     #[arg(long)]
     json: bool,
 }
+
+const DEFAULT_BACKEND_ADDR: &str = "127.0.0.1";
 
 const FAILURE_PARSE: u8 = 100;
 const FAILURE_INIT: u8 = 101;
@@ -71,8 +70,15 @@ async fn main() -> ExitCode {
         }
     };
 
-    // login, set up data provider.
-    let provider = match get_provider(&arg.site, &arg.user, &arg.password).await {
+    // set up connection to backend.
+    let backend = match HttpClientBuilder::default().build(format!("{}:{}", arg.addr, arg.port)) {
+        Ok(backend) => backend,
+        Err(e) => {
+            write_err(e, writer.get_mut(), color, arg.json).unwrap();
+            return ExitCode::from(FAILURE_INIT);
+        } 
+    };
+    let provider = match APIDataProvider::new(backend, &arg.key).await {
         Ok(provider) => provider,
         Err(e) => {
             write_err(e, writer.get_mut(), color, arg.json).unwrap();
@@ -81,13 +87,14 @@ async fn main() -> ExitCode {
     };
 
     // set up stream.
-    let mut stream = match SolverStream::from_expr(&expr, provider.clone(), IntOrInf::from(arg.limit)) {
+    let stream = match solver::from_expr(&expr, provider.clone(), IntOrInf::from(arg.limit)) {
         Ok(stream) => stream,
         Err(e) => {
             write_err(e, writer.get_mut(), color, arg.json).unwrap();
             return ExitCode::from(FAILURE_SEMANTIC);
         }
     };
+    let mut stream = Box::into_pin(stream);
 
     // perform query.
     let sleep = tokio::time::sleep(Duration::from_secs(arg.timeout));
@@ -117,7 +124,7 @@ async fn main() -> ExitCode {
                                 },
                             };
                             item_count += 1;
-                            write_item(provider.title_codec.to_pretty(t), writer.get_mut(), arg.json).unwrap();
+                            write_item(provider.to_pretty(t), writer.get_mut(), arg.json).unwrap();
                         },
                         TrioResult::Warn(w) => {
                             warn_count += 1;
