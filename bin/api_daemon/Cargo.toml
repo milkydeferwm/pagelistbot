@@ -11,8 +11,9 @@ repository = "https://github.con/milkydeferwm/pagelistbot"
 # TODO: Update related crates too
 async-trait = ">=0.1.74"
 clap = { version = ">=4.3.1", features = [ "cargo", "derive" ] }
-jsonrpsee = { version = ">=0.21.0", features = [ "macros", "client", "server" ] }
+jsonrpsee = { version = ">=0.21.0", features = [ "server" ] }
 mwapi = ">=0.5.0"
+pagelistbot-api-daemon-interface = { path = "../../lib/api_daemon_interface" }
 pagelistbot-env = { path = "../../lib/env" }
 serde = { version = ">=1.0.156", features = [ "derive" ] }
 serde_json = ">=1.0.105"

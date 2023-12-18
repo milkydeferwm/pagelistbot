@@ -8,14 +8,12 @@
 //! and refreshing existing connections.
 
 use clap::Parser;
+use pagelistbot_api_daemon_interface::APIServiceInterfaceServer;
 use std::{collections::HashMap, fs, path::{Path, PathBuf}, sync::Arc, time::Duration};
 use tokio::sync::RwLock;
 
 mod connection;
 mod rpc;
-
-use rpc::APIServiceInterfaceServer;
-pub use rpc::APIServiceInterfaceClient;
 
 #[derive(Debug, Clone, Parser)]
 struct Arg {
