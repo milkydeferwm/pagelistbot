@@ -123,16 +123,24 @@ where
             // update the hashmap.
             let mut store = store.write().await;
             // flush out all connections that no longer exist in the configuration.
-            store.retain(|k, _| config.contains_key(k));
+            store.retain(|k, _| {
+                let preserve = config.contains_key(k);
+                if !preserve {
+                    tracing::info!("dropped {}", k);
+                }
+                preserve
+            });
             // add or replace other connections.
             for (k, v) in config {
                 if let Some(new_connection) = connection::get_provider(&v.api, &v.username, &v.password).await {
                     // replace the old connection with the new one.
                     // the old one is automatically dropped.
+                    tracing::info!("added {}", &k);
                     store.insert(k, new_connection);
                 } else {
                     // new connection generation failed, drop the existing connection.
                     // TODO: or should we retain the existing connection?
+                    tracing::warn!("dropped {}", &k);
                     store.remove(&k);
                 }
             }
