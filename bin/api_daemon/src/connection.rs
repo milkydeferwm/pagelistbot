@@ -49,7 +49,7 @@ pub(crate) async fn get_provider(site: &str, user: &str, password: &str) -> Opti
     let api = match builder.build().await {
         Ok(x) => x,
         Err(e) => {
-            tracing::warn!(warning=?e, site=site, user=user, "cannot log in");
+            tracing::warn!(warning=e.to_string(), site=site, user=user, "cannot log in");
             return None;
         },
     };
@@ -64,7 +64,7 @@ pub(crate) async fn get_provider(site: &str, user: &str, password: &str) -> Opti
             (rights.contains("bot"), rights.contains("apihighlimits"))
         },
         Err(e) => {
-            tracing::warn!(warning=?e, site=site, user=user, "cannot fetch user information");
+            tracing::warn!(warning=e.to_string(), site=site, user=user, "cannot fetch user information");
             return None;
         },
     };
@@ -76,7 +76,7 @@ pub(crate) async fn get_provider(site: &str, user: &str, password: &str) -> Opti
     ])).await {
         Ok(si) => si,
         Err(e) => {
-            tracing::warn!(warning=?e, site=site, user=user, "cannot fetch site information");
+            tracing::warn!(warning=e.to_string(), site=site, user=user, "cannot fetch site information");
             return None;
         },
     };

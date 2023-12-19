@@ -11,6 +11,7 @@ use clap::Parser;
 use pagelistbot_api_daemon_interface::APIServiceInterfaceServer;
 use std::{collections::HashMap, fs, path::{Path, PathBuf}, sync::Arc, time::Duration};
 use tokio::sync::RwLock;
+use tracing_subscriber::prelude::*;
 
 mod connection;
 mod rpc;
@@ -45,9 +46,21 @@ async fn main() {
     let api_store: Arc<RwLock<HashMap<String, APIConnection>>> = Arc::new(RwLock::new(HashMap::new()));
     // set up log writer
     let (non_blocking_logfile, _logfile_guard) = tracing_appender::non_blocking(tracing_appender::rolling::daily(pagelistbot_env::pagelistbot_log(), "api-backend.log"));
-    tracing_subscriber::fmt()
-        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env()) // recommended environment variable: RUST_LOG=info
-        .with_writer(non_blocking_logfile).init();
+    let (non_blocking_stderr, _stderr_guard) = tracing_appender::non_blocking(std::io::stderr());
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::fmt::layer()
+                .with_writer(non_blocking_logfile)
+                .with_ansi(false)
+                .with_filter(tracing_subscriber::filter::LevelFilter::INFO)
+        )
+        .with(
+            tracing_subscriber::fmt::layer()
+                .with_writer(non_blocking_stderr)
+                .with_ansi(true)
+                .with_filter(tracing_subscriber::filter::LevelFilter::WARN)
+        )
+        .init();
     // set up refresh routine
     let refresh_handle = {
         let api_store = api_store.clone();
@@ -72,7 +85,7 @@ async fn main() {
         res = refresh_handle => {
             match res {
                 Err(e) => {
-                    tracing::error!(error=?e, "cannot join refresh handle");
+                    tracing::error!(error=e.to_string(), "cannot join refresh handle");
                 },
                 Ok(_) => unreachable!(),
             }
@@ -81,9 +94,9 @@ async fn main() {
         res = tokio::signal::ctrl_c() => {
             match res {
                 Err(e) => {
-                    tracing::error!(error=?e, "cannot listen to signal");
+                    tracing::error!(error=e.to_string(), "cannot listen to signal");
                 },
-                Ok(_) => tracing::info!("Ctrl-C received, shut down API backend"),
+                Ok(_) => tracing::info!("ctrl-c received, shut down API backend"),
             }
         }
     }
@@ -109,14 +122,14 @@ where
             let config = match fs::read_to_string(path.as_ref()) {
                 Ok(s) => s,
                 Err(e) => {
-                    tracing::warn!(warning=?e, "cannot read configuration file");
+                    tracing::warn!(warning=e.to_string(), "cannot read configuration file");
                     break '_mainscope;
                 }
             };
             let config = match toml::from_str::<ConfigFile>(&config) {
                 Ok(x) => x,
                 Err(e) => {
-                    tracing::warn!(warning=?e, "cannot parse configuration file");
+                    tracing::warn!(warning=e.to_string(), "cannot parse configuration file");
                     break '_mainscope;
                 }
             };
@@ -126,7 +139,7 @@ where
             store.retain(|k, _| {
                 let preserve = config.contains_key(k);
                 if !preserve {
-                    tracing::info!("dropped {}", k);
+                    tracing::info!("dropped `{}`", k);
                 }
                 preserve
             });
@@ -135,12 +148,12 @@ where
                 if let Some(new_connection) = connection::get_provider(&v.api, &v.username, &v.password).await {
                     // replace the old connection with the new one.
                     // the old one is automatically dropped.
-                    tracing::info!("added {}", &k);
+                    tracing::info!("added `{}`", &k);
                     store.insert(k, new_connection);
                 } else {
                     // new connection generation failed, drop the existing connection.
                     // TODO: or should we retain the existing connection?
-                    tracing::warn!("dropped {}", &k);
+                    tracing::warn!("dropped `{}`", &k);
                     store.remove(&k);
                 }
             }
