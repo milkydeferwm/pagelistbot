@@ -1,0 +1,15 @@
+[package]
+name = "pagelistbot-api-daemon-interface"
+version = "0.1.0"
+edition = "2021"
+repository = "https://github.con/milkydeferwm/pagelistbot"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# TODO: Drop `async_trait` after 2023-12-28 when rustc 1.75.0 is released
+# TODO: Update related crates too
+jsonrpsee = { version = ">=0.21.0", features = [ "macros", "client", "server" ] }
+serde_json = ">=1.0.105"
+
+[dev-dependencies]
