@@ -16,7 +16,7 @@ intorinf = { path = "../../lib/intorinf" }
 itertools = ">=0.10"
 jsonrpsee = { version = ">=0.21.0", features = [ "client" ] }
 mwapi = ">=0.5.0"
-mwapi_responses = ">=0.3.4" # T338102
+mwapi_responses = ">=0.4.1" # https://gitlab.wikimedia.org/repos/mwbot-rs/mwbot/-/merge_requests/65
 mwtitle = ">=0.2.2"
 nom = "7.1.3"
 owo-colors = "3.5.0"
