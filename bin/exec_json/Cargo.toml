@@ -8,6 +8,7 @@ repository = "https://github.com/milkydeferwm/pagelistbot"
 
 [dependencies]
 clap = { version = ">=4.4.2", features = [ "cargo", "derive" ] }
+i18n = { path = "../../lib/i18n", features = [ "json" ] }
 tokio = { version = ">=1.23.1", features = [ "macros", "rt", "rt-multi-thread", "signal" ] }
 
 [dev-dependencies]
