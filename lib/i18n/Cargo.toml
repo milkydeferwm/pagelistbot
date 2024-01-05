@@ -1,0 +1,15 @@
+[package]
+name = "i18n"
+version = "0.0.1"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = ">=1.0.156", features = [ "derive" ], optional = true }
+serde_json = { version = ">=1.0.105", optional = true }
+thiserror = ">=1.0.52"
+tracing = ">=0.1.40"
+
+[features]
+json = [ "serde", "serde_json" ]
