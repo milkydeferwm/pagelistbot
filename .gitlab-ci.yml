@@ -1,0 +1,94 @@
+# SPDX-License-Identifier: Apache-2.0
+# Adapted from https://gitlab.wikimedia.org/countcount/xlinks/-/blob/main/.gitlab-ci.yml
+
+stages:
+    - build
+    - release
+
+variables:
+    CARGO_REGISTRIES_CRATES_IO_PROTOCOL: "sparse"
+    CARGO_TERM_COLOR: "always"
+    RUSTFLAGS: -D warnings
+
+workflow:
+    rules:
+        - if: $CI_MERGE_REQUEST_IID         # Workflow triggered when making a merge request.
+        - if: $CI_COMMIT_TAG                # Workflow triggered in pipelines for tags.
+        - if: $CI_COMMIT_BRANCH             # Workflow triggered when pushing to branches.
+
+rust-latest:
+    stage: build
+    image: rust:latest
+    tags:
+        - memory-optimized
+    allow_failure: true # Currently the project relies on multiple experimental feature flags. Compiling on stable is literally impossible.
+    script:
+        - cargo test --verbose --workspace --all-features -- --test-threads=1
+
+rust-nightly:
+    stage: build
+    image: rustlang/rust:nightly
+    tags:
+        - memory-optimized
+    script:
+        - cargo test --verbose --all-features -- --test-threads=1
+
+rust-clippy:
+    stage: build
+    image: rustlang/rust:nightly
+    tags:
+        - memory-optimized
+    script:
+        - rustup component add clippy
+        - cargo clippy --verbose --workspace --all-features
+
+rust-fmt:
+    stage: build
+    image: rustlang/rust:nightly
+    tags:
+        - memory-optimized
+    script:
+        - rustup component add rustfmt
+        - cargo fmt -- --check
+
+rust-security:
+    stage: build
+    image: rust:latest
+    variables:
+        CARGO_AUDIT_VERSION: "0.18.3"
+    before_script:
+        - wget https://github.com/rustsec/rustsec/releases/download/cargo-audit%2Fv${CARGO_AUDIT_VERSION}/cargo-audit-x86_64-unknown-linux-gnu-v${CARGO_AUDIT_VERSION}.tgz
+        - tar xvf cargo-audit-x86_64-unknown-linux-gnu-v${CARGO_AUDIT_VERSION}.tgz -C "$CARGO_HOME/bin/" --strip-components=1
+        - rm cargo-audit-x86_64-unknown-linux-gnu-v${CARGO_AUDIT_VERSION}.tgz
+    script:
+        - cargo audit -D warnings $CARGO_AUDIT
+
+rust-toolforge-release:
+    stage: release
+    rules:
+        - if: $CI_COMMIT_TAG                # Workflow triggered in pipelines for tags.
+    needs:
+        - job: rust-latest
+        - job: rust-nightly
+        - job: rust-clippy
+        - job: rust-security
+    image: rustlang/rust:nightly
+    tags:
+        - memory-optimized
+    variables:
+        ZIG_VERSION: 0.11.0
+        CARGO_ZIGBUILD_VERSION: v0.18.1
+    before_script:
+        - curl -s -f -O -L https://ziglang.org/download/$ZIG_VERSION/zig-linux-x86_64-$ZIG_VERSION.tar.xz
+        - tar xJf zig-linux-x86_64-$ZIG_VERSION.tar.xz
+        - curl -s -f -O -L https://github.com/rust-cross/cargo-zigbuild/releases/download/$CARGO_ZIGBUILD_VERSION/cargo-zigbuild-$CARGO_ZIGBUILD_VERSION.x86_64-unknown-linux-musl.tar.gz
+        - tar xzf cargo-zigbuild-$CARGO_ZIGBUILD_VERSION.x86_64-unknown-linux-musl.tar.gz
+        - export PATH=$PATH:$PWD/zig-linux-x86_64-$ZIG_VERSION:$PWD/cargo-zigbuild-$CARGO_ZIGBUILD_VERSION.x86_64-unknown-linux-musl
+        - cargo install cargo-zigbuild
+    script:
+        - cargo zigbuild --workspace --profile release --locked --target x86_64-unknown-linux-gnu.2.31
+#        - gzip -c target/x86_64-unknown-linux-gnu/release/??? > pagelistbot.gz
+#    artifacts:
+#        paths:
+#            - pagelistbot.gz
+
