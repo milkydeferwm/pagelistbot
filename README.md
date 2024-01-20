@@ -1,7 +1,10 @@
 # Page List Bot #
-[![Build Test](https://github.com/milkydeferwm/pagelistbot/actions/workflows/test.yml/badge.svg)](https://github.com/milkydeferwm/pagelistbot/actions/workflows/test.yml)
+<p style="text-align:center">This project is currently migrating from GitHub to WMF-hosted Gitlab.</p>
 
-Re-implementation of the [legacy Page List Bot](https://github.com/milkydeferwm/pagelistbot-legacy), whose code is too tightly coupled to continue to work on.
+[![Pipeline](https://gitlab.wikimedia.org/milkydefer/pagelistbot/badges/main/pipeline.svg
+)](https://gitlab.wikimedia.org/milkydefer/pagelistbot/-/commits/main)
+
+Re-implementation of the [legacy Page List Bot](https://gitlab.wikimedia.org/milkydefer/pagelistbot-legacy), whose code is too tightly coupled to continue to work on.
 
 The new Page List Bot is built as a frontend-backend application. To build the project, simply clone the repository and run:
 ```
