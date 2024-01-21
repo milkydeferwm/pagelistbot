@@ -1,6 +1,4 @@
 # Page List Bot #
-<p style="text-align:center">This project is currently migrating from GitHub to WMF-hosted Gitlab.</p>
-
 [![Pipeline](https://gitlab.wikimedia.org/milkydefer/pagelistbot/badges/main/pipeline.svg
 )](https://gitlab.wikimedia.org/milkydefer/pagelistbot/-/commits/main)
 
