@@ -27,7 +27,7 @@
                 "files.watcherExclude": {
                     "**/target/**": true
                 },
-                "git.enableCommitSigning": true,
+                // "git.enableCommitSigning": true,
                 "rust-analyzer.checkOnSave.command": "clippy",
                 "rust-analyzer.hover.actions.references.enable": true,
                 "rust-analyzer.inlayHints.lifetimeElisionHints.enable": "skip_trivial",
