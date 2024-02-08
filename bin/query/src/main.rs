@@ -24,10 +24,10 @@ use trio_result::TrioResult;
 #[derive(Debug, Parser)]
 pub struct Arg {
     /// The address of the remote backend.
-    #[arg(short, long, default_value_t = DEFAULT_BACKEND_ADDR.to_string())]
+    #[arg(short, long, default_value_t = pagelistbot_api_daemon_interface::DEFAULT_BACKEND_ADDR.to_string())]
     addr: String,
     /// The port of the remote backend.
-    #[arg(short, long, default_value_t = 8848)]
+    #[arg(short, long, default_value_t = pagelistbot_api_daemon_interface::DEFAULT_BACKEND_PORT)]
     port: u16,
     /// The key of the remote backend.
     #[arg(short, long)]
@@ -45,8 +45,6 @@ pub struct Arg {
     #[arg(long)]
     json: bool,
 }
-
-const DEFAULT_BACKEND_ADDR: &str = "127.0.0.1";
 
 const FAILURE_PARSE: u8 = 100;
 const FAILURE_INIT: u8 = 101;

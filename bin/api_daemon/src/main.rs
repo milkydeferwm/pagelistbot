@@ -22,7 +22,7 @@ struct Arg {
     config: Option<PathBuf>,
     #[arg(long, default_value_t = false)]
     bind_all: bool,
-    #[arg(short = 'p', long = "port", default_value_t = 8848)]
+    #[arg(short = 'p', long = "port", default_value_t = pagelistbot_api_daemon_interface::DEFAULT_BACKEND_PORT)]
     port: u16,
 }
 

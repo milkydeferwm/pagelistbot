@@ -29,3 +29,6 @@ pub trait APIServiceInterface {
     #[method(name = "postValueWithToken")]
     async fn post_value_with_token(&self, key: &str, token_type: &str, parameters: HashMap<String, String>) -> RpcResult<Value>;
 }
+
+pub const DEFAULT_BACKEND_ADDR: &str = "127.0.0.1";
+pub const DEFAULT_BACKEND_PORT: u16 = 8848;
