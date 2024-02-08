@@ -17,9 +17,9 @@ pub struct TaskDescription {
     pub active: bool,
 
     /// Task query expression.
-    #[serde(alias = "query")]
-    #[serde(alias = "expression")]
-    pub expr: String,
+    // #[serde(alias = "query")]
+    // #[serde(alias = "expression")]
+    // pub expr: String,
 
     /// Eager mode flag.
     /// 
