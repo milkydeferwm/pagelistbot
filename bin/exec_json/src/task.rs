@@ -1,6 +1,7 @@
 //! Task description definition.
 
 use serde::{Serialize, Deserialize};
+use std::collections;
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct TaskDescription {
@@ -38,7 +39,7 @@ pub struct TaskDescription {
     #[serde(alias = "limit")]
     #[serde(alias = "querylimit")]
     #[serde(default)]
-    pub query_limit: Option<intorinf::IntOrInf>,
+    pub query_limit: Option<i32>, // Option<intorinf::IntOrInf>,
 
     /// Output specification of the task.
     /// This field can be omitted, and there will be no output at all.
