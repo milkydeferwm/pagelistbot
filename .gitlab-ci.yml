@@ -8,7 +8,7 @@ stages:
 variables:
     CARGO_REGISTRIES_CRATES_IO_PROTOCOL: "sparse"
     CARGO_TERM_COLOR: "always"
-    RUSTFLAGS: -D warnings
+    RUSTFLAGS: -D warnings -Zon-broken-pipe=kill
 
 workflow:
     rules:
