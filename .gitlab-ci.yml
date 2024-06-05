@@ -55,7 +55,7 @@ rust-security:
     stage: build
     image: rust:latest
     variables:
-        CARGO_AUDIT_VERSION: "0.18.3"
+        CARGO_AUDIT_VERSION: "0.20.0"
     before_script:
         - wget https://github.com/rustsec/rustsec/releases/download/cargo-audit%2Fv${CARGO_AUDIT_VERSION}/cargo-audit-x86_64-unknown-linux-gnu-v${CARGO_AUDIT_VERSION}.tgz
         - tar xvf cargo-audit-x86_64-unknown-linux-gnu-v${CARGO_AUDIT_VERSION}.tgz -C "$CARGO_HOME/bin/" --strip-components=1
