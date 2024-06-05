@@ -1,7 +1,5 @@
 //! Parse module for attributes.
 
-#![cfg(feature = "parse")]
-
 use core::num::ParseIntError;
 use crate::{
     LocatedStr,

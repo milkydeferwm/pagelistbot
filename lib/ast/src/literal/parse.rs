@@ -1,7 +1,5 @@
 //! Parse module for literal types.
 
-#![cfg(feature = "parse")]
-
 use alloc::string::String;
 use core::num::ParseIntError;
 use crate::{

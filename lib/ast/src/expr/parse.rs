@@ -1,7 +1,5 @@
 //! Parsing module for expressions.
 
-#![cfg(feature = "parse")]
-
 use alloc::boxed::Box;
 use core::num::ParseIntError;
 use crate::{
