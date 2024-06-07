@@ -1,7 +1,5 @@
 //! Parser utilities.
 
-#![cfg(feature = "parse")]
-
 use alloc::vec::Vec;
 use nom::{
     IResult,

@@ -1,7 +1,8 @@
 # Page List Bot #
-[![Build Test](https://github.com/milkydeferwm/pagelistbot/actions/workflows/test.yml/badge.svg)](https://github.com/milkydeferwm/pagelistbot/actions/workflows/test.yml)
+[![Pipeline](https://gitlab.wikimedia.org/milkydefer/pagelistbot/badges/main/pipeline.svg
+)](https://gitlab.wikimedia.org/milkydefer/pagelistbot/-/commits/main)
 
-Re-implementation of the [legacy Page List Bot](https://github.com/milkydeferwm/pagelistbot-legacy), whose code is too tightly coupled to continue to work on.
+Re-implementation of the [legacy Page List Bot](https://gitlab.wikimedia.org/milkydefer/pagelistbot-legacy), whose code is too tightly coupled to continue to work on.
 
 The new Page List Bot is built as a frontend-backend application. To build the project, simply clone the repository and run:
 ```
@@ -9,29 +10,106 @@ cargo build --release --workspace
 ```
 And find the compiled programs in `target/release`. Currently a nightly build of rustc is required. 
 
-## Query ##
-[![dependency status](https://deps.rs/repo/github/milkydeferwm/pagelistbot/status.svg?path=bin%2Fquery)](https://deps.rs/repo/github/milkydeferwm/pagelistbot?path=bin%2Fquery)
+## Components ##
+The main function of Page List Bot is split into several small parts listed below. Each component has its own documentation.
 
-Query is the actual program that interprets the query, and executing the query. It can be called directly, but you may want to let other programs call it.
+<table>
+  <thead>
+    <tr>
+      <th scope="col">Component</th>
+      <th scope="col">Description</th>
+      <th scope="col">Badge</th>
+    </tr>
+  </thead>
+  <thead>
+    <tr>
+      <th colspan="3">Executable</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row"><a href="/bin/api_daemon/">api_daemon</a></th>
+      <td>Proxy for all connections to MediaWiki API.</td>
+      <td><a href="https://deps.rs/repo/github/milkydeferwm/pagelistbot?path=bin%2Fapi_daemon"><img src="https://deps.rs/repo/github/milkydeferwm/pagelistbot/status.svg?path=bin%2Fapi_daemon"/></a></td>
+    </tr>
+    <tr>
+      <th scope="row"><a href="/bin/query/">query</a></th>
+      <td>Query executor.</td>
+      <td><a href="https://deps.rs/repo/github/milkydeferwm/pagelistbot?path=bin%2Fquery"><img src="https://deps.rs/repo/github/milkydeferwm/pagelistbot/status.svg?path=bin%2Fquery"/></a></td>
+    </tr>
+  </tbody>
+  <thead>
+    <tr>
+      <th colspan="3">Library</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row"><a href="/lib/api_daemon_interface/">api_daemon_interface</a></th>
+      <td>JSON RPC interface definitions shared between the API Daemon and other programs.</td>
+      <td><a href="https://deps.rs/repo/github/milkydeferwm/pagelistbot?path=lib%2Fapi-daemon-interface"><img src="https://deps.rs/repo/github/milkydeferwm/pagelistbot/status.svg?path=lib%2Fapi_daemon_interface"/></a></td>
+    </tr>
+    <tr>
+      <th scope="row"><a href="/lib/ast/">ast</a></th>
+      <td>Abstract syntax tree (AST) for the query language.</td>
+      <td><a href="https://deps.rs/repo/github/milkydeferwm/pagelistbot?path=lib%2Fast"><img src="https://deps.rs/repo/github/milkydeferwm/pagelistbot/status.svg?path=lib%2Fast"/></a></td>
+    </tr>
+    <tr>
+      <th scope="row"><a href="/lib/env/">env</a></th>
+      <td>Environment variable utilities.</td>
+      <td><a href="https://deps.rs/repo/github/milkydeferwm/pagelistbot?path=lib%2Fenv"><img src="https://deps.rs/repo/github/milkydeferwm/pagelistbot/status.svg?path=lib%2Fenv"/></a></td>
+    </tr>
+    <tr>
+      <th scope="row"><a href="/lib/intorinf/">intorinf</a></th>
+      <td>A special integer type holding either a finite integer value or an infinite value.</td>
+      <td><a href="https://deps.rs/repo/github/milkydeferwm/pagelistbot?path=lib%2Fintorinf"><img src="https://deps.rs/repo/github/milkydeferwm/pagelistbot/status.svg?path=lib%2Fintorinf"/></a></td>
+    </tr>
+    <tr>
+      <th scope="row"><a href="/lib/provider/">provider</a></th>
+      <td>Trait definition for data provider.</td>
+      <td><a href="https://deps.rs/repo/github/milkydeferwm/pagelistbot?path=lib%2Fprovider"><img src="https://deps.rs/repo/github/milkydeferwm/pagelistbot/status.svg?path=lib%2Fprovider"/></a></td>
+    </tr>
+    <tr>
+      <th scope="row"><a href="/lib/solver/">solver</a></th>
+      <td>Query solver. Each query opeartion is defined as a poll-able stream.</td>
+      <td><a href="https://deps.rs/repo/github/milkydeferwm/pagelistbot?path=lib%2Fsolver"><img src="https://deps.rs/repo/github/milkydeferwm/pagelistbot/status.svg?path=lib%2Fsolver"/></a></td>
+    </tr>
+    <tr>
+      <th scope="row"><a href="/lib/trioresult/">trioresult</a></th>
+      <td>A tri-way result type. Can hold a value, or a warning, or an error.</td>
+      <td><a href="https://deps.rs/repo/github/milkydeferwm/pagelistbot?path=lib%2Ftrioresult"><img src="https://deps.rs/repo/github/milkydeferwm/pagelistbot/status.svg?path=lib%2Ftrioresult"/></a></td>
+    </tr>
+  </tbody>
+</table>
 
-### Usage ###
+## Configuration and Environment Variables ##
+### Directory Hierarchy ###
+The Page List Bot suite assumes the following directory hierarchy:
 ```
-query [--site <SITE>] [--query <QUERY>] [--user <USER>] [--password <PASSWORD>] [--timeout <TIMEOUT>] [--limit <LIMIT>] [--json]
+${PAGELISTBOT_HOME}
+├─ bin
+│   ├─ api-daemon
+│   ├─ query
+│   └─ ...
+├─ logs
+│   ├─ logxxxxxx.log
+│   └─ ...
+└─ config.toml
 ```
-Available options:
-<dl>
-<dt><code>-s, --site &lt;SITE&gt;</code></dt>
-<dd>The URL of the remote MediaWiki installation's <code>api.php</code>. You can visit <code>Special:Version</code> to find that piece of information. eg. <code>https://en.wikipedia.org/w/api.php</code>.</dd>
-<dt><code>-q, --query &lt;QUERY&gt;</code></dt>
-<dd>The query in string. Note you may want to escape certain characters. eg. <code>linkto(\"Main Page\")</code>.</dd>
-<dt><code>-u, --user &lt;USER&gt;</code></dt>
-<dd>The username to execute the query as. If the username is an empty string, the program will execute the query as an anonymous user. Defaults to an empty string.</dd>
-<dt><code>-p, --password &lt;PASSWORD&gt;</code></dt>
-<dd>The password of the corresponding username. The password is a bot password. To obtain a bot password for your account, go to <code>Special:BotPasswords</code>. If the username is empty, this will be ignored. Defaults to an empty string.</dd>
-<dt><code>-t, --timeout &lt;TIMEOUT&gt;</code></dt>
-<dd>The longest time in seconds to wait for results. After the specified time has elapsed, a warning will be emitted. Defaults to <code>120</code>, which equals to two minutes.</dd>
-<dt><code>-l, --limit &lt;LIMIT&gt;</code></dt>
-<dd>The maximum amount of results per query step. The total amount of results emitted is usually less than that number. The limit can also be overrided in the query. If the limit is exceeded, a warning will be emitted. Defaults to <code>10000</code>.</dd>
-<dt><code>--json</code></dt>
-<dd>Whether to print the results in JSON format. This is good for piping, but not good for human. Specify this flag to enable JSON outputing.</dd>
-</dl>
+`PAGELISTBOT_HOME` is the environment variable used to locate the installation directory. If it is not specified, `~/.pagelistbot` is used.
+
+### Configuration File ###
+The configuration is stored in `config.toml`. It follows TOML syntax:
+```toml
+[site key 1]
+key1 = value1
+key2 = value2
+
+[site key 2]
+key1 = value1
+key2 = value2
+
+...
+```
+It is shared between programs, each reading different parts of the configuration.
+> **Be careful.** Bot username and password may be saved into this file. This file should therefore be considered confidential.

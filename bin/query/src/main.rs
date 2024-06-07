@@ -1,7 +1,5 @@
 //! Page list bot query execution core.
 
-#![feature(unix_sigpipe)]
-
 mod api;
 use api::APIDataProvider;
 mod writer;
@@ -52,7 +50,6 @@ const FAILURE_SEMANTIC: u8 = 102;
 const FAILURE_QUERY: u8 = 103;
 
 #[tokio::main]
-#[unix_sigpipe = "sig_dfl"]
 async fn main() -> ExitCode {
     let arg = Arg::parse();
     let stdout = stdout().lock();

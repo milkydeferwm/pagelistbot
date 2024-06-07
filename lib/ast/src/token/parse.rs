@@ -1,7 +1,5 @@
 //! Parse module for token types.
 
-#![cfg(feature = "parse")]
-
 use super::{
     Dot, Comma, LeftParen, RightParen, And, Add, Sub, Caret,
     Page, Link, LinkTo, Embed, InCat, Prefix, Toggle,

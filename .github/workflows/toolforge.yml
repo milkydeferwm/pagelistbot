@@ -10,7 +10,7 @@ jobs:
       image: docker-registry.tools.wmflabs.org/toolforge-bullseye-sssd:latest
       env:
         CARGO_TERM_COLOR: always
-        RUSTFLAGS: -D warnings
+        RUSTFLAGS: -D warnings -Zon-broken-pipe=kill
 
     steps:
       - name: Install dependencies
@@ -20,7 +20,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: nightly
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Build
         run: cargo build --verbose --release --workspace
       - uses: actions/upload-artifact@v3
